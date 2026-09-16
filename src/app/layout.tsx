@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import AuthProvider from "@/components/AuthProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,13 +10,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "NL Starter",
-  description: "Mobile-first Next.js starter — NL Discovery design system",
+  title: "Seven Bro!",
+  description: "Aplikasi Mutiara Bangsa 2 — kas, pengumuman & agenda, poin perilaku",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "NL Starter",
+    title: "Seven Bro!",
   },
 };
 
@@ -36,11 +37,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="id" className={inter.variable}>
       <head>
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body>{children}</body>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

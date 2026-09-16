@@ -1,7 +1,7 @@
 {
-  "name": "NL Starter",
-  "short_name": "NL Starter",
-  "description": "Mobile-first Next.js starter with the NL Discovery design system",
+  "name": "Seven Bro!",
+  "short_name": "Seven Bro!",
+  "description": "Aplikasi mutiara bangsa 2 — kas, pengumuman & agenda, poin perilaku",
   "start_url": "/app",
   "display": "standalone",
   "background_color": "#ffffff",

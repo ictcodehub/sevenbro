@@ -1,12 +1,23 @@
 "use client"
 
+import { useSession, signOut } from "next-auth/react"
 import { useEffect, useState, type ReactNode } from "react"
-import { Activity, Bookmark, Compass, Home, Settings } from "lucide-react"
+import { useRouter, usePathname } from "next/navigation"
+import {
+  CalendarDays,
+  Home,
+  Megaphone,
+  Trophy,
+  Wallet,
+  Users,
+  Shield,
+  QrCode,
+} from "lucide-react"
 import AppShell from "@/components/AppShell"
 import type { AppShellNotification } from "@/components/AppShell"
 import { NOTIFICATIONS } from "@/lib/demo-data"
 
-const READ_KEY = "nl-starter:read-notifications"
+const READ_KEY = "sevenbro:read-notifications"
 
 function loadRead(): Set<string> {
   if (typeof window === "undefined") return new Set()
@@ -25,60 +36,93 @@ function saveRead(ids: string[]) {
   }
 }
 
+// Mapping role -> nav items
+function getNavItems(role?: string) {
+  const base = [
+    { href: "/app", label: "Beranda", icon: Home },
+    { href: "/app/pengumuman", label: "Info", icon: Megaphone },
+    { href: "/app/agenda", label: "Agenda", icon: CalendarDays },
+  ]
+
+  if (role === "HOMEROOM" || role === "KETUA" || role === "SEKRETARIS" || role === "BENDAHARA") {
+    const items = [...base, { href: "/app/poin", label: "Poin", icon: Trophy }]
+    // Kas: hanya Homeroom & Bendahara
+    if (role === "HOMEROOM" || role === "BENDAHARA") {
+      items.splice(3, 0, { href: "/app/kas", label: "Kas", icon: Wallet })
+    }
+    return items
+  }
+
+  if (role === "TEACHER") {
+    // Guru non-homeroom: hanya UI kasih poin — tanpa Beranda/Info/Arena
+    return [{ href: "/app/scan", label: "Kasih Poin", icon: QrCode }]
+  }
+
+  return base
+}
+
+function getAdminItems(role?: string) {
+  if (role === "HOMEROOM") {
+    return [
+      { href: "/app/admin/roster", label: "Roster", icon: Users },
+      { href: "/app/admin/settings", label: "Pengaturan Kelas", icon: Shield },
+    ]
+  }
+  return []
+}
+
 export default function ShellLayout({ children }: { children: ReactNode }) {
-  const [notifs] = useState<AppShellNotification[]>(NOTIFICATIONS)
+  const router = useRouter()
+  const pathname = usePathname()
+  const { data: session } = useSession()
+  const [notifs, setNotifs] = useState<AppShellNotification[]>(NOTIFICATIONS)
   const [readIds, setReadIds] = useState<Set<string>>(() => new Set())
-  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setReadIds(loadRead())
-    setMounted(true)
   }, [])
 
-  const unread = mounted
-    ? new Set(notifs.map((n) => n.id).filter((id) => !readIds.has(id)))
-    : new Set<string>()
+  const withRead: AppShellNotification[] = notifs.map((n) => ({
+    ...n,
+    read: n.read || readIds.has(n.id),
+  }))
 
   const markRead = (id: string) => {
+    setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
     const next = new Set(readIds)
     next.add(id)
     setReadIds(next)
     saveRead([...next])
   }
 
-  const markAllRead = () => {
-    const next = new Set(notifs.map((n) => n.id))
-    setReadIds(next)
-    saveRead([...next])
-  }
+  const role = (session?.user as { role?: string } | undefined)?.role
+  const name = session?.user?.name || "Guru"
+  const navItems = getNavItems(role)
+  const adminItems = getAdminItems(role)
+
+  // TEACHER: selalu dorong ke /app/scan (jangan mampir beranda/arena)
+  useEffect(() => {
+    if (role === "TEACHER" && pathname !== "/app/scan") {
+      router.replace("/app/scan")
+    }
+  }, [role, pathname, router])
 
   return (
     <AppShell
       brand={{
         logoSrc: "/brand-logo.png",
-        logoAlt: "NL Starter",
-        title: "NL Starter",
-        subtitle: "Design system template",
+        logoAlt: "Seven Bro!",
+        title: "Seven Bro!",
       }}
-      nav={{
-        left: [
-          { href: "/app/browse", label: "Browse", icon: Compass },
-          { href: "/app/activity", label: "Activity", icon: Activity },
-        ],
-        home: { href: "/app", label: "Home", icon: Home },
-        right: [
-          { href: "/app/saved", label: "Saved", icon: Bookmark },
-          { href: "/app/settings", label: "Settings", icon: Settings },
-        ],
-      }}
-      notifications={notifs}
-      unreadIds={unread}
+      nav={{ items: navItems }}
+      notifications={withRead}
       onNotificationClick={markRead}
-      onMarkAllRead={markAllRead}
-      user={{ name: "Demo User", email: "demo@example.com" }}
+      user={{ name }}
+      onSettings={() => router.push("/app/settings")}
       onSignOut={() => {
-        /* wire your auth here, e.g. signOut() from next-auth */
+        void signOut({ callbackUrl: "/login" })
       }}
+      adminItems={adminItems}
     >
       {children}
     </AppShell>

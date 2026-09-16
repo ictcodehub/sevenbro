@@ -1,100 +1,330 @@
 "use client"
 
-import { Bell, Calendar, Clock, Inbox, MapPin } from "lucide-react"
+import Link from "next/link"
+import {
+  CalendarDays,
+  Megaphone,
+  Pin,
+  Star,
+  Trophy,
+  Wallet,
+  ArrowRight,
+  Zap,
+  Crown,
+  Award,
+} from "lucide-react"
 import {
   SectionHeader,
   StatCard,
   ListRow,
-  HeroCard,
-  ProgressCard,
 } from "@/components/ui-primitives"
-import { FEED } from "@/lib/demo-data"
+import { useAppSWR } from "@/lib/fetcher"
+import { formatIDR, formatDateID, formatTimeID } from "@/lib/format"
+import { RoleGate } from "@/components/RoleGate"
+
+type Announcement = {
+  id: string
+  title: string
+  body: string
+  pinned: boolean
+  created_at: string
+}
+
+type EventRow = {
+  id: string
+  title: string
+  location: string | null
+  starts_at: string
+}
+
+type Summary = {
+  balance: number
+  recent: unknown[]
+}
+
+type PointsPayload = {
+  leaderboard: { student_id: string; full_name: string; total_points: number }[]
+}
+
+const MEDAL = [
+  {
+    chip: "bg-amber text-white",
+    ring: "ring-amber/40 bg-amber/10",
+    icon: Trophy,
+    label: "Juara 1",
+    note: "Terbaik",
+  },
+  {
+    chip: "bg-ink-soft text-white",
+    ring: "ring-ink-soft/30 bg-surface",
+    icon: Award,
+    label: "Juara 2",
+    note: "Hebat",
+  },
+  {
+    chip: "bg-amber/70 text-white",
+    ring: "ring-amber/25 bg-amber/5",
+    icon: Star,
+    label: "Juara 3",
+    note: "Keren",
+  },
+] as const
+
+function shortName(full: string) {
+  const parts = full.trim().split(/\s+/)
+  if (parts.length <= 2) return full
+  return `${parts[0]} ${parts[parts.length - 1]}`
+}
+
+const HOME_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
 
 export default function HomePage() {
-  const upcoming = FEED.slice(0, 3)
+  return (
+    <RoleGate allow={HOME_ROLES}>
+      <HomeInner />
+    </RoleGate>
+  )
+}
+
+function HomeInner() {
+  const { data: announcements } = useAppSWR<Announcement[]>("/api/announcements")
+  const { data: events } = useAppSWR<EventRow[]>("/api/events")
+  const { data: kas } = useAppSWR<Summary>("/api/kas/summary")
+  const { data: points } = useAppSWR<PointsPayload>("/api/points")
+
+  const pinned =
+    (announcements ?? []).find((a) => a.pinned) ?? (announcements ?? [])[0]
+  const upcoming = (events ?? []).slice(0, 3)
+  const top3 = (points?.leaderboard ?? []).slice(0, 3)
+  const totalPoin = (points?.leaderboard ?? []).reduce(
+    (s, p) => s + (p.total_points || 0),
+    0,
+  )
+  const totalSiswa = points?.leaderboard?.length ?? 0
 
   return (
-    <div className="px-4 py-3 space-y-4">
-      {/* ── Greeting ── */}
-      <div>
-        <h1 className="text-lg font-bold text-ink">Hi there! 👋</h1>
-        <p className="text-[11px] text-ink-soft/75">Welcome to your NL Starter app</p>
+    <div className="px-4 py-3 space-y-3">
+      {/* ── Sapaan ── */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-ink">Halo, 7B! 👋</h1>
+          <p className="text-[11px] text-ink-soft/75">
+            Informasi kelas ada di sini
+          </p>
+        </div>
+        <span className="text-[10px] font-semibold text-forest bg-forest/10 px-2 py-1 rounded-full">
+          {totalSiswa > 0 ? `${totalSiswa} orang` : "7B"}
+        </span>
       </div>
 
-      {/* ── Quick stats (StatCard) ── */}
-      <div className="flex gap-2">
+      {/* ── 1. Disematkan — paling atas ── */}
+      {pinned ? (
+        <Link
+          href="/app/pengumuman"
+          className="block active:scale-[0.99] transition-transform"
+        >
+          <div className="bg-deep rounded-2xl p-4 text-white">
+            <div className="flex items-center justify-between mb-2">
+              <span className="inline-flex items-center gap-1 bg-amber/20 text-amber rounded-full px-2 py-0.5 text-[9px] font-bold">
+                <Pin className="h-2.5 w-2.5" />
+                {pinned.pinned ? "Disematkan" : "Terbaru"}
+              </span>
+              <span className="text-[10px] text-white/45">Info kelas</span>
+            </div>
+            <h3 className="text-sm font-bold leading-tight mb-1">
+              {pinned.title}
+            </h3>
+            <p className="text-[11px] text-white/65 leading-relaxed line-clamp-2">
+              {pinned.body}
+            </p>
+            <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between">
+              <span className="text-[10px] text-acid font-semibold flex items-center gap-0.5">
+                Baca selengkapnya <ArrowRight className="h-3 w-3" />
+              </span>
+              <Megaphone className="h-4 w-4 text-white/30" />
+            </div>
+          </div>
+        </Link>
+      ) : (
+        <div className="bg-deep rounded-2xl p-4 text-white flex items-center justify-between">
+          <div>
+            <p className="text-[10px] text-white/55">Tidak ada pengumuman</p>
+            <p className="text-sm font-bold text-acid mt-0.5">Cek Info untuk update</p>
+          </div>
+          <Megaphone className="h-7 w-7 text-white/30" />
+        </div>
+      )}
+
+      {/* ── 2. Tiga kartu inline: Info · Agenda · Poin ── */}
+      <div className="grid grid-cols-3 gap-2">
         <StatCard
-          href="/app/browse"
-          icon={<Inbox className="h-4 w-4" />}
-          label="Browse"
-          value={`${FEED.length} items`}
+          href="/app/pengumuman"
+          icon={<Megaphone className="h-5 w-5" />}
+          label="Info"
+          value={`${announcements?.length ?? 0} baru`}
           tone="forest"
         />
         <StatCard
-          href="/app/activity"
-          icon={<Bell className="h-4 w-4" />}
-          label="Activity"
-          value="3 events"
+          href="/app/agenda"
+          icon={<CalendarDays className="h-5 w-5" />}
+          label="Agenda"
+          value={`${events?.length ?? 0} kegiatan`}
           tone="amber"
         />
+        <StatCard
+          href="/app/poin"
+          icon={<Trophy className="h-5 w-5" />}
+          label="Poin"
+          value={`${totalPoin} total`}
+          tone="lime"
+        />
       </div>
 
-      {/* ── Dark hero card ── */}
-      <HeroCard
-        eyebrow="Happening now"
-        meta="09:00 — 10:00"
-        title="Morning sync"
-        location="Room A"
-        description="Replace this hero with your live state — the card is fully prop-driven."
-      />
+      {/* ── 3. Podium Top 3 — piala & bintang ── */}
+      <Link href="/app/poin" className="block active:scale-[0.99] transition-transform">
+        <div className="bg-white border border-line shadow-sm rounded-2xl p-3.5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-1.5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber/15">
+                <Trophy className="h-3.5 w-3.5 text-amber" />
+              </div>
+              <div>
+                <h2 className="text-xs font-semibold text-ink">Peringkat Poin</h2>
+                <p className="text-[9px] text-ink-soft/60">Top 3 kelas 7B</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-0.5 text-amber">
+              <Star className="h-3 w-3 fill-amber" />
+              <Star className="h-3 w-3 fill-amber" />
+              <Star className="h-3 w-3" />
+            </div>
+          </div>
 
-      {/* ── Progress card ── */}
-      <ProgressCard
-        eyebrow={
-          <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            Onboarding
-          </span>
-        }
-        value={60}
-        sub="%"
-        percent={60}
-        doneLabel="3/5 done"
-      />
+          {top3.length === 0 ? (
+            <p className="text-[10px] text-ink-soft/60 py-2 text-center">
+              Belum ada poin
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {/* Juara 1 dulu — lebih menonjol */}
+              {(() => {
+                const p = top3[0]
+                const m = MEDAL[0]
+                const Icon = m.icon
+                return (
+                  <div className={`flex items-center gap-2.5 rounded-xl p-2.5 ring-1 ${m.ring}`}>
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${m.chip} shadow-sm`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1">
+                        <Crown className="h-3 w-3 text-amber shrink-0" />
+                        <p className="text-[12px] font-bold text-ink truncate">
+                          {shortName(p.full_name)}
+                        </p>
+                      </div>
+                      <p className="text-[9px] text-ink-soft/70">{m.label} · {m.note}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-bold text-forest leading-none">
+                        {p.total_points}
+                      </p>
+                      <p className="text-[9px] text-ink-soft/60">poin</p>
+                    </div>
+                  </div>
+                )
+              })()}
 
-      {/* ── Upcoming list (SectionHeader + ListRow) ── */}
+              {/* Juara 2 & 3 */}
+              <div className="grid grid-cols-2 gap-2">
+                {top3.slice(1, 3).map((p, idx) => {
+                  const m = MEDAL[idx + 1]
+                  const Icon = m.icon
+                  return (
+                    <div
+                      key={p.student_id}
+                      className={`rounded-xl p-2.5 ring-1 ${m.ring} flex flex-col gap-1.5`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${m.chip}`}>
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <Star className="h-3 w-3 text-amber/70 fill-amber/40" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-semibold text-ink truncate">
+                          {shortName(p.full_name)}
+                        </p>
+                        <p className="text-[9px] text-ink-soft/60">{m.label}</p>
+                      </div>
+                      <p className="text-[11px] font-bold text-forest">
+                        {p.total_points} <span className="font-medium text-ink-soft/60">poin</span>
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-3 pt-2 border-t border-line/40">
+            <span className="text-[10px] text-forest font-semibold flex items-center gap-0.5">
+              Lihat semua <ArrowRight className="h-3 w-3" />
+            </span>
+          </div>
+        </div>
+      </Link>
+
+      {/* ── 4. Saldo Kas (tetap) ── */}
+      <Link href="/app/kas" className="block active:scale-[0.99] transition-transform">
+        <div className="bg-deep rounded-2xl p-4 text-white">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="flex items-center gap-1.5 text-[10px] font-medium text-white/70">
+              <Wallet className="h-3 w-3" />
+              Saldo Kas Kelas
+            </span>
+            <span className="text-[10px] text-acid">Lihat kas</span>
+          </div>
+          <p className="text-2xl font-bold leading-none text-acid">
+            {formatIDR(kas?.balance ?? 0)}
+          </p>
+          <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between">
+            <span className="text-[10px] text-white/45">
+              {kas?.recent?.length ?? 0} transaksi
+            </span>
+            <Zap className="h-4 w-4 text-acid/50" />
+          </div>
+        </div>
+      </Link>
+
+      {/* ── 5. Agenda (tetap bentuknya) ── */}
       <div>
         <SectionHeader
-          title="Upcoming"
-          action={{ href: "/app/browse", label: "See all" }}
+          title="Agenda Terdekat"
+          count={events?.length ?? 0}
+          action={{ href: "/app/agenda", label: "Semua" }}
         />
         <div className="space-y-1.5">
-          {upcoming.map((item) => (
+          {upcoming.map((e) => (
             <ListRow
-              key={item.id}
-              icon={<Calendar className="h-3.5 w-3.5 text-forest" />}
-              title={item.title}
-              subtitle={item.subtitle}
-              rightTop={item.time}
-              rightBottom={item.date}
-              href="/app/browse"
+              key={e.id}
+              icon={<CalendarDays className="h-3.5 w-3.5 text-forest" />}
+              title={e.title}
+              subtitle={e.location || "-"}
+              rightTop={formatTimeID(new Date(e.starts_at))}
+              rightBottom={formatDateID(new Date(e.starts_at))}
+              href="/app/agenda"
             />
           ))}
+          {upcoming.length === 0 && (
+            <div className="bg-white border border-line shadow-sm rounded-xl p-3 text-center text-[10px] text-ink-soft/60">
+              Belum ada agenda
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ── Empty state demo ── */}
-      <div>
-        <SectionHeader title="Empty state" count="0" />
-        <div className="bg-white border border-line shadow-sm rounded-2xl py-6 text-center">
-          <div className="flex justify-center mb-1 text-ink-soft/40">
-            <MapPin className="h-5 w-5" />
-          </div>
-          <p className="text-[11px] text-ink-soft/75">
-            Nothing here yet — wire up your data
-          </p>
-        </div>
-      </div>
+      <div className="h-2" />
     </div>
   )
 }

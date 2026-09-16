@@ -39,3 +39,16 @@ next-env.d.ts
 # next-pwa (generated at build time)
 public/sw.js
 public/workbox-*.js
+
+# logs & local temp
+*.log
+.cf-*.log
+cf-*.log
+.probe_*.py
+.chk*.py
+.check*.py
+.seed*.py
+.migrate*.py
+
+supabase/.temp/
+.cf-tunnel.err
