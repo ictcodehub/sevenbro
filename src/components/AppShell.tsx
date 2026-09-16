@@ -173,7 +173,6 @@ export default function AppShell({
   const [showProfile, setShowProfile] = useState(false)
 
   const unread = notifications.filter((n) => !n.read).length
-  const showBell = notifications.length > 0
 
   const isActive = (href: string) =>
     href === "/app" ? pathname === "/app" : pathname === href || pathname.startsWith(`${href}/`)
@@ -195,28 +194,24 @@ export default function AppShell({
             <span className="text-sm font-bold text-ink truncate">{brand.title}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            {showBell && (
-              <button
-                onClick={() => {
-                  setShowNotif((v) => !v)
-                  setShowProfile(false)
-                }}
-                aria-label={`Notifikasi${unread > 0 ? `, ${unread} belum dibaca` : ""}`}
-                className="relative flex h-9 w-9 items-center justify-center rounded-xl text-ink hover:bg-surface transition mt-1"
-              >
-                <Bell className="h-5 w-5" />
-                {unread > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber px-1 text-[9px] font-bold text-white">
-                    {unread > 9 ? "9+" : unread}
-                  </span>
-                )}
-              </button>
-            )}
+            <button
+              onClick={() => {
+                setShowNotif((v) => !v)
+                setShowProfile(false)
+              }}
+              aria-label={`Notifikasi${unread > 0 ? `, ${unread} belum dibaca` : ""}`}
+              className="relative flex h-9 w-9 items-center justify-center rounded-xl text-ink hover:bg-surface transition mt-1"
+            >
+              <Bell className="h-5 w-5" />
+              {unread > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber px-1 text-[9px] font-bold text-white">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+            </button>
             {user && (
               <>
-                {showBell && (
-                  <span className="w-px h-5 bg-line mx-0.5 shrink-0" aria-hidden="true" />
-                )}
+                <span className="w-px h-5 bg-line mx-0.5 shrink-0" aria-hidden="true" />
                 <button
                   type="button"
                   onClick={() => {
@@ -249,53 +244,51 @@ export default function AppShell({
             className="absolute inset-0 bg-deep/30 backdrop-blur-[4px]"
           />
           <div className="relative z-10 flex flex-col h-full pt-2">
-            {/* Panel header — rounded bawah, blur hijau */}
-            <div className="bg-forest/92 backdrop-blur-md text-white rounded-b-[28px] px-5 pt-6 pb-5 shadow-[0_8px_32px_rgba(13,33,28,0.35)]">
-              <div className="flex items-start justify-between mb-3">
+            {/* Panel header — ringkas */}
+            <div className="bg-forest/90 backdrop-blur-md text-white rounded-b-[24px] px-4 py-3 shadow-[0_4px_20px_rgba(13,33,28,0.25)]">
+              <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-lime/80 mb-1">
-                    Seven Bro
-                  </p>
-                  <h2 className="text-[20px] font-bold text-white leading-tight tracking-tight">
+                  <h2 className="text-[15px] font-bold text-white leading-tight">
                     Notifikasi
                   </h2>
-                  <p className="text-[11px] text-white/50 mt-1">
+                  <p className="text-[10px] text-white/50 mt-0.5">
                     {unread > 0
                       ? `${unread} belum dibaca`
                       : notifications.length > 0
-                        ? `${notifications.length} notifikasi · sudah dibaca`
+                        ? `${notifications.length} · sudah dibaca`
                         : "Kosong"}
                   </p>
                 </div>
-                <button
-                  onClick={closeAll}
-                  aria-label="Tutup"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white shrink-0 active:scale-95 transition"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="flex items-center gap-3">
-                {unread > 0 && (
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {unread > 0 && (
+                    <button
+                      onClick={() => {
+                        notifications
+                          .filter((n) => !n.read)
+                          .forEach((n) => onNotificationClick?.(n.id))
+                      }}
+                      className="text-[11px] font-semibold text-lime px-2 py-1 rounded-full bg-lime/15"
+                    >
+                      Dibaca
+                    </button>
+                  )}
+                  {notifications.length > 0 && (
+                    <button
+                      onClick={() => onClearAllNotifications?.()}
+                      aria-label="Hapus semua"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/80"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                   <button
-                    onClick={() => {
-                      notifications
-                        .filter((n) => !n.read)
-                        .forEach((n) => onNotificationClick?.(n.id))
-                    }}
-                    className="flex items-center gap-1.5 text-[12px] font-semibold text-lime px-3 py-1.5 rounded-full bg-lime/15 border border-lime/25"
+                    onClick={closeAll}
+                    aria-label="Tutup"
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white"
                   >
-                    <CheckCheck className="h-3.5 w-3.5" />
-                    Tandai Dibaca
+                    <X className="h-3.5 w-3.5" />
                   </button>
-                )}
-                <button
-                  onClick={() => onClearAllNotifications?.()}
-                  className="flex items-center gap-1.5 text-[12px] font-medium text-white/70 px-3 py-1.5 rounded-full bg-white/10 border border-white/15"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Hapus Semua
-                </button>
+                </div>
               </div>
             </div>
 
