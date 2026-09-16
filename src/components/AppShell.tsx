@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell, Settings2, LogOut } from "lucide-react"
+import { Bell, Settings2, LogOut, X } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 
@@ -127,56 +127,96 @@ export default function AppShell({
           </div>
         </div>
 
-        {/* Notifikasi dropdown */}
+        {/* Notification shade — full-screen ala HP */}
         {showNotif && (
-          <>
-            <div className="fixed inset-0 z-30" onClick={closeAll} />
-            <div className="absolute right-4 top-16 w-72 bg-white border border-line rounded-2xl shadow-lg z-50 overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-line">
-                <h3 className="text-sm font-bold text-ink">Notifikasi</h3>
-                {unread > 0 && (
+          <div className="fixed inset-0 z-50 flex flex-col">
+            {/* Backdrop blur */}
+            <button
+              type="button"
+              aria-label="Tutup notifikasi"
+              onClick={closeAll}
+              className="absolute inset-0 bg-deep/40 backdrop-blur-md"
+            />
+            {/* Panel notifikasi */}
+            <div className="relative z-10 flex flex-col max-h-full">
+              {/* Header shade */}
+              <div className="bg-deep/95 backdrop-blur-xl text-white px-4 pt-4 pb-3 rounded-b-2xl shadow-xl">
+                <div className="flex items-center justify-between mb-1">
+                  <h2 className="text-[15px] font-bold text-white">Notifikasi</h2>
                   <button
-                    onClick={() => {
-                      notifications.forEach((n) => onNotificationClick?.(n.id))
-                      setShowNotif(false)
-                    }}
-                    className="text-[10px] text-forest font-semibold"
+                    onClick={closeAll}
+                    aria-label="Tutup"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white/80"
                   >
-                    Tandai semua dibaca
+                    <X className="h-4 w-4" />
                   </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] text-white/50">
+                    {unread > 0 ? `${unread} belum dibaca` : "Semua sudah dibaca"}
+                  </p>
+                  {unread > 0 && (
+                    <button
+                      onClick={() => {
+                        notifications.forEach((n) => onNotificationClick?.(n.id))
+                      }}
+                      className="text-[11px] font-semibold text-lime"
+                    >
+                      Tandai semua dibaca
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Daftar notifikasi */}
+              <div className="flex-1 overflow-y-auto bg-page/90 backdrop-blur-sm">
+                {notifications.length === 0 ? (
+                  <div className="px-6 py-12 text-center">
+                    <Bell className="h-8 w-8 text-ink-soft/30 mx-auto mb-2" />
+                    <p className="text-[12px] text-ink-soft/50">Belum ada notifikasi</p>
+                  </div>
+                ) : (
+                  <ul className="px-3 py-2 space-y-1.5">
+                    {notifications.map((n) => (
+                      <li
+                        key={n.id}
+                        onClick={() => {
+                          onNotificationClick?.(n.id)
+                          setShowNotif(false)
+                        }}
+                        className={`rounded-xl px-3.5 py-3 cursor-pointer active:scale-[0.99] transition ${
+                          !n.read
+                            ? "bg-white border border-forest/20 shadow-sm"
+                            : "bg-white/70 border border-line/50"
+                        }`}
+                      >
+                        <div className="flex items-start gap-2.5">
+                          {!n.read ? (
+                            <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-forest" />
+                          ) : (
+                            <span className="mt-1.5 h-2 w-2 shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className={`text-[12px] leading-snug ${
+                                !n.read ? "font-bold text-ink" : "font-medium text-ink/70"
+                              }`}
+                            >
+                              {n.title}
+                            </p>
+                            <p className="text-[11px] text-ink-soft/70 mt-0.5 leading-snug">
+                              {n.body}
+                            </p>
+                            <p className="text-[9px] text-ink-soft/45 mt-1">{n.time}</p>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
-              <ul className="max-h-48 overflow-y-auto">
-                {notifications.length === 0 ? (
-                  <li className="px-4 py-6 text-center text-[11px] text-ink-soft/60">
-                    Belum ada notifikasi
-                  </li>
-                ) : (
-                  notifications.map((n) => (
-                    <li
-                      key={n.id}
-                      onClick={() => {
-                        onNotificationClick?.(n.id)
-                        setShowNotif(false)
-                      }}
-                      className={`px-4 py-3 cursor-pointer hover:bg-surface transition ${!n.read ? "bg-primary/[0.03]" : ""}`}
-                    >
-                      <div className="flex items-start gap-2">
-                        {!n.read && (
-                          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-forest" />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-semibold text-ink truncate">{n.title}</p>
-                          <p className="text-[10px] text-ink-soft/75 mt-0.5">{n.body}</p>
-                          <p className="text-[9px] text-ink-soft/50 mt-0.5">{n.time}</p>
-                        </div>
-                      </div>
-                    </li>
-                  ))
-                )}
-              </ul>
             </div>
-          </>
+          </div>
         )}
 
         {/* Profile dropdown — campur, tanpa kategori */}
