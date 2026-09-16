@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type ReactNode } from "react"
+import { useRef, useState, type ReactNode } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -66,6 +66,105 @@ function notifIcon(title: string) {
   return Bell
 }
 
+/** Kartu notifikasi ala iOS + swipe-to-delete */
+function NotifCard({
+  n,
+  onDelete,
+  onOpen,
+}: {
+  n: AppShellNotification
+  onDelete: () => void
+  onOpen: () => void
+}) {
+  const [dx, setDx] = useState(0)
+  const startRef = useRef<number | null>(null)
+  const dragging = useRef(false)
+  const Icon = notifIcon(n.title)
+  const THRESHOLD = 80
+
+  const onDown = (e: React.PointerEvent) => {
+    startRef.current = e.clientX
+    dragging.current = true
+  }
+  const onMove = (e: React.PointerEvent) => {
+    if (!dragging.current || startRef.current == null) return
+    const delta = e.clientX - startRef.current
+    if (delta < 0) setDx(Math.max(delta, -100))
+  }
+  const onUp = () => {
+    if (!dragging.current) return
+    dragging.current = false
+    if (dx < -THRESHOLD) {
+      onDelete()
+      setDx(0)
+    } else {
+      setDx(0)
+    }
+    startRef.current = null
+  }
+
+  return (
+    <li className="relative rounded-2xl overflow-hidden select-none touch-pan-y">
+      {/* Merah di belakang */}
+      <div className="absolute inset-y-0 right-0 w-20 bg-alert flex items-center justify-center">
+        <span className="flex flex-col items-center text-white">
+          <Trash2 className="h-4 w-4" />
+          <span className="text-[9px] font-semibold mt-0.5">Hapus</span>
+        </span>
+      </div>
+
+      {/* Kartu — geser saat swipe */}
+      <div
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerCancel={onUp}
+        onClick={() => {
+          if (dx === 0) onOpen()
+          else setDx(0)
+        }}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") onOpen()
+        }}
+        className={`relative flex items-start gap-2.5 px-3.5 py-3 cursor-pointer active:opacity-90 transition-transform ${
+          dx !== 0 ? "" : "transition-transform duration-200"
+        } ${n.read ? "bg-white/80" : "bg-white"} rounded-2xl border ${
+          n.read ? "border-white/40" : "border-forest/20"
+        } shadow-sm`}
+        style={{ transform: `translateX(${dx}px)` }}
+      >
+        <span
+          className={`flex h-9 w-9 items-center justify-center rounded-[10px] shrink-0 ${
+            n.read ? "bg-surface text-ink-soft" : "bg-forest text-lime"
+          }`}
+        >
+          <Icon className="h-4 w-4" />
+        </span>
+        <span className="flex-1 min-w-0">
+          <span className="flex items-center gap-1.5">
+            <span
+              className={`text-[13px] leading-snug ${
+                n.read ? "font-medium text-ink/75" : "font-bold text-ink"
+              }`}
+            >
+              {n.title}
+            </span>
+            {!n.read && (
+              <span className="h-1.5 w-1.5 rounded-full bg-forest shrink-0" />
+            )}
+          </span>
+          <span className="block text-[12px] text-ink-soft/70 mt-0.5 leading-snug">
+            {n.body}
+          </span>
+          <span className="block text-[10px] text-ink-soft/45 mt-1">{n.time}</span>
+        </span>
+      </div>
+    </li>
+  )
+}
+
 export default function AppShell({
   children,
   brand,
@@ -82,7 +181,6 @@ export default function AppShell({
   const pathname = usePathname()
   const [showNotif, setShowNotif] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
-  const [swipeId, setSwipeId] = useState<string | null>(null)
 
   const unread = notifications.filter((n) => !n.read).length
   const showBell = notifications.length > 0
@@ -93,7 +191,6 @@ export default function AppShell({
   const closeAll = () => {
     setShowNotif(false)
     setShowProfile(false)
-    setSwipeId(null)
   }
 
   return (
@@ -113,7 +210,6 @@ export default function AppShell({
                 onClick={() => {
                   setShowNotif((v) => !v)
                   setShowProfile(false)
-                  setSwipeId(null)
                 }}
                 aria-label={`Notifikasi${unread > 0 ? `, ${unread} belum dibaca` : ""}`}
                 className="relative flex h-9 w-9 items-center justify-center rounded-xl text-ink hover:bg-surface transition mt-1"
@@ -210,97 +306,41 @@ export default function AppShell({
               </div>
             </div>
 
-            {/* Daftar */}
+            {/* Daftar — ala iOS */}
             <div className="flex-1 overflow-y-auto px-3 py-3 min-h-0">
               {notifications.length === 0 ? (
                 <div className="px-6 py-16 text-center">
                   <Bell className="h-10 w-10 text-white/30 mx-auto mb-3" />
                   <p className="text-[13px] font-medium text-white/60">Belum ada notifikasi</p>
+                  <p className="text-[11px] text-white/40 mt-1">Geser kartu ke kiri untuk hapus</p>
                 </div>
               ) : (
-                <ul className="space-y-2">
-                  {notifications.map((n) => {
-                    const Icon = notifIcon(n.title)
-                    return (
-                      <li
-                        key={n.id}
-                        className={`relative rounded-2xl overflow-hidden border transition ${
-                          !n.read
-                            ? "bg-white/95 border-forest/25 shadow-sm"
-                            : "bg-white/70 border-white/40"
-                        }`}
-                      >
-                        {/* Swipe / hapus */}
-                        <div className="absolute inset-y-0 right-0 w-16 bg-alert flex items-center justify-center">
-                          <button
-                            type="button"
-                            aria-label="Hapus notifikasi"
-                            onClick={() => onNotificationDelete?.(n.id)}
-                            className="flex flex-col items-center gap-0.5 text-white"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="text-[9px] font-semibold">Hapus</span>
-                          </button>
-                        </div>
-                        {/* Konten — geser kiri saat swipeId aktif */}
-                        <div
-                          className={`relative flex items-start gap-2.5 px-3 py-3 transition-transform ${
-                            swipeId === n.id ? "-translate-x-16" : "translate-x-0"
-                          }`}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSwipeId(swipeId === n.id ? null : n.id)
-                            }}
-                            onDoubleClick={() => onNotificationClick?.(n.id)}
-                            className="flex items-start gap-2.5 flex-1 min-w-0 text-left"
-                          >
-                            <span
-                              className={`flex h-8 w-8 items-center justify-center rounded-xl shrink-0 ${
-                                !n.read ? "bg-forest text-lime" : "bg-surface text-ink-soft"
-                              }`}
-                            >
-                              <Icon className="h-4 w-4" />
-                            </span>
-                            <span className="flex-1 min-w-0">
-                              <span className="flex items-center gap-1.5">
-                                <span
-                                  className={`text-[12px] leading-snug ${
-                                    !n.read ? "font-bold text-ink" : "font-medium text-ink/70"
-                                  }`}
-                                >
-                                  {n.title}
-                                </span>
-                                {!n.read && (
-                                  <span className="h-1.5 w-1.5 rounded-full bg-forest shrink-0" />
-                                )}
-                              </span>
-                              <span className="block text-[11px] text-ink-soft/70 mt-0.5 leading-snug">
-                                {n.body}
-                              </span>
-                              <span className="block text-[9px] text-ink-soft/45 mt-1">
-                                {n.time}
-                              </span>
-                            </span>
-                          </button>
-                          {swipeId === n.id && (
-                            <button
-                              type="button"
-                              aria-label="Tutup hapus"
-                              onClick={() => setSwipeId(null)}
-                              className="shrink-0 self-center text-ink-soft/40 p-1"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                          )}
-                        </div>
-                      </li>
-                    )
-                  })}
+                <ul className="space-y-2.5">
+                  {notifications.map((n) => (
+                    <NotifCard
+                      key={n.id}
+                      n={n}
+                      onDelete={() => onNotificationDelete?.(n.id)}
+                      onOpen={() => onNotificationClick?.(n.id)}
+                    />
+                  ))}
                 </ul>
               )}
             </div>
+
+            {/* Footer — Clear all ala iOS */}
+            {notifications.length > 0 && (
+              <div className="px-3 pb-4 pt-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => onClearAllNotifications?.()}
+                  className="w-full flex items-center justify-center gap-1.5 rounded-2xl bg-white/80 backdrop-blur border border-white/40 py-2.5 text-[12px] font-semibold text-ink/80"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Hapus Semua
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
