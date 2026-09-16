@@ -82,7 +82,7 @@ export default function AppShell({
             </div>
             <span className="text-sm font-bold text-ink truncate">{brand.title}</span>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {showBell && (
               <button
                 onClick={() => {
@@ -109,9 +109,9 @@ export default function AppShell({
                   setShowNotif(false)
                 }}
                 aria-label="Menu profil"
-                className="ml-1 flex items-center"
+                className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-surface transition shrink-0"
               >
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-8 w-8 ring-1 ring-line">
                   <AvatarImage src={user.avatar} alt={user.name} />
                   <AvatarFallback className="bg-forest text-white text-xs font-semibold">
                     {user.name.charAt(0).toUpperCase()}
@@ -174,14 +174,13 @@ export default function AppShell({
           </>
         )}
 
-        {/* Profile dropdown — opsi rapi, ikon sejajar */}
+        {/* Profile dropdown — campur, tanpa kategori */}
         {showProfile && (
           <>
             <div className="fixed inset-0 z-30" onClick={closeAll} />
-            <div className="absolute right-3 top-16 z-50 w-64 bg-white border border-line rounded-2xl shadow-lg overflow-hidden">
-              {/* Identitas */}
-              <div className="flex items-center gap-3 px-4 py-3.5 bg-page/50 border-b border-line">
-                <Avatar className="h-10 w-10 shrink-0">
+            <div className="absolute right-3 top-16 z-50 w-60 bg-white border border-line rounded-2xl shadow-lg overflow-hidden">
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-line">
+                <Avatar className="h-9 w-9 shrink-0 ring-1 ring-line">
                   <AvatarImage src={user?.avatar} alt={user?.name} />
                   <AvatarFallback className="bg-forest text-white text-sm font-bold">
                     {user?.name?.charAt(0).toUpperCase() || "?"}
@@ -189,39 +188,25 @@ export default function AppShell({
                 </Avatar>
                 <div className="min-w-0">
                   <p className="text-[12px] font-bold text-ink truncate">{user?.name}</p>
-                  <p className="text-[10px] text-ink-soft/60 truncate">
-                    {user?.role || "Siswa"} · Kelas 7B
+                  <p className="text-[10px] text-ink-soft/55 truncate">
+                    {user?.role || "Siswa"} · 7B
                   </p>
                 </div>
               </div>
-
-              {/* Admin (Homeroom) */}
-              {adminItems.length > 0 && (
-                <div className="py-1">
-                  <p className="px-4 py-1 text-[9px] font-bold uppercase tracking-wider text-ink-soft/40">
-                    Admin Kelas
-                  </p>
-                  {adminItems.map(({ href, label, icon: Icon }) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      onClick={() => setShowProfile(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-medium text-ink hover:bg-surface transition"
-                    >
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber/10 text-amber shrink-0">
-                        <Icon className="h-3.5 w-3.5" />
-                      </span>
-                      {label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-
-              {/* Akun */}
-              <div className="py-1 border-t border-line">
-                <p className="px-4 py-1 text-[9px] font-bold uppercase tracking-wider text-ink-soft/40">
-                  Akun
-                </p>
+              <div className="py-1">
+                {adminItems.map(({ href, label, icon: Icon }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setShowProfile(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-medium text-ink hover:bg-surface transition"
+                  >
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface text-ink-soft shrink-0">
+                      <Icon className="h-3.5 w-3.5" />
+                    </span>
+                    {label}
+                  </Link>
+                ))}
                 <button
                   onClick={() => {
                     onSettings?.()
