@@ -156,7 +156,7 @@ export default function AppShell({
             {user && (
               <div className="ml-1 pl-2 border-l border-line flex items-center gap-1.5">
                 {user.role && user.role !== "ANGGOTA" && (
-                  <span className="hidden sm:inline-flex text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-forest/10 text-forest">
+                  <span className="inline-flex text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-forest/10 text-forest shrink-0">
                     {user.role}
                   </span>
                 )}
