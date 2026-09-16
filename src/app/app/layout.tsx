@@ -18,6 +18,7 @@ import type { AppShellNotification } from "@/components/AppShell"
 import { NOTIFICATIONS } from "@/lib/demo-data"
 
 const READ_KEY = "sevenbro:read-notifications"
+const DELETED_KEY = "sevenbro:deleted-notifications"
 
 function loadRead(): Set<string> {
   if (typeof window === "undefined") return new Set()
@@ -31,6 +32,23 @@ function loadRead(): Set<string> {
 function saveRead(ids: string[]) {
   try {
     localStorage.setItem(READ_KEY, JSON.stringify(ids))
+  } catch {
+    /* private mode — ignore */
+  }
+}
+
+function loadDeleted(): Set<string> {
+  if (typeof window === "undefined") return new Set()
+  try {
+    return new Set(JSON.parse(localStorage.getItem(DELETED_KEY) || "[]"))
+  } catch {
+    return new Set()
+  }
+}
+
+function saveDeleted(ids: string[]) {
+  try {
+    localStorage.setItem(DELETED_KEY, JSON.stringify(ids))
   } catch {
     /* private mode — ignore */
   }
@@ -77,15 +95,19 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
   const { data: session } = useSession()
   const [notifs, setNotifs] = useState<AppShellNotification[]>(NOTIFICATIONS)
   const [readIds, setReadIds] = useState<Set<string>>(() => new Set())
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(() => new Set())
 
   useEffect(() => {
     setReadIds(loadRead())
+    setDeletedIds(loadDeleted())
   }, [])
 
-  const withRead: AppShellNotification[] = notifs.map((n) => ({
-    ...n,
-    read: n.read || readIds.has(n.id),
-  }))
+  const withRead: AppShellNotification[] = notifs
+    .filter((n) => !deletedIds.has(n.id))
+    .map((n) => ({
+      ...n,
+      read: n.read || readIds.has(n.id),
+    }))
 
   const markRead = (id: string) => {
     setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
@@ -93,6 +115,24 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
     next.add(id)
     setReadIds(next)
     saveRead([...next])
+  }
+
+  const deleteNotif = (id: string) => {
+    setDeletedIds((prev) => {
+      const next = new Set(prev)
+      next.add(id)
+      saveDeleted([...next])
+      return next
+    })
+  }
+
+  const clearAllNotifs = () => {
+    const all = withRead.map((n) => n.id)
+    setDeletedIds((prev) => {
+      const next = new Set([...prev, ...all])
+      saveDeleted([...next])
+      return next
+    })
   }
 
   const role = (session?.user as { role?: string } | undefined)?.role
@@ -117,6 +157,8 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
       nav={{ items: navItems }}
       notifications={withRead}
       onNotificationClick={markRead}
+      onNotificationDelete={deleteNotif}
+      onClearAllNotifications={clearAllNotifs}
       user={{ name, role }}
       onSettings={() => router.push("/app/settings")}
       onSignOut={() => {
