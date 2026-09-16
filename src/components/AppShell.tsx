@@ -104,16 +104,11 @@ function NotifCard({
   }
 
   return (
-    <li className="relative rounded-2xl overflow-hidden select-none touch-pan-y">
-      {/* Merah di belakang */}
-      <div className="absolute inset-y-0 right-0 w-20 bg-alert flex items-center justify-center">
-        <span className="flex flex-col items-center text-white">
-          <Trash2 className="h-4 w-4" />
-          <span className="text-[9px] font-semibold mt-0.5">Hapus</span>
-        </span>
-      </div>
-
-      {/* Kartu — geser saat swipe */}
+    <li
+      className={`relative rounded-2xl overflow-hidden select-none touch-pan-y transition-opacity duration-200 ${
+        dx < -40 ? "opacity-40" : "opacity-100"
+      }`}
+    >
       <div
         onPointerDown={onDown}
         onPointerMove={onMove}
@@ -128,22 +123,20 @@ function NotifCard({
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") onOpen()
         }}
-        className={`relative flex items-start gap-2.5 px-3.5 py-3 cursor-pointer active:opacity-90 transition-transform ${
+        className={`relative flex items-start gap-2.5 px-3.5 py-3.5 cursor-pointer active:opacity-95 rounded-2xl border ${
           dx !== 0 ? "" : "transition-transform duration-200"
-        } ${n.read ? "bg-white/80" : "bg-white"} rounded-2xl border ${
-          n.read ? "border-white/40" : "border-forest/20"
-        } shadow-sm`}
+        } ${n.read ? "bg-white/75 border-white/35" : "bg-white border-forest/15"} shadow-sm`}
         style={{ transform: `translateX(${dx}px)` }}
       >
         <span
-          className={`flex h-9 w-9 items-center justify-center rounded-[10px] shrink-0 ${
+          className={`flex h-9 w-9 items-center justify-center rounded-xl shrink-0 ${
             n.read ? "bg-surface text-ink-soft" : "bg-forest text-lime"
           }`}
         >
           <Icon className="h-4 w-4" />
         </span>
         <span className="flex-1 min-w-0">
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-start justify-between gap-2">
             <span
               className={`text-[13px] leading-snug ${
                 n.read ? "font-medium text-ink/75" : "font-bold text-ink"
@@ -151,14 +144,11 @@ function NotifCard({
             >
               {n.title}
             </span>
-            {!n.read && (
-              <span className="h-1.5 w-1.5 rounded-full bg-forest shrink-0" />
-            )}
+            <span className="text-[9px] text-ink-soft/40 shrink-0 mt-0.5">{n.time}</span>
           </span>
-          <span className="block text-[12px] text-ink-soft/70 mt-0.5 leading-snug">
+          <span className="block text-[12px] text-ink-soft/65 mt-0.5 leading-snug">
             {n.body}
           </span>
-          <span className="block text-[10px] text-ink-soft/45 mt-1">{n.time}</span>
         </span>
       </div>
     </li>
@@ -249,60 +239,63 @@ export default function AppShell({
         </div>
       </header>
 
-      {/* Notification shade — hijau transparan + blur tipis */}
+      {/* Notification shade — ala iOS Notification Center */}
       {showNotif && (
         <div className="fixed inset-0 z-50 flex flex-col">
           <button
             type="button"
             aria-label="Tutup notifikasi"
             onClick={closeAll}
-            className="absolute inset-0 bg-forest/25 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-deep/30 backdrop-blur-[4px]"
           />
-          <div className="relative z-10 flex flex-col h-full">
-            {/* Header shade */}
-            <div className="bg-forest/90 backdrop-blur-md text-white px-4 pt-5 pb-3.5 shadow-lg">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Bell className="h-4 w-4 text-lime" />
-                  <h2 className="text-[15px] font-bold text-white">Notifikasi</h2>
+          <div className="relative z-10 flex flex-col h-full pt-2">
+            {/* Panel header — rounded bawah, blur hijau */}
+            <div className="bg-forest/92 backdrop-blur-md text-white rounded-b-[28px] px-5 pt-6 pb-5 shadow-[0_8px_32px_rgba(13,33,28,0.35)]">
+              <div className="flex items-start justify-between mb-3">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-lime/80 mb-1">
+                    Seven Bro
+                  </p>
+                  <h2 className="text-[20px] font-bold text-white leading-tight tracking-tight">
+                    Notifikasi
+                  </h2>
+                  <p className="text-[11px] text-white/50 mt-1">
+                    {unread > 0
+                      ? `${unread} belum dibaca`
+                      : notifications.length > 0
+                        ? `${notifications.length} notifikasi · sudah dibaca`
+                        : "Kosong"}
+                  </p>
                 </div>
                 <button
                   onClick={closeAll}
                   aria-label="Tutup"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15 text-white"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white shrink-0 active:scale-95 transition"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <div className="flex items-center justify-between">
-                <p className="text-[11px] text-white/60">
-                  {unread > 0 ? `${unread} belum dibaca` : "Semua sudah dibaca"}
-                </p>
-                <div className="flex items-center gap-2">
-                  {unread > 0 && (
-                    <button
-                      onClick={() => {
-                        notifications
-                          .filter((n) => !n.read)
-                          .forEach((n) => onNotificationClick?.(n.id))
-                      }}
-                      className="flex items-center gap-1 text-[11px] font-semibold text-lime"
-                    >
-                      <CheckCheck className="h-3.5 w-3.5" />
-                      Tandai semua
-                    </button>
-                  )}
-                  {notifications.length > 0 && (
-                    <button
-                      onClick={() => onClearAllNotifications?.()}
-                      className="flex items-center gap-1 text-[11px] font-semibold text-white/70"
-                      title="Hapus semua"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Hapus
-                    </button>
-                  )}
-                </div>
+              <div className="flex items-center gap-3">
+                {unread > 0 && (
+                  <button
+                    onClick={() => {
+                      notifications
+                        .filter((n) => !n.read)
+                        .forEach((n) => onNotificationClick?.(n.id))
+                    }}
+                    className="flex items-center gap-1.5 text-[12px] font-semibold text-lime px-3 py-1.5 rounded-full bg-lime/15 border border-lime/25"
+                  >
+                    <CheckCheck className="h-3.5 w-3.5" />
+                    Tandai Dibaca
+                  </button>
+                )}
+                <button
+                  onClick={() => onClearAllNotifications?.()}
+                  className="flex items-center gap-1.5 text-[12px] font-medium text-white/70 px-3 py-1.5 rounded-full bg-white/10 border border-white/15"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Hapus Semua
+                </button>
               </div>
             </div>
 
