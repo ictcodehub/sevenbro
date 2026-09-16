@@ -90,7 +90,7 @@ export default function AppShell({
                   setShowProfile(false)
                 }}
                 aria-label={`Notifikasi${unread > 0 ? `, ${unread} belum dibaca` : ""}`}
-                className="relative flex h-9 w-9 items-center justify-center rounded-xl text-ink hover:bg-surface transition"
+                className="relative flex h-9 w-9 items-center justify-center rounded-xl text-ink hover:bg-surface transition mt-1"
               >
                 <Bell className="h-5 w-5" />
                 {unread > 0 && (
@@ -127,56 +127,58 @@ export default function AppShell({
           </div>
         </div>
 
-        {/* Notification shade — full-screen ala HP */}
+        {/* Notification shade — full-screen, putih semi-transparan + blur tipis */}
         {showNotif && (
           <div className="fixed inset-0 z-50 flex flex-col">
-            {/* Backdrop blur */}
+            {/* Backdrop putih blur — tutup saat tap luar */}
             <button
               type="button"
               aria-label="Tutup notifikasi"
               onClick={closeAll}
-              className="absolute inset-0 bg-deep/40 backdrop-blur-md"
+              className="absolute inset-0 bg-white/55 backdrop-blur-[3px]"
             />
-            {/* Panel notifikasi */}
-            <div className="relative z-10 flex flex-col max-h-full">
-              {/* Header shade */}
-              <div className="bg-deep/95 backdrop-blur-xl text-white px-4 pt-4 pb-3 rounded-b-2xl shadow-xl">
-                <div className="flex items-center justify-between mb-1">
-                  <h2 className="text-[15px] font-bold text-white">Notifikasi</h2>
-                  <button
-                    onClick={closeAll}
-                    aria-label="Tutup"
-                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white/80"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-[11px] text-white/50">
+            {/* Panel isi — putih solid-ish, isi layar */}
+            <div className="relative z-10 flex flex-col h-full bg-white/95 backdrop-blur-sm shadow-2xl">
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 pt-5 pb-3 border-b border-line bg-white/90 shrink-0">
+                <div>
+                  <h2 className="text-[16px] font-bold text-ink">Notifikasi</h2>
+                  <p className="text-[10px] text-ink-soft/55 mt-0.5">
                     {unread > 0 ? `${unread} belum dibaca` : "Semua sudah dibaca"}
                   </p>
+                </div>
+                <div className="flex items-center gap-2">
                   {unread > 0 && (
                     <button
                       onClick={() => {
                         notifications.forEach((n) => onNotificationClick?.(n.id))
                       }}
-                      className="text-[11px] font-semibold text-lime"
+                      className="text-[11px] font-semibold text-forest"
                     >
-                      Tandai semua dibaca
+                      Tandai semua
                     </button>
                   )}
+                  <button
+                    onClick={closeAll}
+                    aria-label="Tutup"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface text-ink-soft"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
 
               {/* Daftar notifikasi */}
-              <div className="flex-1 overflow-y-auto bg-page/90 backdrop-blur-sm">
+              <div className="flex-1 overflow-y-auto px-3 py-3 min-h-0">
                 {notifications.length === 0 ? (
-                  <div className="px-6 py-12 text-center">
-                    <Bell className="h-8 w-8 text-ink-soft/30 mx-auto mb-2" />
-                    <p className="text-[12px] text-ink-soft/50">Belum ada notifikasi</p>
+                  <div className="px-6 py-16 text-center">
+                    <Bell className="h-10 w-10 text-ink-soft/25 mx-auto mb-3" />
+                    <p className="text-[13px] font-medium text-ink-soft/50">
+                      Belum ada notifikasi
+                    </p>
                   </div>
                 ) : (
-                  <ul className="px-3 py-2 space-y-1.5">
+                  <ul className="space-y-2">
                     {notifications.map((n) => (
                       <li
                         key={n.id}
@@ -184,30 +186,28 @@ export default function AppShell({
                           onNotificationClick?.(n.id)
                           setShowNotif(false)
                         }}
-                        className={`rounded-xl px-3.5 py-3 cursor-pointer active:scale-[0.99] transition ${
+                        className={`rounded-xl px-3.5 py-3.5 cursor-pointer active:scale-[0.99] transition border ${
                           !n.read
-                            ? "bg-white border border-forest/20 shadow-sm"
-                            : "bg-white/70 border border-line/50"
+                            ? "bg-forest/5 border-forest/20"
+                            : "bg-surface/50 border-line/70"
                         }`}
                       >
                         <div className="flex items-start gap-2.5">
-                          {!n.read ? (
+                          {!n.read && (
                             <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-forest" />
-                          ) : (
-                            <span className="mt-1.5 h-2 w-2 shrink-0" />
                           )}
                           <div className="flex-1 min-w-0">
                             <p
-                              className={`text-[12px] leading-snug ${
-                                !n.read ? "font-bold text-ink" : "font-medium text-ink/70"
+                              className={`text-[13px] leading-snug ${
+                                !n.read ? "font-bold text-ink" : "font-medium text-ink/75"
                               }`}
                             >
                               {n.title}
                             </p>
-                            <p className="text-[11px] text-ink-soft/70 mt-0.5 leading-snug">
+                            <p className="text-[12px] text-ink-soft/70 mt-1 leading-snug">
                               {n.body}
                             </p>
-                            <p className="text-[9px] text-ink-soft/45 mt-1">{n.time}</p>
+                            <p className="text-[10px] text-ink-soft/45 mt-1.5">{n.time}</p>
                           </div>
                         </div>
                       </li>
