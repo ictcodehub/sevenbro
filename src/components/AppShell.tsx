@@ -102,22 +102,27 @@ export default function AppShell({
             )}
 
             {user && (
-              <button
-                type="button"
-                onClick={() => {
-                  setShowProfile((v) => !v)
-                  setShowNotif(false)
-                }}
-                aria-label="Menu profil"
-                className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-surface transition shrink-0"
-              >
-                <Avatar className="h-8 w-8 ring-1 ring-line">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="bg-forest text-white text-xs font-semibold">
-                    {user.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              </button>
+              <>
+                {showBell && (
+                  <span className="w-px h-5 bg-line mx-0.5 shrink-0" aria-hidden="true" />
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProfile((v) => !v)
+                    setShowNotif(false)
+                  }}
+                  aria-label="Menu profil"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-surface transition shrink-0"
+                >
+                  <Avatar className="h-8 w-8 ring-1 ring-line">
+                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarFallback className="bg-forest text-white text-xs font-semibold">
+                      {user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </>
             )}
           </div>
         </div>
