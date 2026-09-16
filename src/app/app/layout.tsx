@@ -45,12 +45,12 @@ function getNavItems(role?: string) {
   ]
 
   if (role === "HOMEROOM" || role === "KETUA" || role === "SEKRETARIS" || role === "BENDAHARA") {
-    const items = [...base, { href: "/app/poin", label: "Poin", icon: Trophy }]
-    // Kas: hanya Homeroom & Bendahara
-    if (role === "HOMEROOM" || role === "BENDAHARA") {
-      items.splice(3, 0, { href: "/app/kas", label: "Kas", icon: Wallet })
-    }
-    return items
+    // Kas: semua pengurus (manage = Homeroom/Bendahara; lain = read-only)
+    return [
+      ...base,
+      { href: "/app/kas", label: "Kas", icon: Wallet },
+      { href: "/app/poin", label: "Poin", icon: Trophy },
+    ]
   }
 
   if (role === "TEACHER") {
@@ -117,7 +117,7 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
       nav={{ items: navItems }}
       notifications={withRead}
       onNotificationClick={markRead}
-      user={{ name }}
+      user={{ name, role }}
       onSettings={() => router.push("/app/settings")}
       onSignOut={() => {
         void signOut({ callbackUrl: "/login" })

@@ -25,6 +25,7 @@ Scripts: `dev` · `build` · `start` · `lint` · `typecheck`
 
 - Build plan (roles matrix, DB schema, T-1..T-29): `.hermes/plans/2026-09-15_083831-kelas-7b-class-management-pwa.md`
 - Design system: `docs/DESIGN_SYSTEM.md` · UX patterns: `docs/UX_PATTERNS.md`
+- **Role-based UI logic** (pengurus vs siswa, Homeroom = super admin): `docs/ROLE_UI.md`
 
 ## Status (rebranded from nl-starter)
 

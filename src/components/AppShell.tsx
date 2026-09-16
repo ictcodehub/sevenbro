@@ -24,6 +24,7 @@ export type AppShellNotification = {
 export type AppShellUser = {
   name: string
   avatar?: string
+  role?: string
 }
 
 export type AppShellProps = {
@@ -153,7 +154,12 @@ export default function AppShell({
               <Settings2 className="h-5 w-5" />
             </button>
             {user && (
-              <div className="ml-1 pl-2 border-l border-line">
+              <div className="ml-1 pl-2 border-l border-line flex items-center gap-1.5">
+                {user.role && user.role !== "ANGGOTA" && (
+                  <span className="hidden sm:inline-flex text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-forest/10 text-forest">
+                    {user.role}
+                  </span>
+                )}
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user.avatar} alt={user.name} />
                   <AvatarFallback className="bg-forest text-white text-xs font-semibold">
@@ -212,7 +218,9 @@ export default function AppShell({
             <div className="absolute right-4 top-16 w-56 bg-white border border-line rounded-2xl shadow-lg z-50 overflow-hidden">
               <div className="px-4 py-3 border-b border-line">
                 <p className="text-[11px] font-bold text-ink">{user?.name}</p>
-                <p className="text-[10px] text-ink-soft/75">Seven Bro! 7B</p>
+                <p className="text-[10px] text-ink-soft/75">
+                  {user?.role ? `${user.role} · Seven Bro! 7B` : "Seven Bro! 7B"}
+                </p>
               </div>
               <button
                 onClick={() => { onSettings?.(); setShowSettings(false) }}

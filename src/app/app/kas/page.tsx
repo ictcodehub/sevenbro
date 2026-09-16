@@ -24,7 +24,8 @@ import { Sheet, Field, inputClass } from "@/components/ui/sheet"
 import { canManageKas } from "@/lib/policies"
 import { RoleGate } from "@/components/RoleGate"
 
-const PAGE_ROLES = ["HOMEROOM", "BENDAHARA"]
+/** Kas: manage = HOMEROOM & BENDAHARA; KETUA & SEKRETARIS = read-only */
+const PAGE_ROLES = ["HOMEROOM", "BENDAHARA", "KETUA", "SEKRETARIS"]
 const NOMINAL = 2000
 
 type Tx = {
@@ -408,7 +409,9 @@ function KasInner() {
         <div>
           <h1 className="text-lg font-bold text-ink">Kas Kelas</h1>
           <p className="text-[11px] text-ink-soft/75">
-            {canManage ? "Centang yang sudah bayar" : "Hanya Homeroom & Bendahara"}
+            {canManage
+              ? "Centang yang sudah bayar"
+              : "Lihat saja — kelola hanya Bendahara & Homeroom"}
           </p>
         </div>
         <Link
