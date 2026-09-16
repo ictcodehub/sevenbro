@@ -264,7 +264,7 @@ function MiniCalendar({
             }}
             className="ml-auto text-forest font-semibold"
           >
-            Semua Tanggal
+            Semua Bulan
           </button>
         </div>
       </div>
@@ -482,25 +482,28 @@ function BukuKasInner() {
     })
   }, [rows])
 
+  // Filter tanggal → per BUKAN (bukan per hari saja)
+  const dateMonth = date ? date.slice(0, 7) : ""
+
   const display = useMemo(
     () =>
       allWithSaldo.filter((t) => {
         if (only !== "all" && t.kind !== only) return false
-        if (date && t.occurred_on !== date) return false
+        if (dateMonth && !t.occurred_on.startsWith(dateMonth)) return false
         return matchesQuery(t, q)
       }),
-    [allWithSaldo, only, date, q],
+    [allWithSaldo, only, dateMonth, q],
   )
 
-  // Baris buku kas: iuran digabung per hari → "N/M siswa"; transaksi lain baris sendiri
   type LedgerLine = {
     key: string
-    tanggal: string
+    day: string
     uraian: string
     masuk: number
     keluar: number
     detail?: Tx
     count?: number
+    empty?: boolean
   }
 
   const ledgerLines = useMemo(() => {
@@ -512,13 +515,14 @@ function BukuKasInner() {
       byDay.set(t.occurred_on, list)
     }
 
+    // Opsi A: hanya hari yang benar-benar ada transaksi
+    const days = [...byDay.keys()].sort()
+
     const lines: LedgerLine[] = []
-    const days = [...byDay.keys()].sort() // ascending
     for (const day of days) {
       const items = byDay.get(day) ?? []
       const tanggal = formatDateID(new Date(day + "T12:00:00"))
 
-      // Iuran harian: category Iuran / Iuran khusus / deskripsi = nama (collect)
       const iuran = items.filter((t) => {
         if (t.kind !== "IN") return false
         return (
@@ -529,8 +533,6 @@ function BukuKasInner() {
       })
       if (iuran.length > 0) {
         const sum = iuran.reduce((s, t) => s + t.amount, 0)
-        // Hitung unik nama siswa yang cocok roster — bukan unik description
-        // (entri batch lama “Rabu · 15 siswa · …” jangan dihitung +1)
         const nameSet = new Set<string>()
         const roster = new Set(
           (students ?? []).map((s) => s.full_name.toLowerCase()),
@@ -538,9 +540,8 @@ function BukuKasInner() {
         for (const t of iuran) {
           const d = t.description.trim().toLowerCase()
           if (roster.has(d)) nameSet.add(d)
-          else if (/·\s*\d+\s*siswa\b/i.test(d)) continue // batch lama
+          else if (/·\s*\d+\s*siswa\b/i.test(d)) continue
           else {
-            // cocokkan potongan nama di description (bayar khusus “Nama · note”)
             for (const n of roster) {
               if (d === n || d.startsWith(n + " ·") || d.includes(n)) {
                 nameSet.add(n)
@@ -554,7 +555,7 @@ function BukuKasInner() {
           totalSiswa > 0 ? `${paidCount}/${totalSiswa} Siswa` : `${paidCount} Siswa`
         lines.push({
           key: `iuran-${day}`,
-          tanggal,
+          day,
           uraian: label,
           masuk: sum,
           keluar: 0,
@@ -563,12 +564,11 @@ function BukuKasInner() {
         })
       }
 
-      // Transaksi lain (OUT + IN non-iuran)
       const others = items.filter((t) => !iuran.includes(t))
       for (const t of others) {
         lines.push({
           key: t.id,
-          tanggal,
+          day,
           uraian: shortUraian(t),
           masuk: t.kind === "IN" ? t.amount : 0,
           keluar: t.kind === "OUT" ? t.amount : 0,
@@ -577,7 +577,7 @@ function BukuKasInner() {
       }
     }
     return lines
-  }, [display, students])
+  }, [display, students, dateMonth])
 
   const totalIn = display.filter((t) => t.kind === "IN").reduce((s, t) => s + t.amount, 0)
   const totalOut = display.filter((t) => t.kind === "OUT").reduce((s, t) => s + t.amount, 0)
@@ -613,8 +613,10 @@ function BukuKasInner() {
               }`}
             >
               <CalendarDays className="h-3.5 w-3.5 text-forest/50" />
-              <span className="max-w-[72px] truncate">
-                {date ? dmy(date) : "Tanggal"}
+              <span className="max-w-[100px] truncate">
+                {date
+                  ? `${MONTHS_ID[parseInt(date.slice(5, 7), 10) - 1]} ${date.slice(0, 4)}`
+                  : "Bulan"}
               </span>
               {date && (
                 <span
@@ -756,7 +758,7 @@ function BukuKasInner() {
           <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
             {date && (
               <span className="inline-flex items-center gap-1 text-[9px] font-semibold px-2 py-0.5 rounded-full bg-forest/10 text-forest">
-                {formatDateID(new Date(date + "T12:00:00"))}
+                {MONTHS_ID[parseInt(date.slice(5, 7), 10) - 1]} {date.slice(0, 4)}
                 <button type="button" onClick={() => setDate("")} aria-label="Hapus tanggal">
                   <X className="h-2.5 w-2.5" />
                 </button>
@@ -953,9 +955,7 @@ function BukuKasInner() {
                     {i + 1}
                   </span>
                   <span className="w-[64px] text-[9px] text-ink-soft/55 shrink-0 leading-tight">
-                    {line.detail
-                      ? formatDateID(new Date(line.detail.occurred_on + "T12:00:00"))
-                      : "—"}
+                    {formatDateID(new Date(line.day + "T12:00:00"))}
                   </span>
                   <span className="flex-1 min-w-0 text-[11px] font-semibold text-ink truncate">
                     {line.uraian}

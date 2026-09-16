@@ -555,13 +555,13 @@ function KasInner() {
                 <p className="px-3.5 py-2 text-[11px] text-alert bg-alert-bg">{err}</p>
               )}
 
-              {/* Tabel: No | Nama | Centang — flex grid, sejajar */}
+              {/* Tabel: No | Nama | Bayar | Izin */}
               <div>
                 <div className="flex items-center gap-2 px-2.5 py-1.5 bg-page/80 border-b border-line text-[9px] font-medium uppercase tracking-wide text-ink-soft/60">
                   <span className="w-6 text-center shrink-0">No</span>
                   <span className="flex-1 min-w-0">Nama</span>
-                  <span className="w-10 text-center shrink-0">✓</span>
-                  <span className="w-10 text-center shrink-0">Izin</span>
+                  <span className="w-12 text-center shrink-0">Bayar</span>
+                  <span className="w-12 text-center shrink-0">Izin</span>
                 </div>
                 {list.length === 0 ? (
                   <p className="p-5 text-center text-[11px] text-ink-soft/60">
@@ -631,28 +631,32 @@ function KasInner() {
                               )
                             })()}
                           </div>
-                          <span
-                            className={`flex h-5 w-5 items-center justify-center rounded border-2 shrink-0 ${
-                              !bayarMode
-                                ? "bg-surface border-line/60 text-transparent opacity-40"
-                                : on
-                                  ? "bg-forest border-forest text-white"
-                                  : "bg-white border-line text-transparent"
-                            }`}
-                          >
-                            <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                          </span>
-                          <span
-                            className={`flex h-5 w-5 items-center justify-center rounded border text-[9px] font-bold shrink-0 ${
-                              bayarMode
-                                ? "bg-surface border-line/60 text-transparent opacity-40"
-                                : izin
+                          <div className="w-12 shrink-0 flex justify-center">
+                            <span
+                              className={`flex h-5 w-5 items-center justify-center rounded border-2 ${
+                                !bayarMode
+                                  ? "bg-surface border-line/60 text-transparent opacity-40"
+                                  : on
+                                    ? "bg-forest border-forest text-white"
+                                    : "bg-white border-line text-transparent"
+                              }`}
+                            >
+                              <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                            </span>
+                          </div>
+                          <div className="w-12 shrink-0 flex justify-center">
+                            <span
+                              className={`flex h-5 w-5 items-center justify-center rounded border text-[9px] font-bold ${
+                                bayarMode
+                                  ? "bg-surface border-line/60 text-transparent opacity-40"
+                                  : izin
                                   ? "bg-amber text-white border-amber"
                                   : "bg-white border-line text-transparent"
                             }`}
                           >
                             ✓
-                          </span>
+                            </span>
+                          </div>
                         </div>
                       )
                     })}
