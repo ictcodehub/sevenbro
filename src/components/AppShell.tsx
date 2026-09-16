@@ -174,47 +174,81 @@ export default function AppShell({
           </>
         )}
 
-        {/* Profile dropdown — semua opsi di sini */}
+        {/* Profile dropdown — opsi rapi, ikon sejajar */}
         {showProfile && (
           <>
             <div className="fixed inset-0 z-30" onClick={closeAll} />
-            <div className="absolute right-4 top-16 w-60 bg-white border border-line rounded-2xl shadow-lg z-50 overflow-hidden">
-              <div className="px-4 py-3 border-b border-line">
-                <p className="text-[12px] font-bold text-ink truncate">{user?.name}</p>
-                <p className="text-[10px] text-ink-soft/60">
-                  {user?.role ? `${user.role} · Seven Bro! 7B` : "Seven Bro! 7B"}
-                </p>
+            <div className="absolute right-3 top-16 z-50 w-64 bg-white border border-line rounded-2xl shadow-lg overflow-hidden">
+              {/* Identitas */}
+              <div className="flex items-center gap-3 px-4 py-3.5 bg-page/50 border-b border-line">
+                <Avatar className="h-10 w-10 shrink-0">
+                  <AvatarImage src={user?.avatar} alt={user?.name} />
+                  <AvatarFallback className="bg-forest text-white text-sm font-bold">
+                    {user?.name?.charAt(0).toUpperCase() || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="text-[12px] font-bold text-ink truncate">{user?.name}</p>
+                  <p className="text-[10px] text-ink-soft/60 truncate">
+                    {user?.role || "Siswa"} · Kelas 7B
+                  </p>
+                </div>
               </div>
-              {adminItems.map(({ href, label, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setShowProfile(false)}
-                  className="w-full text-left px-4 py-2.5 text-[12px] text-ink hover:bg-surface transition flex items-center gap-2"
-                >
-                  <Icon className="h-4 w-4" /> {label}
-                </Link>
-              ))}
-              <button
-                onClick={() => {
-                  onSettings?.()
-                  setShowProfile(false)
-                }}
-                className="w-full text-left px-4 py-2.5 text-[12px] text-ink hover:bg-surface transition flex items-center gap-2 border-t border-line"
-              >
-                <Settings2 className="h-4 w-4" /> Pengaturan
-              </button>
-              {onSignOut && (
+
+              {/* Admin (Homeroom) */}
+              {adminItems.length > 0 && (
+                <div className="py-1">
+                  <p className="px-4 py-1 text-[9px] font-bold uppercase tracking-wider text-ink-soft/40">
+                    Admin Kelas
+                  </p>
+                  {adminItems.map(({ href, label, icon: Icon }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={() => setShowProfile(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-medium text-ink hover:bg-surface transition"
+                    >
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber/10 text-amber shrink-0">
+                        <Icon className="h-3.5 w-3.5" />
+                      </span>
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* Akun */}
+              <div className="py-1 border-t border-line">
+                <p className="px-4 py-1 text-[9px] font-bold uppercase tracking-wider text-ink-soft/40">
+                  Akun
+                </p>
                 <button
                   onClick={() => {
-                    onSignOut()
+                    onSettings?.()
                     setShowProfile(false)
                   }}
-                  className="w-full text-left px-4 py-2.5 text-[12px] text-red-500 hover:bg-red-50 transition flex items-center gap-2"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-[12px] font-medium text-ink hover:bg-surface transition"
                 >
-                  <LogOut className="h-4 w-4" /> Keluar
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface text-ink-soft shrink-0">
+                    <Settings2 className="h-3.5 w-3.5" />
+                  </span>
+                  Pengaturan
                 </button>
-              )}
+                {onSignOut && (
+                  <button
+                    onClick={() => {
+                      onSignOut()
+                      setShowProfile(false)
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-[12px] font-medium text-red-600 hover:bg-red-50 transition"
+                  >
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 text-red-500 shrink-0">
+                      <LogOut className="h-3.5 w-3.5" />
+                    </span>
+                    Keluar
+                  </button>
+                )}
+              </div>
             </div>
           </>
         )}
