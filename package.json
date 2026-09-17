@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "setup:agent": "codegraph init",
+    "cg:status": "codegraph status",
+    "cg:explore": "codegraph explore"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.2.6",
