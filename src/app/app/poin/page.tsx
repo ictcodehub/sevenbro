@@ -338,7 +338,7 @@ function PoinInner() {
       setReason("")
       setAmount(10)
       setKind("PRESTASI")
-      flash("Poin tersimpan!")
+      flash("Poin berhasil disimpan.")
       await mutate()
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Gagal menyimpan")
@@ -510,14 +510,31 @@ function PoinInner() {
             <p className="text-[11px] text-white/55">Siapa yang naik peringkat minggu ini?</p>
           </div>
           {canGive && (
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="flex items-center gap-1 bg-lime text-deep text-[10px] font-bold px-3 py-2 rounded-xl active:scale-[0.95] transition-transform shrink-0 shadow"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Kasih Poin
-            </button>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setShowQr((v) => !v)}
+                  aria-label="QR Beri Poin"
+                  aria-pressed={showQr}
+                  className={`flex h-9 w-9 items-center justify-center rounded-xl border transition active:scale-[0.95] ${
+                    showQr
+                      ? "bg-lime text-deep border-lime shadow"
+                      : "bg-white/10 text-acid border-white/20"
+                  }`}
+                >
+                  <QrCode className="h-4 w-4" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className="flex items-center gap-1 bg-lime text-deep text-[10px] font-bold px-3 py-2 rounded-xl active:scale-[0.95] transition-transform shadow"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Beri Poin
+              </button>
+            </div>
           )}
         </div>
 
@@ -533,7 +550,7 @@ function PoinInner() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-bold text-acid truncate">
-                Kamu · #{myIndex + 1}
+                Peringkat Anda · #{myIndex + 1}
               </p>
               <div className="mt-1 h-1.5 bg-white/15 rounded-full overflow-hidden">
                 <div
@@ -549,30 +566,17 @@ function PoinInner() {
           </button>
         )}
 
-        {/* QR Kasih Poin — homeroom only */}
-        {isAdmin && (
-          <button
-            type="button"
-            onClick={() => setShowQr((v) => !v)}
-            className="mt-2 w-full flex items-center justify-between rounded-xl bg-white/10 border border-white/15 px-3 py-2.5 text-left"
-          >
-            <span className="flex items-center gap-2 text-[11px] font-semibold text-acid">
-              <QrCode className="h-4 w-4" />
-              QR Kasih Poin untuk guru
-            </span>
-            <span className="text-[10px] text-white/50">{showQr ? "Tutup" : "Buka"}</span>
-          </button>
-        )}
+        {/* QR panel — dibuka dari ikon di header */}
         {showQr && isAdmin && (
           <div className="mt-2 rounded-2xl bg-white p-4 flex flex-col items-center gap-2 border border-line">
             {qrDataUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={qrDataUrl} alt="QR Kasih Poin" className="w-44 h-44" />
+              <img src={qrDataUrl} alt="QR Beri Poin" className="w-44 h-44" />
             ) : (
-              <p className="text-[11px] text-ink-soft/60 py-10">Membuat QR…</p>
+              <p className="text-[11px] text-ink-soft/60 py-10">Menyiapkan QR…</p>
             )}
             <p className="text-[11px] font-semibold text-ink text-center">
-              Scan → login guru → kasih / kurangi poin
+              Scan → masuk sebagai guru → beri atau kurangi poin
             </p>
             <p className="text-[9px] text-ink-soft/60 text-center break-all">
               {(process.env.NEXT_PUBLIC_APP_URL ||
@@ -595,9 +599,9 @@ function PoinInner() {
             {rows.length === 0 && (
               <div className="arena-bg rounded-2xl p-6 text-center border border-white/10">
                 <Trophy className="h-10 w-10 text-amber mx-auto mb-2" />
-                <p className="text-[12px] font-bold text-acid">Arena masih sepi</p>
+                <p className="text-[12px] font-bold text-acid">Belum ada data poin</p>
                 <p className="text-[10px] text-white/50 mt-1">
-                  Belum ada pemain di papan skor
+                  Belum ada siswa di Leaderboard
                 </p>
               </div>
             )}
@@ -730,7 +734,7 @@ function PoinInner() {
                                 </p>
                                 {isMe && (
                                   <span className="text-[8px] font-bold uppercase tracking-wide bg-forest text-white px-1 py-0 rounded shrink-0">
-                                    kamu
+                                    Anda
                                   </span>
                                 )}
                                 {showPos && (
@@ -844,14 +848,14 @@ function PoinInner() {
         )}
         <div>
           <p className="text-[11px] font-semibold text-ink mb-1.5">
-            Kenapa dapat / kurang poin?
+            Alasan penambahan / pengurangan poin?
           </p>
           <HistoryList items={detail?.history ?? []} />
         </div>
       </Sheet>
 
       {/* Form beri poin */}
-      <Sheet open={open} onClose={() => setOpen(false)} title="Kasih Poin">
+      <Sheet open={open} onClose={() => setOpen(false)} title="Beri Poin">
         {err && (
           <p className="text-[11px] text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
             {err}
@@ -916,7 +920,7 @@ function PoinInner() {
           </div>
         </div>
 
-        <Field label="Alasan" hint="Wajib — muncul di Battle Log semua orang">
+        <Field label="Alasan" hint="Wajib — tampil di Battle Log semua siswa">
           <textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}

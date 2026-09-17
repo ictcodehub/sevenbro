@@ -69,7 +69,7 @@ export default function AdminSettingsPage() {
       <div className="px-4 py-3">
         <EmptyState
           icon={<Shield className="h-6 w-6" />}
-          message="Hanya homeroom yang boleh membuka pengaturan kelas"
+          message="Hanya wali kelas yang boleh membuka pengaturan kelas"
         />
       </div>
     )

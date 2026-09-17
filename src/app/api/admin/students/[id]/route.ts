@@ -18,6 +18,13 @@ export async function PATCH(req: Request, { params }: Params) {
     const { id } = await params
     const body = await req.json().catch(() => ({}))
     const patch: Record<string, unknown> = {}
+    if (typeof body?.full_name === "string") {
+      const name = body.full_name.trim()
+      if (!name) {
+        return NextResponse.json({ error: "Nama tidak boleh kosong" }, { status: 400 })
+      }
+      patch.full_name = name
+    }
     if (typeof body?.position === "string") {
       if (!POSITIONS.includes(body.position)) {
         return NextResponse.json({ error: "Posisi tidak valid" }, { status: 400 })

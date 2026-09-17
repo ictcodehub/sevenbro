@@ -257,7 +257,7 @@ function KasInner() {
       }
       return
     }
-    flash("Centang bayar dikosongkan")
+    flash("Centang pembayaran dikosongkan")
   }
 
   const saveCollect = async () => {
@@ -325,7 +325,7 @@ function KasInner() {
         })
         const b = await r.json().catch(() => null)
         if (!r.ok) throw new Error(b?.error || "Gagal")
-        flash("Ditandai izin")
+        flash("Ditandai sebagai izin")
       }
       await Promise.all([mutateIzin(), mutate(), mutateTunggak()])
     } catch (e) {
@@ -410,8 +410,8 @@ function KasInner() {
           <h1 className="text-lg font-bold text-ink">Kas Kelas</h1>
           <p className="text-[11px] text-ink-soft/75">
             {canManage
-              ? "Centang yang sudah bayar"
-              : "Lihat saja — kelola hanya Bendahara & Homeroom"}
+              ? "Centang siswa yang sudah membayar"
+              : "Hanya dapat dilihat — pengelolaan oleh Bendahara & Wali Kelas"}
           </p>
         </div>
         <Link
@@ -680,7 +680,7 @@ function KasInner() {
                     : totalPick === 0
                       ? markMode === "izin"
                         ? "Centang siswa yang izin"
-                        : "Centang yang sudah bayar"
+                        : "Centang siswa yang sudah membayar"
                       : markMode === "izin"
                         ? `Simpan ${totalPick} izin`
                         : `Simpan ${totalPick} setoran · ${formatIDR(totalRupiah)}`}
@@ -694,7 +694,7 @@ function KasInner() {
             <div className="flex items-center gap-2 rounded-xl bg-alert/8 border border-alert/15 px-3 py-2">
               <AlertTriangle className="h-3.5 w-3.5 text-alert shrink-0" />
               <p className="text-[10px] text-ink-soft/70 flex-1 min-w-0">
-                {tunggak.rows.length} siswa masih utang · kumulatif semester
+                {tunggak.rows.length} siswa masih memiliki tunggak · kumulatif semester
               </p>
               <span className="text-[10px] font-semibold text-alert shrink-0">
                 {formatIDR(tunggak.totalTunggak)}
@@ -811,7 +811,7 @@ function KasInner() {
             <option value="">Pilih Siswa…</option>
             {list.map((s) => {
               const t = tunggakByName.get(s.full_name.toLowerCase())
-              const badge = t && t.tunggak > 0 ? ` — utang ${formatIDR(t.tunggak)}` : ""
+              const badge = t && t.tunggak > 0 ? ` — tunggak ${formatIDR(t.tunggak)}` : ""
               return (
                 <option key={s.id} value={s.id}>
                   {s.full_name}
@@ -850,13 +850,13 @@ function KasInner() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-[9px] text-ink-soft/55">Sudah bayar</p>
+                  <p className="text-[9px] text-ink-soft/55">Sudah Membayar</p>
                   <p className="text-[10px] font-semibold text-forest tabular-nums">
                     {formatIDR(t.paid)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[9px] text-ink-soft/55">Sisa utang</p>
+                  <p className="text-[9px] text-ink-soft/55">Sisa Tunggak</p>
                   <p
                     className={`text-[10px] font-semibold tabular-nums ${
                       t.tunggak > 0 ? "text-alert" : "text-forest"
@@ -872,7 +872,7 @@ function KasInner() {
                   onClick={() => setSpAmount(String(t.tunggak))}
                   className="mt-2 w-full text-[10px] font-semibold text-forest py-1 rounded-lg border border-forest/30"
                 >
-                  Pakai sisa utang ({formatIDR(t.tunggak)})
+                  Gunakan sisa tunggak ({formatIDR(t.tunggak)})
                 </button>
               )}
             </div>

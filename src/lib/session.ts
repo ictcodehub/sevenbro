@@ -69,7 +69,7 @@ export async function requireApi(policy?: (role: string) => boolean): Promise<Ap
     throw new ApiError(403, "Akun belum terdaftar di kelas ini. Hubungi homeroom.")
   }
   if (policy && !policy(ctx.role)) {
-    throw new ApiError(403, "Kamu tidak punya akses untuk aksi ini")
+    throw new ApiError(403, "Anda tidak memiliki akses untuk aksi ini")
   }
   return ctx
 }

@@ -66,7 +66,7 @@ const MEDAL = [
     ring: "ring-amber/25 bg-amber/5",
     icon: Star,
     label: "Juara 3",
-    note: "Keren",
+    note: "Bagus",
   },
 ] as const
 
@@ -107,13 +107,13 @@ function HomeInner() {
       {/* ── Sapaan ── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold text-ink">Halo, 7B! 👋</h1>
+          <h1 className="text-lg font-bold text-ink">Kelas 7B</h1>
           <p className="text-[11px] text-ink-soft/75">
-            Informasi kelas ada di sini
+            Ringkasan informasi & aktivitas kelas
           </p>
         </div>
         <span className="text-[10px] font-semibold text-forest bg-forest/10 px-2 py-1 rounded-full">
-          {totalSiswa > 0 ? `${totalSiswa} orang` : "7B"}
+          {totalSiswa > 0 ? `${totalSiswa} siswa` : "7B"}
         </span>
       </div>
 

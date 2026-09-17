@@ -57,8 +57,8 @@ export function RoleGate({
             icon={<Shield className="h-6 w-6" />}
             message={
               role === "TEACHER"
-                ? "Akun guru hanya untuk Kasih Poin"
-                : "Kamu tidak punya akses ke halaman ini"
+                ? "Akun guru hanya untuk Beri Poin"
+                : "Anda tidak memiliki akses ke halaman ini"
             }
           />
         </div>

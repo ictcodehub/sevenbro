@@ -67,7 +67,7 @@ export const NOTIFICATIONS: AppNotification[] = [
   {
     id: "n1",
     title: "Pengumuman baru",
-    body: "Piket kelas jadwal baru sudah keluar, cek ya!",
+    body: "Jadwal piket kelas baru telah diterbitkan. Silakan diperiksa.",
     time: "2 jam lalu",
     read: false,
   },
@@ -81,9 +81,23 @@ export const NOTIFICATIONS: AppNotification[] = [
   {
     id: "n3",
     title: "Poin perilaku",
-    body: "Kamu dapat +2 poin karena membantu teman.",
+    body: "Anda memperoleh +2 poin karena membantu teman.",
     time: "Kemarin",
     read: true,
+  },
+  {
+    id: "n4",
+    title: "Setoran hari ini",
+    body: "Jangan lupa setoran Rp 2.000 untuk siswa yang belum bayar.",
+    time: "30 menit lalu",
+    read: false,
+  },
+  {
+    id: "n5",
+    title: "Agenda baru",
+    body: "Ulangan Matematika Selasa 08:00 di kelas.",
+    time: "1 jam lalu",
+    read: false,
   },
 ]
 

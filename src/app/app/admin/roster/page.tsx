@@ -2,10 +2,19 @@
 
 import { useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
-import { Users, Shield, Inbox, UserPlus, Link2, GraduationCap, Trash2 } from "lucide-react"
+import {
+  Users,
+  Shield,
+  Inbox,
+  UserPlus,
+  Link2,
+  GraduationCap,
+  Trash2,
+  Pencil,
+} from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { SectionHeader, EmptyState } from "@/components/ui-primitives"
-import { inputClass } from "@/components/ui/sheet"
+import { Sheet, inputClass } from "@/components/ui/sheet"
 
 type Student = {
   id: string
@@ -61,6 +70,96 @@ export default function AdminRosterPage() {
   const [saving, setSaving] = useState(false)
   const [linkStudent, setLinkStudent] = useState<Record<string, string>>({})
   const [toast, setToast] = useState<string | null>(null)
+  const [editStudent, setEditStudent] = useState<Student | null>(null)
+  const [editTeacher, setEditTeacher] = useState<Teacher | null>(null)
+  const [editName, setEditName] = useState("")
+  const [editEmail, setEditEmail] = useState("")
+  const [editNis, setEditNis] = useState("")
+
+  const openEditStudent = (s: Student) => {
+    setEditStudent(s)
+    setEditTeacher(null)
+    setEditName(s.full_name)
+    setEditEmail(s.email ?? "")
+    setEditNis(s.nis ?? "")
+  }
+
+  const openEditTeacher = (t: Teacher) => {
+    setEditTeacher(t)
+    setEditStudent(null)
+    setEditName(t.name ?? "")
+    setEditEmail(t.email)
+    setEditNis("")
+  }
+
+  const closeEdit = () => {
+    setEditStudent(null)
+    setEditTeacher(null)
+    setEditName("")
+    setEditEmail("")
+    setEditNis("")
+  }
+
+  const saveEdit = async () => {
+    const name = editName.trim()
+    if (!name) {
+      flash("Nama tidak boleh kosong")
+      return
+    }
+    setSaving(true)
+    try {
+      if (editStudent) {
+        const r = await fetch(`/api/admin/students/${editStudent.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            full_name: name,
+            email: editEmail.trim() || null,
+            nis: editNis.trim() || null,
+          }),
+        })
+        const b = await r.json().catch(() => null)
+        if (!r.ok) throw new Error(b?.error || "Gagal menyimpan siswa")
+        setStudents((prev) =>
+          prev.map((s) =>
+            s.id === editStudent.id
+              ? {
+                  ...s,
+                  full_name: name,
+                  email: editEmail.trim() || null,
+                  nis: editNis.trim() || null,
+                }
+              : s,
+          ),
+        )
+        flash("Data siswa diperbarui")
+      } else if (editTeacher) {
+        const r = await fetch(`/api/admin/teachers/${editTeacher.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            email: editEmail.trim().toLowerCase(),
+          }),
+        })
+        const b = await r.json().catch(() => null)
+        if (!r.ok) throw new Error(b?.error || "Gagal menyimpan guru")
+        setTeachers((prev) =>
+          prev.map((t) =>
+            t.id === editTeacher.id
+              ? { ...t, name, email: editEmail.trim().toLowerCase() }
+              : t,
+          ),
+        )
+        flash("Data guru diperbarui")
+      }
+      closeEdit()
+    } catch (e) {
+      flash(e instanceof Error ? e.message : "Gagal")
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const flash = (msg: string) => {
     setToast(msg)
@@ -109,7 +208,7 @@ export default function AdminRosterPage() {
       <div className="px-4 py-3">
         <EmptyState
           icon={<Shield className="h-6 w-6" />}
-          message="Hanya homeroom yang boleh membuka roster"
+          message="Hanya wali kelas yang boleh membuka roster"
         />
       </div>
     )
@@ -218,7 +317,7 @@ export default function AdminRosterPage() {
       if (!r.ok) throw new Error(b?.error || "Gagal menambah guru")
       setTeacherEmail("")
       setTeacherName("")
-      flash("Guru ditambahkan — bisa scan QR")
+      flash("Guru berhasil ditambahkan. Dapat memindai QR.")
       await load()
     } catch (e) {
       flash(e instanceof Error ? e.message : "Gagal")
@@ -288,7 +387,7 @@ export default function AdminRosterPage() {
 
       {/* Guru yang boleh kasih poin via QR */}
       <div>
-        <SectionHeader title="Guru (Scan Kasih Poin)" count={String(teachers.length)} />
+        <SectionHeader title="Guru (Scan Beri Poin)" count={String(teachers.length)} />
         <div className="bg-white border border-line shadow-sm rounded-2xl p-3 space-y-2 mb-2">
           <div className="flex gap-2">
             <input
@@ -333,6 +432,14 @@ export default function AdminRosterPage() {
                   </p>
                   <p className="text-[10px] text-ink-soft/70 truncate">{t.email}</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => openEditTeacher(t)}
+                  aria-label="Ubah data guru"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-ink-soft hover:bg-surface shrink-0"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
                 <button
                   type="button"
                   onClick={() => void removeTeacher(t.id)}
@@ -403,7 +510,7 @@ export default function AdminRosterPage() {
                 <div className="flex-1 min-w-0 space-y-1">
                   <p className="text-[11px] font-semibold text-ink truncate">{s.full_name}</p>
                   <p className="text-[10px] text-ink-soft/75 truncate">
-                    {s.email || "belum tertaut"}
+                    {s.email || "belum terhubung"}
                   </p>
                   <div className="flex items-center gap-1.5">
                     <select
@@ -431,6 +538,14 @@ export default function AdminRosterPage() {
                   </div>
                 </div>
                 {positionBadge(s.position)}
+                <button
+                  type="button"
+                  onClick={() => openEditStudent(s)}
+                  aria-label="Ubah data siswa"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-ink-soft hover:bg-surface shrink-0"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
               </div>
             ))}
           </div>
@@ -442,6 +557,53 @@ export default function AdminRosterPage() {
           {toast}
         </div>
       )}
+
+      <Sheet
+        open={Boolean(editStudent || editTeacher)}
+        onClose={closeEdit}
+        title={editStudent ? "Ubah Data Siswa" : "Ubah Data Guru"}
+      >
+        <div className="space-y-2">
+          <div>
+            <span className="text-[11px] font-semibold text-ink">Nama Lengkap</span>
+            <input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className={inputClass + " mt-1"}
+              placeholder="Nama lengkap"
+            />
+          </div>
+          <div>
+            <span className="text-[11px] font-semibold text-ink">Email</span>
+            <input
+              value={editEmail}
+              onChange={(e) => setEditEmail(e.target.value)}
+              type="email"
+              className={inputClass + " mt-1"}
+              placeholder="nama@mutiarabangsa.sch.id"
+            />
+          </div>
+          {editStudent && (
+            <div>
+              <span className="text-[11px] font-semibold text-ink">NIS</span>
+              <input
+                value={editNis}
+                onChange={(e) => setEditNis(e.target.value)}
+                className={inputClass + " mt-1"}
+                placeholder="Nomor Induk Siswa (opsional)"
+              />
+            </div>
+          )}
+          <button
+            type="button"
+            disabled={saving || !editName.trim()}
+            onClick={() => void saveEdit()}
+            className="w-full bg-forest text-white text-[12px] font-semibold py-2.5 rounded-xl disabled:opacity-50 active:scale-[0.98] transition-transform"
+          >
+            {saving ? "Menyimpan…" : "Simpan Perubahan"}
+          </button>
+        </div>
+      </Sheet>
 
       <div className="h-2" />
     </div>

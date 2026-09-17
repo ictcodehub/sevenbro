@@ -22,27 +22,51 @@
     --input: #d7e5db;
     --ring: #144d36;
     --radius: 0.75rem;
+
+    /* Seven Bro tokens — di-flip oleh .dark */
+    --sb-page: #f3f7f4;
+    --sb-surface: #eaf2eb;
+    --sb-deep: #0d211c;
+    --sb-deep-2: #0a1a16;
+    --sb-ink: #111827;
+    --sb-ink-soft: #6b7280;
+    --sb-line: #d7e5db;
+    --sb-card: #ffffff;
+    --sb-card-95: rgba(255, 255, 255, 0.95);
+    --sb-card-90: rgba(255, 255, 255, 0.9);
   }
   .dark {
-    --background: #0d211c;
+    --background: #111827;
     --foreground: #f3f7f4;
-    --card: #0a1a16;
+    --card: #1f2937;
     --card-foreground: #f3f7f4;
-    --popover: #0a1a16;
+    --popover: #1f2937;
     --popover-foreground: #f3f7f4;
     --primary: #a3e635;
     --primary-foreground: #0d211c;
-    --secondary: #144d36;
+    --secondary: #374151;
     --secondary-foreground: #f3f7f4;
-    --muted: #144d36;
+    --muted: #374151;
     --muted-foreground: #9ca3af;
     --accent: #a3e635;
     --accent-foreground: #0d211c;
     --destructive: #ef4444;
     --destructive-foreground: #fef2f2;
-    --border: #1f3d34;
-    --input: #1f3d34;
+    --border: #374151;
+    --input: #374151;
     --ring: #a3e635;
+
+    /* Dark netral (grey), bukan hijau — brand tetap di forest/lime/amber */
+    --sb-page: #0b0f14;
+    --sb-surface: #151b23;
+    --sb-deep: #0b0f14;
+    --sb-deep-2: #111827;
+    --sb-ink: #f3f4f6;
+    --sb-ink-soft: #9ca3af;
+    --sb-line: #2a3441;
+    --sb-card: #151b23;
+    --sb-card-95: rgba(21, 27, 35, 0.95);
+    --sb-card-90: rgba(21, 27, 35, 0.92);
   }
 }
 
@@ -69,22 +93,77 @@
   --radius: var(--radius);
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  /* Mixed NL Discovery palette (Theme1 + Theme 2) */
-  --color-page: #f3f7f4;
-  --color-surface: #eaf2eb;
-  --color-deep: #0d211c;
-  --color-deep-2: #0a1a16;
+  /* Mixed NL Discovery palette — token flip lewat CSS var */
+  --color-page: var(--sb-page);
+  --color-surface: var(--sb-surface);
+  --color-deep: var(--sb-deep);
+  --color-deep-2: var(--sb-deep-2);
   --color-forest: #144d36;
   --color-lime: #a3e635;
   --color-lime-soft: #d7f2a4;
   --color-acid: #effadb;
   --color-amber: #fba94c;
-  --color-ink: #111827;
-  --color-ink-soft: #6b7280;
+  --color-ink: var(--sb-ink);
+  --color-ink-soft: var(--sb-ink-soft);
   --color-ok-bg: #dcfce7;
   --color-alert: #ef4444;
   --color-alert-bg: #fef2f2;
-  --color-line: #d7e5db;
+  --color-line: var(--sb-line);
+}
+
+/* Card putih ikut mode gelap (bg-white dipakai di banyak tempat) */
+.dark .bg-white {
+  background-color: var(--sb-card);
+}
+.dark .bg-white\/95 {
+  background-color: var(--sb-card-95);
+}
+.dark .bg-white\/90 {
+  background-color: var(--sb-card-90);
+}
+.dark .divide-line > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--sb-line);
+}
+.dark body {
+  background-color: var(--sb-page);
+  color: var(--sb-ink);
+}
+
+/* Forest terlalu gelap di atas dark grey — naikkan untuk teks/ikon/border */
+.dark {
+  --sb-forest-on-dark: #6ee7b7;
+}
+.dark .text-forest {
+  color: var(--sb-forest-on-dark);
+}
+.dark .text-forest\/70 {
+  color: color-mix(in srgb, var(--sb-forest-on-dark) 75%, transparent);
+}
+.dark .text-forest\/50 {
+  color: color-mix(in srgb, var(--sb-forest-on-dark) 55%, transparent);
+}
+.dark .border-forest {
+  border-color: var(--sb-forest-on-dark);
+}
+.dark .border-forest\/30 {
+  border-color: color-mix(in srgb, var(--sb-forest-on-dark) 40%, transparent);
+}
+.dark .fill-forest {
+  fill: var(--sb-forest-on-dark);
+}
+.dark .stroke-forest {
+  stroke: var(--sb-forest-on-dark);
+}
+/* text-deep SELALU gelap (dipakai di atas lime/amber) — jangan di-flip */
+.dark .bg-forest\/10 {
+  background-color: color-mix(in srgb, var(--sb-forest-on-dark) 12%, transparent);
+}
+.dark .bg-forest\/15 {
+  background-color: color-mix(in srgb, var(--sb-forest-on-dark) 16%, transparent);
+}
+.dark .bg-forest\/8,
+.dark .bg-forest\/5 {
+  background-color: color-mix(in srgb, var(--sb-forest-on-dark) 8%, transparent);
 }
 
 /* ============================================================

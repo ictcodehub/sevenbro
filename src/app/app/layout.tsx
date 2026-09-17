@@ -16,42 +16,28 @@ import {
 import AppShell from "@/components/AppShell"
 import type { AppShellNotification } from "@/components/AppShell"
 import { NOTIFICATIONS } from "@/lib/demo-data"
-
-const READ_KEY = "sevenbro:read-notifications"
-const DELETED_KEY = "sevenbro:deleted-notifications"
+import {
+  DELETED_KEY,
+  NOTIF_EVENT,
+  READ_KEY,
+  loadIdSet,
+  saveIdSet,
+} from "@/lib/notifications-store"
 
 function loadRead(): Set<string> {
-  if (typeof window === "undefined") return new Set()
-  try {
-    return new Set(JSON.parse(localStorage.getItem(READ_KEY) || "[]"))
-  } catch {
-    return new Set()
-  }
+  return loadIdSet(READ_KEY)
 }
 
 function saveRead(ids: string[]) {
-  try {
-    localStorage.setItem(READ_KEY, JSON.stringify(ids))
-  } catch {
-    /* private mode — ignore */
-  }
+  saveIdSet(READ_KEY, ids)
 }
 
 function loadDeleted(): Set<string> {
-  if (typeof window === "undefined") return new Set()
-  try {
-    return new Set(JSON.parse(localStorage.getItem(DELETED_KEY) || "[]"))
-  } catch {
-    return new Set()
-  }
+  return loadIdSet(DELETED_KEY)
 }
 
 function saveDeleted(ids: string[]) {
-  try {
-    localStorage.setItem(DELETED_KEY, JSON.stringify(ids))
-  } catch {
-    /* private mode — ignore */
-  }
+  saveIdSet(DELETED_KEY, ids)
 }
 
 // Mapping role -> nav items
@@ -72,8 +58,8 @@ function getNavItems(role?: string) {
   }
 
   if (role === "TEACHER") {
-    // Guru non-homeroom: hanya UI kasih poin — tanpa Beranda/Info/Arena
-    return [{ href: "/app/scan", label: "Kasih Poin", icon: QrCode }]
+    // Guru non-homeroom: hanya antarmuka beri poin
+    return [{ href: "/app/scan", label: "Beri Poin", icon: QrCode }]
   }
 
   return base
@@ -98,8 +84,17 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
   const [deletedIds, setDeletedIds] = useState<Set<string>>(() => new Set())
 
   useEffect(() => {
-    setReadIds(loadRead())
-    setDeletedIds(loadDeleted())
+    const sync = () => {
+      setReadIds(loadRead())
+      setDeletedIds(loadDeleted())
+    }
+    sync()
+    window.addEventListener(NOTIF_EVENT, sync)
+    window.addEventListener("storage", sync)
+    return () => {
+      window.removeEventListener(NOTIF_EVENT, sync)
+      window.removeEventListener("storage", sync)
+    }
   }, [])
 
   const withRead: AppShellNotification[] = notifs
@@ -161,6 +156,7 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
       onClearAllNotifications={clearAllNotifs}
       user={{ name, role }}
       onSettings={() => router.push("/app/settings")}
+      onViewHistory={() => router.push("/app/notifications")}
       onSignOut={() => {
         void signOut({ callbackUrl: "/login" })
       }}

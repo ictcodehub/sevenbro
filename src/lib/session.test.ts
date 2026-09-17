@@ -80,7 +80,7 @@ describe("requireApi", () => {
     const canPost = (role: string) => role === "HOMEROOM" || role === "KETUA"
     await expect(requireApi(canPost)).rejects.toMatchObject({
       status: 403,
-      message: "Kamu tidak punya akses untuk aksi ini",
+      message: "Anda tidak memiliki akses untuk aksi ini",
     })
   })
 

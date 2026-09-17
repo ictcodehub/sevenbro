@@ -52,3 +52,6 @@ cf-*.log
 
 supabase/.temp/
 .cf-tunnel.err
+
+# agent local
+.mimocode/

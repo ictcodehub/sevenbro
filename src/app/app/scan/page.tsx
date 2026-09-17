@@ -75,7 +75,7 @@ function ScanInner() {
       <div className="px-4 py-3">
         <EmptyState
           icon={<Shield className="h-6 w-6" />}
-          message="Fitur ini hanya untuk guru & homeroom"
+          message="Fitur ini hanya untuk guru dan wali kelas"
         />
       </div>
     )
@@ -107,7 +107,7 @@ function ScanInner() {
       )
       setReason("")
       setStudentId("")
-      flash("Poin tersimpan!")
+      flash("Poin berhasil disimpan.")
       await mutate()
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Gagal menyimpan")
@@ -121,9 +121,9 @@ function ScanInner() {
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-forest/70">
-            Scan mode
+            Scan Mode
           </p>
-          <h1 className="text-lg font-bold text-ink">Kasih Poin</h1>
+          <h1 className="text-lg font-bold text-ink">Beri Poin</h1>
           <p className="text-[11px] text-ink-soft/75">
             {session?.user?.name} · {role}
           </p>
