@@ -29,6 +29,7 @@ import {
   type Prefs,
 } from "@/lib/prefs"
 import MassReportVoteModal from "@/components/MassReportVoteModal"
+import PwaInstallModal from "@/components/PwaInstallModal"
 
 export type AppShellNav = {
   href: string
@@ -666,6 +667,9 @@ export default function AppShell({
 
       {/* Modal vote mass report — tampil global saat report VOTING */}
       <MassReportVoteModal />
+
+      {/* Smart install prompt — muncul bila PWA belum terpasang */}
+      <PwaInstallModal />
 
       {/* Bottom nav — selalu menempel di bawah */}
       <nav
