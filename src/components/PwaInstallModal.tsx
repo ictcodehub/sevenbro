@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { Download, X } from "lucide-react"
+import type { CSSProperties } from "react"
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>
@@ -16,22 +16,19 @@ function isStandalone(): boolean {
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
     window.matchMedia("(display-mode: window-controls-overlay)").matches ||
-    // iOS Safari
     (navigator as Navigator & { standalone?: boolean }).standalone === true
   )
 }
 
 function isIos(): boolean {
   if (typeof window === "undefined") return false
-  const ua = navigator.userAgent
-  return /iPhone|iPad|iPod/i.test(ua)
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent)
 }
 
 /**
- * Smart Install Prompt — modal nawarin install PWA bila belum terpasang.
- * - Android/Chrome: pakai beforeinstallprompt bila ada
- * - iOS: instruksi Bagikan → Tambahkan ke Layar Utama
- * - Sudah install (standalone) → tidak muncul sama sekali
+ * Smart Install Prompt — alert modal gaya iOS system alert / notification.
+ * Android: beforeinstallprompt bila ada · iOS: instruksi Bagikan.
+ * Sudah install → tidak muncul.
  */
 export default function PwaInstallModal() {
   const [open, setOpen] = useState(false)
@@ -43,9 +40,9 @@ export default function PwaInstallModal() {
 
     let dismissed = false
     try {
-      dismissed = localStorage.getItem(DISMISS_KEY) === "1"
-      // Kalau user sudah pernah lihat di sesi ini & sudah dismiss, tunggu sesi baru
       if (sessionStorage.getItem(DISMISS_KEY) === "1") dismissed = true
+      const ls = localStorage.getItem(DISMISS_KEY)
+      if (ls && Date.now() - Number(ls) < 1000 * 60 * 60 * 24 * 7) dismissed = true
     } catch {}
     if (dismissed) return
 
@@ -57,7 +54,6 @@ export default function PwaInstallModal() {
       setOpen(false)
       setPromptEvt(null)
       try {
-        localStorage.setItem("sevenbro:installed", "1")
         localStorage.removeItem(DISMISS_KEY)
       } catch {}
     }
@@ -65,17 +61,15 @@ export default function PwaInstallModal() {
     window.addEventListener("beforeinstallprompt", onPrompt)
     window.addEventListener("appinstalled", onInstalled)
 
-    // Delay biar tidak bentrok pas login / load pertama
     const t = window.setTimeout(() => {
       if (isStandalone()) return
       setOpen(true)
       try {
         localStorage.setItem(SHOWN_KEY, "1")
       } catch {}
-    }, 2200)
+    }, 2000)
 
     setReady(true)
-
     return () => {
       window.clearTimeout(t)
       window.removeEventListener("beforeinstallprompt", onPrompt)
@@ -88,16 +82,13 @@ export default function PwaInstallModal() {
     if (remember) {
       try {
         sessionStorage.setItem(DISMISS_KEY, "1")
-        // Jangan permanen — minggu depan bisa nawarin lagi
         localStorage.setItem(DISMISS_KEY, String(Date.now()))
       } catch {}
     }
   }, [])
 
-  // Kalau sudah install, tutup
   useEffect(() => {
-    if (!ready) return
-    if (isStandalone()) setOpen(false)
+    if (ready && isStandalone()) setOpen(false)
   }, [ready])
 
   const doInstall = async () => {
@@ -107,110 +98,110 @@ export default function PwaInstallModal() {
         const choice = await promptEvt.userChoice
         if (choice.outcome === "accepted") {
           close(false)
-          setIsInstalledLocal()
+          try {
+            localStorage.setItem("sevenbro:installed", "1")
+          } catch {}
           return
         }
       } catch {
-        /* fallback ke instruksi */
+        /* biarkan modal instruksi tetap / tutup */
       }
     }
-    setReady(true)
-  }
-
-  const setIsInstalledLocal = () => {
-    try {
-      localStorage.setItem("sevenbro:installed", "1")
-    } catch {}
+    close(true)
   }
 
   if (!open || isStandalone()) return null
-
   const ios = isIos()
+
+  const bodyStyle: CSSProperties = {
+    backdropFilter: "blur(24px)",
+    WebkitBackdropFilter: "blur(24px)",
+  }
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-4"
+      className="fixed inset-0 z-[70] flex items-center justify-center px-5"
       role="dialog"
       aria-modal="true"
-      aria-label="Install aplikasi"
+      aria-labelledby="pwa-install-title"
+      style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
     >
       <button
         type="button"
         aria-label="Tutup"
         onClick={() => close(true)}
-        className="absolute inset-0 bg-ink/50"
+        className="absolute inset-0 bg-black/45"
       />
-      <div className="relative w-full max-w-sm bg-white rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden border border-line">
-        <div className="bg-deep px-5 pt-5 pb-4 text-white flex items-start gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/icon-192.png"
-            alt=""
-            width={48}
-            height={48}
-            className="h-12 w-12 rounded-xl shrink-0 bg-white/10 object-contain p-1"
-          />
-          <div className="min-w-0 flex-1">
-            <p className="text-[15px] font-bold text-acid leading-tight">Seven Bro!</p>
-            <p className="text-[11px] text-white/70 mt-0.5">
-              Pasang di layar utama — buka lebih cepat, seperti app biasa
+
+      {/* iOS-style alert card */}
+      <div
+        className="relative w-full max-w-[286px] overflow-hidden rounded-[22px] shadow-[0_20px_50px_rgba(0,0,0,0.35)] border border-white/40"
+        style={bodyStyle}
+      >
+        <div className="bg-white/95 dark:bg-[#2c2c2e]/98">
+          {/* Header — icon + title, center (ala iOS alert) */}
+          <div className="px-5 pt-5 pb-3 text-center">
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-[14px] overflow-hidden bg-page ring-1 ring-black/5 shadow-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/icon-192.png"
+                alt=""
+                width={56}
+                height={56}
+                className="h-full w-full object-contain"
+              />
+            </div>
+            <h2
+              id="pwa-install-title"
+              className="text-[16px] font-semibold text-ink leading-tight tracking-tight"
+            >
+              Pasang Seven Bro di layar utama?
+            </h2>
+            <p className="mt-1.5 text-[13px] text-ink-soft/75 leading-snug text-balance">
+              Buka lebih cepat seperti app biasa. Ringan, offline-friendly, ikon bebek
+              langsung di home.
             </p>
+
+            {!promptEvt && (
+              <p className="mt-3 text-left text-[12px] text-ink-soft/70 leading-relaxed">
+                {ios ? (
+                  <>
+                    <span className="font-medium text-ink">1.</span> Ketuk{" "}
+                    <span className="font-semibold text-ink">Bagikan</span> di Safari ·{" "}
+                    <span className="font-medium text-ink">2.</span>{" "}
+                    <span className="font-semibold text-ink">Tambahkan ke Layar Utama</span> ·{" "}
+                    <span className="font-medium text-ink">3.</span>{" "}
+                    <span className="font-semibold text-ink">Tambah</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-medium text-ink">1.</span> Menu{" "}
+                    <span className="font-semibold text-ink">⋮</span> ·{" "}
+                    <span className="font-medium text-ink">2.</span>{" "}
+                    <span className="font-semibold text-ink">Instal aplikasi</span> ·{" "}
+                    <span className="font-medium text-ink">3.</span>{" "}
+                    <span className="font-semibold text-ink">Instal</span>
+                  </>
+                )}
+              </p>
+            )}
           </div>
-          <button
-            type="button"
-            onClick={() => close(true)}
-            aria-label="Nanti saja"
-            className="shrink-0 h-7 w-7 flex items-center justify-center rounded-lg bg-white/10 text-white/70"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
 
-        <div className="px-5 py-4 space-y-3">
-          {ios ? (
-            <ol className="text-[12px] text-ink space-y-2 list-decimal pl-5 leading-snug">
-              <li>
-                Ketuk tombol <span className="font-bold">Bagikan</span> (kotak panah) di
-                Safari
-              </li>
-              <li>
-                Pilih <span className="font-bold">Tambahkan ke Layar Utama</span>
-              </li>
-              <li>
-                Tekan <span className="font-bold">Tambah</span> — ikon bebek siap di home
-              </li>
-            </ol>
-          ) : (
-            <ol className="text-[12px] text-ink space-y-2 list-decimal pl-5 leading-snug">
-              <li>
-                Buka menu <span className="font-bold">⋮</span> (titik tiga) Chrome
-              </li>
-              <li>
-                Pilih <span className="font-bold">Instal aplikasi</span> /{" "}
-                <span className="font-bold">Tambahkan ke layar utama</span>
-              </li>
-              <li>
-                Konfirmasi <span className="font-bold">Instal</span> /{" "}
-                <span className="font-bold">Tambah</span>
-              </li>
-            </ol>
-          )}
-
-          <div className="flex gap-2 pt-1">
+          {/* iOS alert actions — full-width, hairline dividers */}
+          <div className="border-t border-black/[0.08]">
             <button
               type="button"
               onClick={() => void doInstall()}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-forest text-white text-[12px] font-bold py-3 active:scale-[0.98]"
+              className="w-full min-h-[44px] px-4 py-3.5 text-[15px] font-semibold text-[#0a84ff] active:bg-black/[0.04] transition-colors"
             >
-              <Download className="h-4 w-4" />
-              {ios ? "Saya Mengerti" : "Instal Sekarang"}
+              {ios ? "Cara Pasang" : "Instal Sekarang"}
             </button>
             <button
               type="button"
               onClick={() => close(true)}
-              className="px-4 rounded-xl bg-page border border-line text-[12px] font-semibold text-ink-soft py-3"
+              className="w-full min-h-[44px] px-4 py-3.5 text-[15px] font-normal text-[#0a84ff] border-t border-black/[0.08] active:bg-black/[0.04] transition-colors"
             >
-              Nanti
+              Nanti Saja
             </button>
           </div>
         </div>
