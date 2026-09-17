@@ -266,14 +266,16 @@ export default function AppShell({
     applyDarkMode(stored.dark)
   }, [])
 
-  // PWA install prompt — hanya tampil kalau browser siap install
+  // PWA install — tampil selama app belum terpasang di device ini
   useEffect(() => {
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       (navigator as Navigator & { standalone?: boolean }).standalone === true
     setIsStandalone(standalone)
     try {
-      setInstallDismissed(localStorage.getItem("sevenbro:install-dismissed") === "1")
+      // Bersihkan dismiss lama (localStorage) — tombol selalu tampil di browser
+      localStorage.removeItem("sevenbro:install-dismissed")
+      setInstallDismissed(sessionStorage.getItem("sevenbro:install-dismissed") === "1")
     } catch {}
 
     const onPrompt = (e: Event) => {
@@ -283,6 +285,7 @@ export default function AppShell({
     const onInstalled = () => {
       setInstallEvent(null)
       setIsStandalone(true)
+      setInstallDismissed(false)
     }
     window.addEventListener("beforeinstallprompt", onPrompt)
     window.addEventListener("appinstalled", onInstalled)
@@ -292,15 +295,7 @@ export default function AppShell({
     }
   }, [])
 
-  // Tombol hanya jika: belum standalone · browser kasih prompt · belum di-dismiss
-  const showInstall = !isStandalone && Boolean(installEvent) && !installDismissed
-
-  const dismissInstall = () => {
-    setInstallDismissed(true)
-    try {
-      localStorage.setItem("sevenbro:install-dismissed", "1")
-    } catch {}
-  }
+  const showInstall = !isStandalone && !installDismissed
 
   const handleInstall = async () => {
     if (installEvent) {
@@ -310,14 +305,16 @@ export default function AppShell({
         if (choice.outcome === "accepted") {
           setInstallEvent(null)
           setIsStandalone(true)
-        } else {
-          dismissInstall()
         }
       } catch {
         setInstallHint(true)
-        setTimeout(() => setInstallHint(false), 4000)
+        setTimeout(() => setInstallHint(false), 6000)
       }
+      return
     }
+    // Chrome Android kadang belum kasih prompt — tampilkan cara manual
+    setInstallHint(true)
+    setTimeout(() => setInstallHint(false), 6000)
   }
 
   const updatePrefs = async (patch: Partial<Prefs>) => {
@@ -433,10 +430,12 @@ export default function AppShell({
       </header>
 
       {installHint && (
-        <div className="sticky top-14 z-30 px-4 pt-2">
+        <div className="sticky top-[50px] z-30 px-4 pt-2">
           <div className="rounded-xl bg-amber/15 border border-amber/30 px-3 py-2 text-[10px] text-amber-900 leading-snug">
-            Buka menu browser → <span className="font-semibold">Tambahkan ke layar utama</span> /
-            Install app. Di Chrome Android, tombol Install akan muncul otomatis.
+            Di Chrome Android: menu <span className="font-semibold">⋮</span> →{" "}
+            <span className="font-semibold">Tambahkan ke layar utama</span> · Di iPhone:
+            tombol <span className="font-semibold">Bagikan</span> →{" "}
+            <span className="font-semibold">Tambahkan ke Layar Utama</span>
           </div>
         </div>
       )}
