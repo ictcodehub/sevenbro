@@ -47,7 +47,7 @@ export async function POST(req: Request) {
         title,
         body: text,
         pinned,
-        created_by: ctx.email ?? ctx.name,
+        created_by: ctx.name ?? ctx.email,
       })
       .select("*")
       .single()

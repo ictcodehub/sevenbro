@@ -40,6 +40,16 @@
 - **Edit data siswa** (nama, email, NIS) & **edit data guru** (nama, email) via sheet
 - Hapus guru
 
+### Info (Pengumuman)
+- CRUD: buat, ubah (judul/isi/sematan), sematkan, hapus
+- Expand “Baca selengkapnya”, author name (bukan email)
+- Policy: Homeroom & Ketua
+
+### Agenda
+- CRUD + edit (judul, lokasi, waktu) via API PATCH
+- Label Hari Ini / Besok, jam di chip forest
+- Policy: Homeroom, Ketua, Sekretaris
+
 ### Copy / Bahasa
 - Audit UI: formal Indonesia + Title Case
 - Pertahankan istilah produk yang sudah pas: Leaderboard, Battle Log, Kejar Podium, Scan Mode
@@ -51,11 +61,17 @@
 - Dark mode: page `#0b0f14`, card `#151b23`, text-forest `#6ee7b7`
 
 ## Belum / Open
-- **Info (Pengumuman) & Agenda** — belum final
 - Web-push server (VAPID) belum; sekarang Notification API lokal
 - Persist toggle offline ke service worker belum
-- Deploy Vercel production URL + env
+- Agenda lampau (API hanya kirim mendatang)
 - Tunggak lintas bulan: asumsi Jul/Des ganjil & Jan/Genap genap
+
+## Deploy (Beta)
+- GitHub: `ictcodehub/sevenbro` master `07054e0+`
+- Vercel: https://sevenbro.vercel.app
+- Supabase: `gdmqmoigudtgknkgomeu` (migrations 003/004 applied)
+- **Wajib**: Google Console → Authorized redirect URI
+  `https://sevenbro.vercel.app/api/auth/callback/google`
 
 ## Stack
 Next.js 15 · React 19 · Tailwind 4 · next-auth v4 Google · Supabase · SWR · Vitest (116 tests)

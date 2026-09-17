@@ -2,7 +2,16 @@
 
 import { useSession } from "next-auth/react"
 import { useMemo, useState } from "react"
-import { CalendarDays, Clock, MapPin, Inbox, Plus, Trash2, Check } from "lucide-react"
+import {
+  CalendarDays,
+  Clock,
+  MapPin,
+  Inbox,
+  Plus,
+  Trash2,
+  Check,
+  Pencil,
+} from "lucide-react"
 import { SectionHeader, EmptyState } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
 import { formatDateID, formatTimeID } from "@/lib/format"
@@ -19,6 +28,27 @@ type EventRow = {
 
 const PAGE_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
 
+function dayKey(d: Date) {
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+}
+
+function dayLabel(d: Date) {
+  const today = new Date()
+  const tomorrow = new Date(today)
+  tomorrow.setDate(today.getDate() + 1)
+  const base = formatDateID(d)
+  if (dayKey(d) === dayKey(today)) return `Hari Ini · ${base}`
+  if (dayKey(d) === dayKey(tomorrow)) return `Besok · ${base}`
+  return base
+}
+
+function toLocalInputValue(iso: string) {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ""
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 export default function AgendaPage() {
   return (
     <RoleGate allow={PAGE_ROLES}>
@@ -34,6 +64,7 @@ function AgendaInner() {
   const { data, error, mutate } = useAppSWR<EventRow[]>("/api/events")
 
   const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState<EventRow | null>(null)
   const [title, setTitle] = useState("")
   const [location, setLocation] = useState("")
   const [when, setWhen] = useState("")
@@ -42,12 +73,13 @@ function AgendaInner() {
   const [toast, setToast] = useState<string | null>(null)
 
   const groups = useMemo(() => {
-    const map = new Map<string, EventRow[]>()
+    const map = new Map<string, { date: Date; events: EventRow[] }>()
     for (const ev of data ?? []) {
-      const key = formatDateID(new Date(ev.starts_at))
-      const list = map.get(key) ?? []
-      list.push(ev)
-      map.set(key, list)
+      const d = new Date(ev.starts_at)
+      const key = dayKey(d)
+      const entry = map.get(key) ?? { date: d, events: [] }
+      entry.events.push(ev)
+      map.set(key, entry)
     }
     return [...map.entries()]
   }, [data])
@@ -57,7 +89,30 @@ function AgendaInner() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  const create = async () => {
+  const openCreate = () => {
+    setEditing(null)
+    setTitle("")
+    setLocation("")
+    setWhen("")
+    setErr(null)
+    setOpen(true)
+  }
+
+  const openEdit = (ev: EventRow) => {
+    setEditing(ev)
+    setTitle(ev.title)
+    setLocation(ev.location ?? "")
+    setWhen(toLocalInputValue(ev.starts_at))
+    setErr(null)
+    setOpen(true)
+  }
+
+  const closeSheet = () => {
+    setOpen(false)
+    setEditing(null)
+  }
+
+  const save = async () => {
     setErr(null)
     if (!title.trim() || !when) {
       setErr("Judul dan waktu wajib diisi")
@@ -66,22 +121,37 @@ function AgendaInner() {
     setSaving(true)
     try {
       const startsAt = new Date(when).toISOString()
-      const r = await fetch("/api/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: title.trim(),
-          starts_at: startsAt,
-          location: location.trim() || null,
-        }),
-      })
-      const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
-      setOpen(false)
+      if (editing) {
+        const r = await fetch(`/api/events/${editing.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: title.trim(),
+            starts_at: startsAt,
+            location: location.trim() || null,
+          }),
+        })
+        const b = await r.json().catch(() => null)
+        if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
+        flash("Agenda diperbarui")
+      } else {
+        const r = await fetch("/api/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: title.trim(),
+            starts_at: startsAt,
+            location: location.trim() || null,
+          }),
+        })
+        const b = await r.json().catch(() => null)
+        if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
+        flash("Agenda ditambahkan")
+      }
+      closeSheet()
       setTitle("")
       setLocation("")
       setWhen("")
-      flash("Agenda ditambahkan")
       await mutate()
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Gagal menyimpan")
@@ -98,7 +168,7 @@ function AgendaInner() {
         const b = await r.json().catch(() => null)
         throw new Error(b?.error || "Gagal")
       }
-      flash("Dihapus")
+      flash("Agenda dihapus")
       await mutate()
     } catch (e) {
       flash(e instanceof Error ? e.message : "Gagal")
@@ -110,16 +180,16 @@ function AgendaInner() {
       <div className="flex items-start justify-between gap-2">
         <div>
           <h1 className="text-lg font-bold text-ink">Agenda</h1>
-          <p className="text-[11px] text-ink-soft/75">Kegiatan kelas & sekolah</p>
+          <p className="text-[11px] text-ink-soft/75">Kegiatan kelas & sekolah mendatang</p>
         </div>
         {canEdit && (
           <button
             type="button"
-            onClick={() => setOpen(true)}
+            onClick={openCreate}
             className="flex items-center gap-1 bg-forest text-white text-[10px] font-semibold px-2.5 py-1.5 rounded-xl active:scale-[0.97] transition-transform shrink-0"
           >
             <Plus className="h-3.5 w-3.5" />
-            Agenda
+            Tambah
           </button>
         )}
       </div>
@@ -127,42 +197,52 @@ function AgendaInner() {
       {error ? (
         <EmptyState icon={<Inbox className="h-6 w-6" />} message="Gagal memuat agenda" />
       ) : groups.length === 0 ? (
-        <EmptyState icon={<CalendarDays className="h-6 w-6" />} message="Belum ada agenda" />
+        <EmptyState
+          icon={<CalendarDays className="h-6 w-6" />}
+          message="Belum ada agenda mendatang"
+        />
       ) : (
-        groups.map(([date, events]) => (
-          <div key={date}>
-            <SectionHeader title={date} count={String(events.length)} />
+        groups.map(([, { date, events }]) => (
+          <div key={dayKey(date)}>
+            <SectionHeader title={dayLabel(date)} count={String(events.length)} />
             <div className="space-y-1.5">
               {events.map((ev) => (
                 <div
                   key={ev.id}
                   className="bg-white border border-line shadow-sm rounded-xl p-2.5 flex items-center gap-2.5"
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface shrink-0">
-                    <CalendarDays className="h-4 w-4 text-forest" />
+                  <div className="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-forest/10 shrink-0">
+                    <span className="text-[11px] font-bold text-forest leading-none">
+                      {formatTimeID(new Date(ev.starts_at))}
+                    </span>
+                    <Clock className="h-2.5 w-2.5 text-forest/60 mt-0.5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] font-semibold text-ink truncate">{ev.title}</p>
                     <p className="flex items-center gap-1 text-[10px] text-ink-soft/75">
                       <MapPin className="h-2.5 w-2.5 shrink-0" />
-                      <span className="truncate">{ev.location || "-"}</span>
-                    </p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="flex items-center justify-end gap-1 text-[11px] font-bold text-ink">
-                      <Clock className="h-3 w-3 text-amber" />
-                      {formatTimeID(new Date(ev.starts_at))}
+                      <span className="truncate">{ev.location || "Lokasi belum ditentukan"}</span>
                     </p>
                   </div>
                   {canEdit && (
-                    <button
-                      type="button"
-                      onClick={() => void remove(ev)}
-                      aria-label="Hapus agenda"
-                      className="flex h-7 w-7 items-center justify-center rounded-lg text-alert hover:bg-alert-bg shrink-0"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => openEdit(ev)}
+                        aria-label="Ubah agenda"
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-ink-soft hover:bg-surface"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void remove(ev)}
+                        aria-label="Hapus agenda"
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-alert hover:bg-alert-bg"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   )}
                 </div>
               ))}
@@ -177,7 +257,11 @@ function AgendaInner() {
         </div>
       )}
 
-      <Sheet open={open} onClose={() => setOpen(false)} title="Agenda baru">
+      <Sheet
+        open={open}
+        onClose={closeSheet}
+        title={editing ? "Ubah Agenda" : "Agenda Baru"}
+      >
         {err && (
           <p className="text-[11px] text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
             {err}
@@ -199,7 +283,7 @@ function AgendaInner() {
             placeholder="Kelas 7B / Lapangan"
           />
         </Field>
-        <Field label="Waktu mulai">
+        <Field label="Waktu Mulai">
           <input
             type="datetime-local"
             value={when}
@@ -210,11 +294,11 @@ function AgendaInner() {
         <button
           type="button"
           disabled={saving}
-          onClick={() => void create()}
+          onClick={() => void save()}
           className="w-full bg-forest text-white text-[12px] font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 disabled:opacity-50"
         >
           <Check className="h-4 w-4" />
-          {saving ? "Menyimpan…" : "Simpan agenda"}
+          {saving ? "Menyimpan…" : editing ? "Simpan Perubahan" : "Simpan Agenda"}
         </button>
       </Sheet>
 

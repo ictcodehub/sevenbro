@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import { useState } from "react"
-import { Megaphone, Pin, PinOff, Inbox, Plus, Trash2, Check } from "lucide-react"
+import { Megaphone, Pin, PinOff, Inbox, Plus, Trash2, Check, Pencil } from "lucide-react"
 import { SectionHeader, EmptyState } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
 import { Sheet, Field, inputClass } from "@/components/ui/sheet"
@@ -31,6 +31,12 @@ function timeLabel(iso: string) {
   }
 }
 
+function authorLabel(raw: string | null) {
+  if (!raw) return "Kelas 7B"
+  if (raw.includes("@")) return raw.split("@")[0]
+  return raw
+}
+
 const PAGE_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
 
 export default function PengumumanPage() {
@@ -48,12 +54,14 @@ function PengumumanInner() {
   const { data, error, mutate } = useAppSWR<Announcement[]>("/api/announcements")
 
   const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState<Announcement | null>(null)
   const [title, setTitle] = useState("")
   const [body, setBody] = useState("")
   const [pinned, setPinned] = useState(false)
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 
   const sorted = [...(data ?? [])].sort(
     (a, b) =>
@@ -66,7 +74,30 @@ function PengumumanInner() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  const create = async () => {
+  const openCreate = () => {
+    setEditing(null)
+    setTitle("")
+    setBody("")
+    setPinned(false)
+    setErr(null)
+    setOpen(true)
+  }
+
+  const openEdit = (a: Announcement) => {
+    setEditing(a)
+    setTitle(a.title)
+    setBody(a.body)
+    setPinned(a.pinned)
+    setErr(null)
+    setOpen(true)
+  }
+
+  const closeSheet = () => {
+    setOpen(false)
+    setEditing(null)
+  }
+
+  const save = async () => {
     setErr(null)
     if (!title.trim() || !body.trim()) {
       setErr("Judul dan isi wajib diisi")
@@ -74,18 +105,33 @@ function PengumumanInner() {
     }
     setSaving(true)
     try {
-      const r = await fetch("/api/announcements", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: title.trim(), body: body.trim(), pinned }),
-      })
-      const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
-      setOpen(false)
+      if (editing) {
+        const r = await fetch(`/api/announcements/${editing.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: title.trim(),
+            body: body.trim(),
+            pinned,
+          }),
+        })
+        const b = await r.json().catch(() => null)
+        if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
+        flash("Pengumuman diperbarui")
+      } else {
+        const r = await fetch("/api/announcements", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: title.trim(), body: body.trim(), pinned }),
+        })
+        const b = await r.json().catch(() => null)
+        if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
+        flash("Pengumuman diterbitkan")
+      }
+      closeSheet()
       setTitle("")
       setBody("")
       setPinned(false)
-      flash("Pengumuman terbit")
       await mutate()
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Gagal menyimpan")
@@ -120,7 +166,7 @@ function PengumumanInner() {
         const b = await r.json().catch(() => null)
         throw new Error(b?.error || "Gagal")
       }
-      flash("Dihapus")
+      flash("Pengumuman dihapus")
       await mutate()
     } catch (e) {
       flash(e instanceof Error ? e.message : "Gagal")
@@ -132,74 +178,105 @@ function PengumumanInner() {
       <div className="flex items-start justify-between gap-2">
         <div>
           <h1 className="text-lg font-bold text-ink">Pengumuman</h1>
-          <p className="text-[11px] text-ink-soft/75">Info penting dari guru & ketua kelas</p>
+          <p className="text-[11px] text-ink-soft/75">Info penting dari guru & pengurus kelas</p>
         </div>
         {canEdit && (
           <button
             type="button"
-            onClick={() => setOpen(true)}
+            onClick={openCreate}
             className="flex items-center gap-1 bg-forest text-white text-[10px] font-semibold px-2.5 py-1.5 rounded-xl active:scale-[0.97] transition-transform shrink-0"
           >
             <Plus className="h-3.5 w-3.5" />
-            Baru
+            Buat
           </button>
         )}
       </div>
 
       <div>
-        <SectionHeader title="Semua pengumuman" count={String(sorted.length)} />
+        <SectionHeader title="Semua Pengumuman" count={String(sorted.length)} />
         {error ? (
           <EmptyState icon={<Inbox className="h-6 w-6" />} message="Gagal memuat pengumuman" />
         ) : sorted.length === 0 ? (
           <EmptyState icon={<Inbox className="h-6 w-6" />} message="Belum ada pengumuman" />
         ) : (
           <div className="space-y-2">
-            {sorted.map((a) => (
-              <article
-                key={a.id}
-                className="bg-white border border-line shadow-sm rounded-2xl p-3.5"
-              >
-                <div className="flex items-center gap-1.5 mb-1">
-                  {a.pinned && (
-                    <span className="inline-flex items-center gap-0.5 bg-amber/15 text-amber rounded-full px-1.5 py-0.5 text-[9px] font-bold">
-                      <Pin className="h-2.5 w-2.5" />
-                      Disematkan
+            {sorted.map((a) => {
+              const isOpen = expanded[a.id]
+              const long = a.body.length > 140
+              return (
+                <article
+                  key={a.id}
+                  className="bg-white border border-line shadow-sm rounded-2xl p-3.5"
+                >
+                  <div className="flex items-center gap-1.5 mb-1">
+                    {a.pinned && (
+                      <span className="inline-flex items-center gap-0.5 bg-amber/15 text-amber rounded-full px-1.5 py-0.5 text-[9px] font-bold">
+                        <Pin className="h-2.5 w-2.5" />
+                        Disematkan
+                      </span>
+                    )}
+                    <span className="text-[10px] text-ink-soft/75">
+                      {timeLabel(a.created_at)}
                     </span>
-                  )}
-                  <span className="text-[10px] text-ink-soft/75">{timeLabel(a.created_at)}</span>
-                </div>
-                <h2 className="text-sm font-bold text-ink">{a.title}</h2>
-                <p className="mt-0.5 text-[11px] text-ink-soft/75 leading-relaxed line-clamp-3">
-                  {a.body}
-                </p>
-                <div className="mt-2 flex items-center justify-between">
-                  <p className="text-[10px] text-ink-soft/50 flex items-center gap-1">
-                    <Megaphone className="h-2.5 w-2.5" />
-                    {a.created_by || "Kelas 7B"}
+                  </div>
+                  <h2 className="text-[13px] font-bold text-ink leading-snug">{a.title}</h2>
+                  <p
+                    className={`mt-1 text-[11px] text-ink-soft/80 leading-relaxed ${
+                      isOpen || !long ? "" : "line-clamp-3"
+                    }`}
+                  >
+                    {a.body}
                   </p>
-                  {canEdit && (
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => void togglePin(a)}
-                        aria-label={a.pinned ? "Lepas sematan" : "Sematkan"}
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-amber hover:bg-amber/10"
-                      >
-                        {a.pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void remove(a)}
-                        aria-label="Hapus"
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-alert hover:bg-alert-bg"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+                  {long && (
+                    <button
+                      type="button"
+                      onClick={() => setExpanded((p) => ({ ...p, [a.id]: !p[a.id] }))}
+                      className="mt-1 text-[10px] font-semibold text-forest"
+                    >
+                      {isOpen ? "Tampilkan lebih sedikit" : "Baca selengkapnya"}
+                    </button>
                   )}
-                </div>
-              </article>
-            ))}
+                  <div className="mt-2.5 pt-2 border-t border-line/60 flex items-center justify-between">
+                    <p className="text-[10px] text-ink-soft/50 flex items-center gap-1 min-w-0">
+                      <Megaphone className="h-2.5 w-2.5 shrink-0" />
+                      <span className="truncate">{authorLabel(a.created_by)}</span>
+                    </p>
+                    {canEdit && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => void togglePin(a)}
+                          aria-label={a.pinned ? "Lepas sematan" : "Sematkan"}
+                          className="flex h-7 w-7 items-center justify-center rounded-lg text-amber hover:bg-amber/10"
+                        >
+                          {a.pinned ? (
+                            <PinOff className="h-3.5 w-3.5" />
+                          ) : (
+                            <Pin className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openEdit(a)}
+                          aria-label="Ubah pengumuman"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg text-ink-soft hover:bg-surface"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void remove(a)}
+                          aria-label="Hapus"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg text-alert hover:bg-alert-bg"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </article>
+              )
+            })}
           </div>
         )}
       </div>
@@ -210,7 +287,11 @@ function PengumumanInner() {
         </div>
       )}
 
-      <Sheet open={open} onClose={() => setOpen(false)} title="Pengumuman baru">
+      <Sheet
+        open={open}
+        onClose={closeSheet}
+        title={editing ? "Ubah Pengumuman" : "Pengumuman Baru"}
+      >
         {err && (
           <p className="text-[11px] text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
             {err}
@@ -238,7 +319,7 @@ function PengumumanInner() {
           onClick={() => setPinned((v) => !v)}
           className="w-full flex items-center justify-between rounded-xl border border-line bg-page px-3 py-2.5"
         >
-          <span className="text-[11px] font-semibold text-ink">Sematkan di beranda</span>
+          <span className="text-[11px] font-semibold text-ink">Sematkan di Beranda</span>
           <span
             className={`h-5 w-9 rounded-full relative transition-colors ${
               pinned ? "bg-forest" : "bg-line"
@@ -254,11 +335,11 @@ function PengumumanInner() {
         <button
           type="button"
           disabled={saving}
-          onClick={() => void create()}
+          onClick={() => void save()}
           className="w-full bg-forest text-white text-[12px] font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 disabled:opacity-50"
         >
           <Check className="h-4 w-4" />
-          {saving ? "Menyimpan…" : "Terbitkan"}
+          {saving ? "Menyimpan…" : editing ? "Simpan Perubahan" : "Terbitkan"}
         </button>
       </Sheet>
 
