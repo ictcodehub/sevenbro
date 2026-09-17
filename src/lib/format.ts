@@ -68,3 +68,30 @@ export function formatTimeID(d: Date): string {
   const mm = String(wib.getUTCMinutes()).padStart(2, "0")
   return `${hh}:${mm}`
 }
+
+/**
+ * Nama untuk UI: ubah FULL CAPS (mis. "KEIKO KHOLIS") jadi Title Case.
+ * Nama yang sudah mixed case dibiarkan (mis. "Tio ICT", "Li Ming Xin").
+ */
+export function formatDisplayName(raw: string | null | undefined): string {
+  if (!raw) return ""
+  const name = raw.trim().replace(/\s+/g, " ")
+  if (!name) return ""
+  const letters = name.replace(/[^A-Za-z]/g, "")
+  if (!letters || letters !== letters.toUpperCase()) return name
+  return name
+    .toLowerCase()
+    .replace(/(^|[\s'’-])([a-z])/g, (_m, sep: string, ch: string) => sep + ch.toUpperCase())
+}
+
+/**
+ * Leaderboard “datar”: semua skor sama (mis. seed 25 poin).
+ * Podium harus nonaktif sampai ada selisih poin.
+ */
+export function isUniformPoints(
+  rows: readonly { total_points?: number | null }[] | null | undefined,
+): boolean {
+  if (!rows || rows.length < 2) return false
+  const first = rows[0]?.total_points ?? 0
+  return rows.every((r) => (r.total_points ?? 0) === first)
+}

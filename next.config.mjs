@@ -17,6 +17,16 @@ const withPWA = withPWAInit({
       },
     },
     {
+      // API data: network-first, fallback cache (stale-while-offline)
+      urlPattern: ({ url }) => url.pathname.startsWith("/api/"),
+      handler: "NetworkFirst",
+      options: {
+        cacheName: "api-data",
+        networkTimeoutSeconds: 5,
+        expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 12 },
+      },
+    },
+    {
       // Page navigations: network-first, fall back to cache (offline)
       urlPattern: ({ request }) => request.mode === "navigate",
       handler: "NetworkFirst",
@@ -26,17 +36,6 @@ const withPWA = withPWAInit({
         expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 },
       },
     },
-    // Example: your data API — network-first (fresh data with offline fallback).
-    // Point urlPattern at your backend domain, or delete this rule.
-    // {
-    //   urlPattern: /^https:\/\/api\.example\.com\/.*/i,
-    //   handler: "NetworkFirst",
-    //   options: {
-    //     cacheName: "api-data",
-    //     networkTimeoutSeconds: 5,
-    //     expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 },
-    //   },
-    // },
   ],
 })
 

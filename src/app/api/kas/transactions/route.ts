@@ -4,7 +4,8 @@ import { canManageKas } from "@/lib/policies"
 import { requireApi } from "@/lib/session"
 import { ensureContextReader } from "@/lib/server-context"
 import { createAdminClient } from "@/lib/db"
-import { formatIDR } from "@/lib/format"
+import { formatIDR, formatDisplayName } from "@/lib/format"
+import { notifyHomeroom } from "@/lib/notify"
 
 export const dynamic = "force-dynamic"
 
@@ -78,6 +79,11 @@ export async function POST(req: Request) {
       .select("*")
       .single()
     if (error) throw new Error(error.message)
+    await notifyHomeroom(ctx, {
+      title: kind === "IN" ? "Pemasukan kas" : "Pengeluaran kas",
+      body: `${formatDisplayName(ctx.name) || "Bendahara"} mencatat ${kind === "IN" ? "masuk" : "keluar"} ${formatIDR(Math.round(amount))} · ${description}.`,
+      kind: "kas",
+    })
     return NextResponse.json(data, { status: 201 })
   } catch (e) {
     return errorResponse(e)

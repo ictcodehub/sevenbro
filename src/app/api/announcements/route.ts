@@ -4,6 +4,8 @@ import { canPostAnnouncement } from "@/lib/policies"
 import { requireApi } from "@/lib/session"
 import { ensureContextReader } from "@/lib/server-context"
 import { createAdminClient } from "@/lib/db"
+import { notifyHomeroom } from "@/lib/notify"
+import { formatDisplayName } from "@/lib/format"
 
 export const dynamic = "force-dynamic"
 
@@ -52,6 +54,11 @@ export async function POST(req: Request) {
       .select("*")
       .single()
     if (error) throw new Error(error.message)
+    await notifyHomeroom(ctx, {
+      title: "Info kelas baru",
+      body: `${formatDisplayName(ctx.name) || "Pengurus"} memposting “${title}”.`,
+      kind: "announcement",
+    })
     return NextResponse.json(data, { status: 201 })
   } catch (e) {
     return errorResponse(e)

@@ -33,3 +33,19 @@ export function resolveEffectiveRole(
 export function isStudentPosition(value: string | null | undefined): value is StudentPosition {
   return !!value && (STUDENT_POSITIONS as readonly string[]).includes(value)
 }
+
+const ROLE_LABELS: Record<string, string> = {
+  HOMEROOM: "Wali Kelas",
+  TEACHER: "Guru",
+  KETUA: "Ketua",
+  BENDAHARA: "Bendahara",
+  SEKRETARIS: "Sekretaris",
+  ANGGOTA: "Anggota",
+  PENDING: "Menunggu",
+}
+
+/** Label role untuk UI (Title Case Indonesia). Jangan tampilkan kode mentah. */
+export function formatRoleLabel(role: string | null | undefined): string {
+  if (!role) return "Siswa"
+  return ROLE_LABELS[role] ?? "Siswa"
+}

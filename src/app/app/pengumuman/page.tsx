@@ -37,7 +37,8 @@ function authorLabel(raw: string | null) {
   return raw
 }
 
-const PAGE_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
+// Sementara: hanya Homeroom — menu Info dinonaktifkan untuk murid
+const PAGE_ROLES = ["HOMEROOM"]
 
 export default function PengumumanPage() {
   return (

@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -22,7 +23,8 @@ import { Sheet, Field, inputClass } from "@/components/ui/sheet"
 import { canGivePoints, canAdmin } from "@/lib/policies"
 import { RoleGate } from "@/components/RoleGate"
 import QRCode from "qrcode"
-import { formatDateID, formatTimeID } from "@/lib/format"
+import { formatDateID, formatTimeID, formatDisplayName } from "@/lib/format"
+import MassReportPanel from "@/components/MassReportPanel"
 
 type LeaderRow = {
   student_id: string
@@ -53,16 +55,33 @@ type StudentDetail = { student: LeaderRow | null; history: PointLog[] }
 
 const AMOUNTS = [5, 10, 20]
 
+/** Preset alasan — SSOT di docs/POINT_SYSTEM.md */
+const POINT_PRESETS = {
+  PRESTASI: [
+    { label: "Bayar Uang Kas", delta: 1 },
+    { label: "Perfect Score DT", delta: 5 },
+    { label: "Perfect Score PT", delta: 5 },
+    { label: "Mengerjakan Piket", delta: 1 },
+    { label: "Juara Lomba", delta: 5 },
+  ],
+  PELANGGARAN: [
+    { label: "Tidak Mengerjakan Piket", delta: 1 },
+    { label: "Tidak Patuh Aturan Kelas", delta: 2 },
+    { label: "Ganggu Proses Belajar", delta: 3 },
+    { label: "Kasar / Tidak Sopan", delta: 3 },
+  ],
+} as const
+
+type PointPresetKind = keyof typeof POINT_PRESETS
+
 const RANK_LABEL: Record<number, string> = {
   1: "Peringkat 1",
   2: "Peringkat 2",
   3: "Peringkat 3",
 }
 
-function shortName(full: string) {
-  const parts = full.trim().split(/\s+/)
-  if (parts.length <= 2) return full
-  return `${parts[0]} ${parts[parts.length - 1]}`
+function personName(full: string) {
+  return formatDisplayName(full)
 }
 
 function whenLabel(iso: string) {
@@ -136,7 +155,7 @@ function HistoryList({ items, showStudent }: { items: PointLog[]; showStudent?: 
               <DeltaBadge delta={log.delta} />
             </div>
             <p className="mt-0.5 text-[9px] text-ink-soft/60 truncate">
-              {showStudent && log.student?.full_name ? `${log.student.full_name} · ` : ""}
+              {showStudent && log.student?.full_name ? `${formatDisplayName(log.student.full_name)} · ` : ""}
               {log.kind === "PELANGGARAN" ? "Pelanggaran" : "Prestasi"}
               {" · "}
               {log.created_by || "—"}
@@ -155,12 +174,14 @@ function PodiumCard({
   student,
   isMe,
   maxPts,
+  muted,
   onOpen,
 }: {
   rank: number
   student: LeaderRow
   isMe: boolean
   maxPts: number
+  muted?: boolean
   onOpen: () => void
 }) {
   const pct = maxPts > 0 ? Math.min(100, (student.total_points / maxPts) * 100) : 0
@@ -170,13 +191,13 @@ function PodiumCard({
     <button
       type="button"
       onClick={onOpen}
-      className={`rank-pop flex flex-col items-center active:scale-[0.97] transition-transform ${
+      className={`flex flex-col items-center active:scale-[0.97] transition-transform ${muted ? "" : "rank-pop"} ${
         rank === 1 ? "order-2 w-[36%] max-w-[130px]" : "order-1 w-[30%] max-w-[110px]"
       } ${rank === 3 ? "order-3" : ""} ${rank !== 1 ? "mt-6" : ""}`}
     >
-      {/* Slot mahkota mewah — hanya #1 */}
+      {/* Slot mahkota mewah — hanya #1, mati saat seri */}
       <div className="h-8 flex items-end justify-center mb-1 relative">
-        {rank === 1 && (
+        {rank === 1 && !muted && (
           <svg
             viewBox="0 0 48 36"
             className="w-11 h-8 crown-glow"
@@ -220,44 +241,73 @@ function PodiumCard({
       </div>
       <div
         className={`relative h-12 w-12 rounded-full flex items-center justify-center text-[13px] font-bold border-2 ${
-          rank === 1
-            ? "bg-amber text-deep border-amber"
-            : rank === 2
-              ? "bg-teal-300 text-deep border-teal-400"
-              : "bg-amber/30 text-deep border-amber/60"
-        } ${isMe ? "me-ring" : ""}`}
+          muted
+            ? "bg-ink-soft/25 text-white/70 border-ink-soft/40"
+            : rank === 1
+              ? "bg-amber text-deep border-amber"
+              : rank === 2
+                ? "bg-teal-300 text-deep border-teal-400"
+                : "bg-amber/30 text-deep border-amber/60"
+        } ${isMe && !muted ? "me-ring" : ""}`}
       >
-        <User className="h-5 w-5 opacity-80" strokeWidth={1.75} />
-        <span
-          className={`absolute -bottom-1 -right-1 h-5 w-5 rounded-full text-[9px] font-bold flex items-center justify-center text-white ${podiumClass}`}
-        >
-          {rank}
-        </span>
+        <User className={`h-5 w-5 ${muted ? "opacity-40" : "opacity-80"}`} strokeWidth={1.75} />
+        {!muted && (
+          <span
+            className={`absolute -bottom-1 -right-1 h-5 w-5 rounded-full text-[9px] font-bold flex items-center justify-center text-white ${podiumClass}`}
+          >
+            {rank}
+          </span>
+        )}
       </div>
       <p
         className={`mt-2 max-w-full truncate px-1 font-bold ${
-          rank === 1 ? "text-[12px] text-acid" : "text-[11px] text-white/90"
+          muted
+            ? "text-[13px] text-white/45"
+            : rank === 1
+              ? "text-[12px] text-acid"
+              : "text-[11px] text-white/90"
         }`}
       >
-        {shortName(student.full_name)}
+        {muted ? "—" : personName(student.full_name)}
       </p>
       <p className="text-[9px] font-semibold text-white/55 mt-0.5">
-        {RANK_LABEL[rank]}
+        {muted ? "Menunggu poin" : RANK_LABEL[rank]}
       </p>
-      <div className={`mt-1.5 w-full rounded-t-lg px-2 pt-1.5 pb-2 ${podiumClass}`}>
+      <div className={`mt-1.5 w-full rounded-t-lg px-2 pt-1.5 pb-2 ${muted ? "bg-ink-soft/40" : podiumClass}`}>
         <p className="text-[13px] font-black text-white leading-none drop-shadow">
-          {student.total_points}
+          {muted ? "—" : student.total_points}
         </p>
         <p className="text-[8px] text-white/80 font-medium">poin</p>
-        <div className="mt-1 h-1 w-full bg-white/25 rounded-full overflow-hidden">
-          <div className="h-full bg-white/90 xp-bar-fill rounded-full" style={{ width: `${pct}%` }} />
-        </div>
+        {!muted && (
+          <div className="mt-1 h-1 w-full bg-white/25 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-white/90 xp-bar-fill"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        )}
       </div>
     </button>
   )
 }
 
 const PAGE_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
+
+/**
+ * Base URL untuk QR Beri Poin.
+ * - Prod / dibuka di domain asli → origin yang sedang dipakai (sevenbro.vercel.app)
+ * - localhost → NEXT_PUBLIC_APP_URL (IP LAN) supaya HP di kelas bisa scan
+ */
+function getQrBaseUrl(): string {
+  if (typeof window === "undefined") {
+    return process.env.NEXT_PUBLIC_APP_URL || ""
+  }
+  const { hostname, origin } = window.location
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    return process.env.NEXT_PUBLIC_APP_URL || origin
+  }
+  return origin
+}
 
 export default function PoinPage() {
   return (
@@ -280,11 +330,7 @@ function PoinInner() {
 
   useEffect(() => {
     if (!showQr || !meCtx?.classId) return
-    // Utamakan IP LAN (NEXT_PUBLIC_APP_URL) supaya QR bisa discan dari HP
-    const base =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (typeof window !== "undefined" ? window.location.origin : "")
-    const url = `${base}/app/scan?c=${meCtx.classId}`
+    const url = `${getQrBaseUrl()}/app/scan?c=${meCtx.classId}`
     QRCode.toDataURL(url, { width: 220, margin: 1, color: { dark: "#0D211C", light: "#FFFFFF" } })
       .then(setQrDataUrl)
       .catch(() => setQrDataUrl(null))
@@ -303,7 +349,14 @@ function PoinInner() {
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
-  const [tab, setTab] = useState<"peringkat" | "riwayat">("peringkat")
+  const [tab, setTab] = useState<"peringkat" | "riwayat" | "report">("peringkat")
+  const [reportCount, setReportCount] = useState(0)
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get("tab")
+
+  useEffect(() => {
+    if (tabParam === "report") setTab("report")
+  }, [tabParam])
 
   const meName = session?.user?.name
   const rows = data?.leaderboard ?? []
@@ -312,6 +365,31 @@ function PoinInner() {
   )
   const me = myIndex >= 0 ? rows[myIndex] : null
   const maxPts = rows[0]?.total_points || 1
+  // Podium mati kalau top skor masih seri — belum ada pemenang nyata
+  const top3 = rows.slice(0, 3)
+  const podiumMuted =
+    top3.length >= 2 && top3.every((p) => p.total_points === top3[0]!.total_points)
+
+  useEffect(() => {
+    let cancelled = false
+    const loadReports = async () => {
+      try {
+        const r = await fetch("/api/mass-reports", { headers: { Accept: "application/json" } })
+        if (!r.ok || cancelled) return
+        const b = (await r.json()) as { reports?: { status?: string }[] }
+        const active = (b.reports ?? []).filter(
+          (x) => x.status === "VOTING" || x.status === "READY",
+        )
+        if (!cancelled) setReportCount(active.length)
+      } catch {}
+    }
+    void loadReports()
+    const t = setInterval(() => void loadReports(), 30000)
+    return () => {
+      cancelled = true
+      clearInterval(t)
+    }
+  }, [])
 
   const flash = (msg: string) => {
     setToast(msg)
@@ -579,9 +657,7 @@ function PoinInner() {
               Scan → masuk sebagai guru → beri atau kurangi poin
             </p>
             <p className="text-[9px] text-ink-soft/60 text-center break-all">
-              {(process.env.NEXT_PUBLIC_APP_URL ||
-                (typeof window !== "undefined" ? window.location.origin : "")) +
-                "/app/scan"}
+              {getQrBaseUrl()}/app/scan
             </p>
             <p className="text-[9px] text-ink-soft/50">
               Cetak & tempel di kelas · hanya akun guru yang diizinkan
@@ -606,31 +682,38 @@ function PoinInner() {
               </div>
             )}
             {rows.length >= 1 && (
-              <div className="relative overflow-hidden bg-deep-2 rounded-2xl px-3 pt-3 pb-3 border border-white/5">
-                <div className="ember-field" aria-hidden="true">
-                  <span className="ember red" />
-                  <span className="ember gold" />
-                  <span className="ember hot" />
-                  <span className="ember" />
-                  <span className="ember gold" />
-                  <span className="ember red" />
-                  <span className="ember" />
-                  <span className="ember hot" />
-                  <span className="ember gold" />
-                  <span className="ember" />
-                  <span className="ember red" />
-                  <span className="ember gold" />
-                  <span className="ember" />
-                  <span className="ember hot" />
-                  <span className="ember gold" />
-                  <span className="ember red" />
-                </div>
+              <div className={`relative overflow-hidden bg-deep-2 rounded-2xl px-3 pt-3 pb-3 border border-white/5 ${podiumMuted ? "podium-muted" : ""}`}>
+                {!podiumMuted && (
+                  <div className="ember-field" aria-hidden="true">
+                    <span className="ember red" />
+                    <span className="ember gold" />
+                    <span className="ember hot" />
+                    <span className="ember" />
+                    <span className="ember gold" />
+                    <span className="ember red" />
+                    <span className="ember" />
+                    <span className="ember hot" />
+                    <span className="ember gold" />
+                    <span className="ember" />
+                    <span className="ember red" />
+                    <span className="ember gold" />
+                    <span className="ember" />
+                    <span className="ember hot" />
+                    <span className="ember gold" />
+                    <span className="ember red" />
+                  </div>
+                )}
                 <div className="relative flex items-center justify-center gap-1.5 mb-1">
-                  <Trophy className="h-4 w-4 text-amber" />
-                  <span className="text-[10px] font-bold text-acid uppercase tracking-[0.15em]">
+                  <Trophy className={`h-4 w-4 ${podiumMuted ? "text-white/40" : "text-amber"}`} />
+                  <span className={`text-[10px] font-bold uppercase tracking-[0.15em] ${podiumMuted ? "text-white/45" : "text-acid"}`}>
                     Leaderboard
                   </span>
                 </div>
+                {podiumMuted && (
+                  <p className="relative text-center text-[9px] text-white/45 mb-1">
+                    Belum ada selisih poin
+                  </p>
+                )}
                 <div className="relative flex items-end justify-center gap-1.5">
                   {rows[1] && (
                     <PodiumCard
@@ -638,6 +721,7 @@ function PoinInner() {
                       student={rows[1]}
                       isMe={rows[1].student_id === data?.studentId}
                       maxPts={maxPts}
+                      muted={podiumMuted}
                       onOpen={() => setDetailId(rows[1].student_id)}
                     />
                   )}
@@ -647,6 +731,7 @@ function PoinInner() {
                       student={rows[0]}
                       isMe={rows[0].student_id === data?.studentId}
                       maxPts={maxPts}
+                      muted={podiumMuted}
                       onOpen={() => setDetailId(rows[0].student_id)}
                     />
                   )}
@@ -656,6 +741,7 @@ function PoinInner() {
                       student={rows[2]}
                       isMe={rows[2].student_id === data?.studentId}
                       maxPts={maxPts}
+                      muted={podiumMuted}
                       onOpen={() => setDetailId(rows[2].student_id)}
                     />
                   )}
@@ -664,27 +750,38 @@ function PoinInner() {
             )}
 
             {/* Tabs */}
-            <div className="grid grid-cols-2 gap-1 bg-surface rounded-xl p-1">
+            <div className="grid grid-cols-3 gap-1 bg-surface rounded-xl p-1">
               {(
                 [
                   ["peringkat", "Leaderboard"],
                   ["riwayat", "Battle Log"],
+                  ["report", "Report"],
                 ] as const
               ).map(([k, label]) => (
                 <button
                   key={k}
                   type="button"
                   onClick={() => setTab(k)}
-                  className={`py-1.5 rounded-lg text-[11px] font-bold transition ${
+                  className={`py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition flex items-center justify-center gap-1.5 ${
                     tab === k ? "bg-forest text-white shadow-sm" : "text-ink-soft"
                   }`}
                 >
                   {label}
+                  {k === "report" && reportCount > 0 && (
+                    <span
+                      aria-hidden="true"
+                      className="inline-flex h-[16px] w-[16px] items-center justify-center rounded-full bg-[#EEA34C] text-white text-[9px] font-medium leading-none"
+                    >
+                      {reportCount > 9 ? "9+" : reportCount}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
 
-            {tab === "peringkat" ? (
+            {tab === "report" ? (
+              <MassReportPanel />
+            ) : tab === "peringkat" ? (
               <div>
                 <SectionHeader title="Kejar Podium" count={String(rest.length)} />
                 {rest.length === 0 ? (
@@ -730,7 +827,7 @@ function PoinInner() {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 min-w-0">
                                 <p className="text-[12px] font-semibold text-ink truncate">
-                                  {shortName(p.full_name)}
+                                  {personName(p.full_name)}
                                 </p>
                                 {isMe && (
                                   <span className="text-[8px] font-bold uppercase tracking-wide bg-forest text-white px-1 py-0 rounded shrink-0">
@@ -824,7 +921,7 @@ function PoinInner() {
       <Sheet
         open={Boolean(detailId)}
         onClose={() => setDetailId(null)}
-        title={detail?.student?.full_name ?? "Riwayat poin"}
+        title={formatDisplayName(detail?.student?.full_name) || "Riwayat poin"}
       >
         {detail?.student && (
           <div className="arena-bg rounded-xl p-3 text-white flex items-center justify-between">
@@ -870,7 +967,7 @@ function PoinInner() {
             <option value="">Pilih siswa…</option>
             {(students ?? []).map((s) => (
               <option key={s.id} value={s.id}>
-                {s.full_name}
+                {formatDisplayName(s.full_name)}
                 {s.position !== "ANGGOTA" ? ` (${s.position})` : ""}
               </option>
             ))}
@@ -896,6 +993,35 @@ function PoinInner() {
                 {k === "PRESTASI" ? "⚡ Prestasi" : "↓ Pelanggaran"}
               </button>
             ))}
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <span className="text-[11px] font-semibold text-ink">Alasan cepat</span>
+          <div className="flex flex-wrap gap-1.5">
+            {POINT_PRESETS[kind as PointPresetKind].map((p) => {
+              const active = reason.trim() === p.label
+              return (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => {
+                    setReason(p.label)
+                    setAmount(Math.abs(p.delta))
+                  }}
+                  className={`text-[10px] font-semibold px-2 py-1.5 rounded-full border transition ${
+                    active
+                      ? kind === "PRESTASI"
+                        ? "bg-forest text-white border-forest"
+                        : "bg-alert text-white border-alert"
+                      : "bg-white text-ink border-line"
+                  }`}
+                >
+                  {p.label} · {p.delta > 0 ? "+" : "−"}
+                  {Math.abs(p.delta)}
+                </button>
+              )
+            })}
           </div>
         </div>
 
@@ -927,8 +1053,8 @@ function PoinInner() {
             rows={3}
             placeholder={
               kind === "PRESTASI"
-                ? "Membantu teman membersihkan kelas…"
-                : "Terlambat masuk kelas 15 menit…"
+                ? "Perfect Score DT Matematika…"
+                : "Tidak mengerjakan piket hari ini…"
             }
             className={inputClass + " resize-none"}
           />

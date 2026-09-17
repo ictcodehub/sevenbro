@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react"
 import { useState, type ReactNode } from "react"
 import { Shield, Wallet, CalendarDays, Megaphone, Trophy, Users } from "lucide-react"
 import { SectionHeader, EmptyState } from "@/components/ui-primitives"
+import { formatDisplayName } from "@/lib/format"
 
 function Toggle({
   label,
@@ -123,7 +124,7 @@ export default function AdminSettingsPage() {
             <Users className="h-3.5 w-3.5 text-forest" />
             Kelas 7B — Mutiara Bangsa 2 JHS
           </p>
-          <p>Homeroom: {session?.user?.name ?? "—"}</p>
+          <p>Homeroom: {formatDisplayName(session?.user?.name) || "—"}</p>
           <p className="text-[10px] text-ink-soft/50">
             Toggle di atas bersifat lokal (state UI). Persistensi setting menyusul
             setelah tabel settings dibuat di Supabase.

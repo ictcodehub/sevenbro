@@ -1,5 +1,75 @@
 @import "tailwindcss";
 
+/* Brocklyns — personal use only (dari dafont) */
+@font-face {
+  font-family: "Brocklyns";
+  src: url("/fonts/Brocklyns.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Chillin on Sunday — caption di bawah judul brand */
+@font-face {
+  font-family: "ChillinOnSunday";
+  src: url("/fonts/ChillinOnSunday.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-brocklyns {
+  font-family: "Brocklyns", system-ui, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+/* Judul brand: shine berulang halus */
+.brand-title {
+  background: linear-gradient(
+    105deg,
+    #144d36 0%,
+    #144d36 30%,
+    #a3e635 50%,
+    #144d36 70%,
+    #144d36 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: brand-shine 2.8s ease-in-out infinite;
+}
+
+.brand-caption {
+  font-family: "ChillinOnSunday", cursive, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: #6b7280;
+  line-height: 1.15;
+  margin-top: 1px;
+}
+
+@keyframes brand-shine {
+  0% {
+    background-position: 100% 0;
+  }
+  50% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-title {
+    animation: none;
+    color: #144d36;
+    background: none;
+  }
+}
+
 @layer base {
   :root {
     --background: #f3f7f4;
@@ -267,4 +337,56 @@
 
 .me-ring {
   box-shadow: 0 0 0 2px #a3e635, 0 0 12px rgba(163, 230, 53, 0.45);
+}
+
+/* Sembunyikan scrollbar horizontal — scroll vertikal tetap */
+.no-scrollbar-x {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar-x::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Scroll container: bisa di-scroll, tapi bar vertikal disembunyikan (ala app) */
+.scroll-y-only {
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scroll-y-only::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+/* Cegah scroll horizontal tanpa merusak sticky / scroll vertikal */
+html,
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+/* Skor seri — podium nonaktif: monokrom, tanpa animasi */
+.podium-muted .rank-pop {
+  animation: none !important;
+}
+.podium-muted .crown-glow,
+.podium-muted .ember-field {
+  animation: none !important;
+  display: none !important;
+}
+.podium-muted .podium-1,
+.podium-muted .podium-2,
+.podium-muted .podium-3 {
+  background: #6b7280 !important;
+  box-shadow: none !important;
+}
+.podium-muted .me-ring {
+  box-shadow: none !important;
+}
+.podium-muted .xp-bar-fill {
+  transition: none !important;
 }

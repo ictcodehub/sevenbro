@@ -15,6 +15,8 @@ import {
   ArrowLeft,
   Moon,
   WifiOff,
+  Download,
+  Flag,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -26,11 +28,19 @@ import {
   showBrowserNotification,
   type Prefs,
 } from "@/lib/prefs"
+import MassReportVoteModal from "@/components/MassReportVoteModal"
 
 export type AppShellNav = {
   href: string
   label: string
   icon: LucideIcon
+  /** Item tampil tapi tidak bisa ditap */
+  disabled?: boolean
+}
+
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>
 }
 
 export type AppShellNotification = {
@@ -39,6 +49,7 @@ export type AppShellNotification = {
   body: string
   time: string
   read: boolean
+  kind?: string | null
 }
 
 export type AppShellUser = {
@@ -136,8 +147,8 @@ function NotifCard({
     if (!dragging.current) return
     dragging.current = false
     if (dx < -THRESHOLD) onDelete()
-    setDx(0)
-    startRef.current = null
+    else if (dx > -THRESHOLD) setDx(0)
+    // biarkan dx negatif kecil, click handler yang putuskan
   }
 
   return (
@@ -151,9 +162,10 @@ function NotifCard({
         onPointerMove={onMove}
         onPointerUp={onUp}
         onPointerCancel={onUp}
-        onClick={() => {
-          if (dx === 0) onOpen()
-          else setDx(0)
+        onClick={(e) => {
+          e.preventDefault()
+          if (dx > -40) onOpen()
+          setDx(0)
         }}
         role="button"
         tabIndex={0}
@@ -243,12 +255,70 @@ export default function AppShell({
   const [showProfile, setShowProfile] = useState(false)
   const [showQuick, setShowQuick] = useState(false)
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS)
+  const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null)
+  const [isStandalone, setIsStandalone] = useState(false)
+  const [installHint, setInstallHint] = useState(false)
+  const [installDismissed, setInstallDismissed] = useState(false)
 
   useEffect(() => {
     const stored = loadPrefs()
     setPrefs(stored)
     applyDarkMode(stored.dark)
   }, [])
+
+  // PWA install prompt — hanya tampil kalau browser siap install
+  useEffect(() => {
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as Navigator & { standalone?: boolean }).standalone === true
+    setIsStandalone(standalone)
+    try {
+      setInstallDismissed(localStorage.getItem("sevenbro:install-dismissed") === "1")
+    } catch {}
+
+    const onPrompt = (e: Event) => {
+      e.preventDefault()
+      setInstallEvent(e as BeforeInstallPromptEvent)
+    }
+    const onInstalled = () => {
+      setInstallEvent(null)
+      setIsStandalone(true)
+    }
+    window.addEventListener("beforeinstallprompt", onPrompt)
+    window.addEventListener("appinstalled", onInstalled)
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onPrompt)
+      window.removeEventListener("appinstalled", onInstalled)
+    }
+  }, [])
+
+  // Tombol hanya jika: belum standalone · browser kasih prompt · belum di-dismiss
+  const showInstall = !isStandalone && Boolean(installEvent) && !installDismissed
+
+  const dismissInstall = () => {
+    setInstallDismissed(true)
+    try {
+      localStorage.setItem("sevenbro:install-dismissed", "1")
+    } catch {}
+  }
+
+  const handleInstall = async () => {
+    if (installEvent) {
+      try {
+        await installEvent.prompt()
+        const choice = await installEvent.userChoice
+        if (choice.outcome === "accepted") {
+          setInstallEvent(null)
+          setIsStandalone(true)
+        } else {
+          dismissInstall()
+        }
+      } catch {
+        setInstallHint(true)
+        setTimeout(() => setInstallHint(false), 4000)
+      }
+    }
+  }
 
   const updatePrefs = async (patch: Partial<Prefs>) => {
     const next = await applyPrefsPatch(prefs, patch)
@@ -279,17 +349,43 @@ export default function AppShell({
   }, [showNotif])
 
   return (
-    <div className="min-h-dvh bg-page flex flex-col">
-      {/* Header — tanpa backdrop-blur supaya badge tidak ter-clip */}
-      <header className="sticky top-0 z-40 bg-white border-b border-line">
-        <div className="flex items-center justify-between px-4 h-14">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-forest text-white font-bold text-sm">
-              {brand.title.slice(0, 2)}
+    <div className="h-dvh flex flex-col overflow-hidden bg-page">
+      {/* Header — selalu di atas, tidak ikut scroll */}
+      <header className="shrink-0 sticky top-0 z-40 bg-white border-b border-line">
+          <div className="flex items-center justify-between gap-2 min-w-0 px-4 h-14 overflow-hidden">
+            <div className="flex items-center gap-2.5 min-w-0">
+              {brand.logoSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={brand.logoSrc}
+                  alt={brand.logoAlt || brand.title}
+                  className="h-9 w-9 shrink-0 rounded-xl object-contain"
+                  width={36}
+                  height={36}
+                />
+              ) : (
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-forest text-white font-bold text-sm">
+                  {brand.title.slice(0, 2)}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-[18px] leading-none truncate font-brocklyns brand-title">
+                  {brand.title}
+                </p>
+                <p className="brand-caption truncate">7B Class Management</p>
+              </div>
             </div>
-            <span className="text-sm font-bold text-ink truncate">{brand.title}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
+            {showInstall && (
+              <button
+                type="button"
+                onClick={() => void handleInstall()}
+                className="inline-flex items-center gap-1.5 rounded-full bg-forest text-white text-[11px] font-semibold px-2.5 py-1.5 shadow-sm active:scale-[0.97] transition-transform shrink-0"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Install App
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {
@@ -333,9 +429,18 @@ export default function AppShell({
         </div>
       </header>
 
+      {installHint && (
+        <div className="sticky top-14 z-30 px-4 pt-2">
+          <div className="rounded-xl bg-amber/15 border border-amber/30 px-3 py-2 text-[10px] text-amber-900 leading-snug">
+            Buka menu browser → <span className="font-semibold">Tambahkan ke layar utama</span> /
+            Install app. Di Chrome Android, tombol Install akan muncul otomatis.
+          </div>
+        </div>
+      )}
+
       {/* Notification shade — slide dari atas, palette white-green */}
       <div
-        className={`fixed inset-0 z-50 bg-page flex flex-col transition-transform duration-300 ease-out ${
+        className={`fixed inset-0 z-50 bg-page flex flex-col overflow-hidden transition-transform duration-300 ease-out ${
           showNotif ? "translate-y-0" : "-translate-y-full pointer-events-none"
         }`}
         aria-hidden={!showNotif}
@@ -445,16 +550,28 @@ export default function AppShell({
               </div>
             ) : (
               <div className="px-3 pt-2">
-                <p className="text-[12px] text-ink-soft/55 px-1 pb-2 font-medium">
-                  Sebelumnya
-                </p>
+                <div className="flex items-center justify-between px-1 pb-2">
+                  <p className="text-[12px] text-ink-soft/55 font-medium">Sebelumnya</p>
+                  {onClearAllNotifications && (
+                    <button
+                      type="button"
+                      onClick={onClearAllNotifications}
+                      className="text-[11px] font-semibold text-alert active:opacity-70"
+                    >
+                      Hapus Semua
+                    </button>
+                  )}
+                </div>
                 <ul className="space-y-2">
                   {notifications.map((n) => (
                     <NotifCard
                       key={n.id}
                       n={n}
                       onDelete={() => onNotificationDelete?.(n.id)}
-                      onOpen={() => onNotificationClick?.(n.id)}
+                      onOpen={() => {
+                        onNotificationClick?.(n.id)
+                        setShowNotif(false)
+                      }}
                     />
                   ))}
                 </ul>
@@ -543,10 +660,14 @@ export default function AppShell({
         </>
       )}
 
-      <main className="flex-1 overflow-y-auto pb-2">{children}</main>
+      <main className="flex-1 min-h-0 scroll-y-only pb-2">{children}</main>
 
+      {/* Modal vote mass report — tampil global saat report VOTING */}
+      <MassReportVoteModal />
+
+      {/* Bottom nav — selalu menempel di bawah */}
       <nav
-        className="sticky bottom-0 z-40 bg-white/95 backdrop-blur-xl border-t border-line"
+        className="shrink-0 sticky bottom-0 z-40 bg-white border-t border-line"
         aria-label="Navigasi utama"
       >
         <div
@@ -555,21 +676,35 @@ export default function AppShell({
             gridTemplateColumns: `repeat(${Math.max(nav.items.length, 3)}, minmax(0, 1fr))`,
           }}
         >
-          {nav.items.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              aria-current={isActive(href) ? "page" : undefined}
-              className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-0.5 rounded-xl transition-all ${
-                isActive(href)
-                  ? "bg-forest/15 text-forest"
-                  : "text-ink-soft/75 hover:text-ink-soft"
-              }`}
-            >
-              <Icon className="h-[20px] w-[20px]" />
-              <span className="text-[10px] font-semibold whitespace-nowrap">{label}</span>
-            </Link>
-          ))}
+          {nav.items.map(({ href, label, icon: Icon, disabled }) => {
+            if (disabled) {
+              return (
+                <span
+                  key={label}
+                  aria-disabled="true"
+                  className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-0.5 rounded-xl text-ink-soft/35 opacity-60 select-none"
+                >
+                  <Icon className="h-[20px] w-[20px]" />
+                  <span className="text-[10px] font-semibold whitespace-nowrap">{label}</span>
+                </span>
+              )
+            }
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={isActive(href) ? "page" : undefined}
+                className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-0.5 rounded-xl transition-all ${
+                  isActive(href)
+                    ? "bg-forest/15 text-forest"
+                    : "text-ink-soft/75 hover:text-ink-soft"
+                }`}
+              >
+                <Icon className="h-[20px] w-[20px]" />
+                <span className="text-[10px] font-semibold whitespace-nowrap">{label}</span>
+              </Link>
+            )
+          })}
         </div>
       </nav>
     </div>

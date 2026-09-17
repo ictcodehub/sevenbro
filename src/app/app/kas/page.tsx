@@ -19,13 +19,13 @@ import {
 } from "lucide-react"
 import { SectionHeader, EmptyState } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
-import { formatIDR, formatDateID, formatTimeID } from "@/lib/format"
+import { formatIDR, formatDateID, formatTimeID, formatDisplayName } from "@/lib/format"
 import { Sheet, Field, inputClass } from "@/components/ui/sheet"
-import { canManageKas } from "@/lib/policies"
+import { canManageKas, canViewKas } from "@/lib/policies"
 import { RoleGate } from "@/components/RoleGate"
 
-/** Kas: manage = HOMEROOM & BENDAHARA; KETUA & SEKRETARIS = read-only */
-const PAGE_ROLES = ["HOMEROOM", "BENDAHARA", "KETUA", "SEKRETARIS"]
+/** Kas: manage = HOMEROOM & BENDAHARA; siswa lain read-only */
+const PAGE_ROLES = ["HOMEROOM", "BENDAHARA", "KETUA", "SEKRETARIS", "ANGGOTA"]
 const NOMINAL = 2000
 
 type Tx = {
@@ -141,6 +141,7 @@ function KasInner() {
   const { data: session } = useSession()
   const role = (session?.user as { role?: string } | undefined)?.role
   const canManage = canManageKas(role ?? "")
+  const canView = canViewKas(role ?? "")
 
   const { data, error, mutate } = useAppSWR<Summary>("/api/kas/summary", undefined, {
     refreshInterval: 10000,
@@ -427,9 +428,9 @@ function KasInner() {
         <EmptyState icon={<Inbox className="h-6 w-6" />} message="Gagal memuat kas" />
       ) : (
         <>
-          {/* Saldo + tombol aksi sejajar */}
+          {/* Saldo + tombol aksi sejajar (aksi hanya manage) */}
           <div className="flex items-stretch gap-2">
-            <div className="w-[60%] bg-deep rounded-2xl p-3.5 text-white flex flex-col justify-between">
+            <div className={`bg-deep rounded-2xl p-3.5 text-white flex flex-col justify-between ${canManage ? "w-[60%]" : "w-full"}`}>
               <div>
                 <span className="flex items-center gap-1.5 text-[10px] font-medium text-white/70">
                   <Wallet className="h-3 w-3" />
@@ -493,6 +494,27 @@ function KasInner() {
               </div>
             )}
           </div>
+
+          {/* Status iuran pribadi — read-only viewer */}
+          {!canManage && canView && (
+            <div className="bg-white border border-line shadow-sm rounded-xl p-3 flex items-center justify-between gap-2">
+              <div>
+                <p className="text-[10px] text-ink-soft/70">Iuran saya bulan ini</p>
+                <p className="mt-0.5 text-[13px] font-bold text-forest tabular-nums">
+                  {data?.myPaid != null && data.myPaid > 0
+                    ? formatIDR(data.myPaid)
+                    : "Belum tercatat"}
+                </p>
+              </div>
+              {data?.month && (
+                <p className="text-[9px] text-ink-soft/55 text-right shrink-0">
+                  {data.month.title}
+                  <br />
+                  {formatIDR(data.month.amount)}/orang
+                </p>
+              )}
+            </div>
+          )}
 
           {canManage && (
             <div className="bg-white border border-line shadow-sm rounded-2xl overflow-hidden">
@@ -610,7 +632,7 @@ function KasInner() {
                                     : "text-ink"
                               }`}
                             >
-                              {s.full_name}
+                              {formatDisplayName(s.full_name)}
                             </p>
                             {(() => {
                               if (!tunggak) return null
@@ -814,7 +836,7 @@ function KasInner() {
               const badge = t && t.tunggak > 0 ? ` — tunggak ${formatIDR(t.tunggak)}` : ""
               return (
                 <option key={s.id} value={s.id}>
-                  {s.full_name}
+                  {formatDisplayName(s.full_name)}
                   {badge}
                 </option>
               )
@@ -840,7 +862,7 @@ function KasInner() {
               }`}
             >
               <p className="text-[11px] font-semibold text-ink mb-1.5">
-                {t.name}
+                {formatDisplayName(t.name)}
               </p>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div>

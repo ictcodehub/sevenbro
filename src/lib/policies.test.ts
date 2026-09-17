@@ -6,7 +6,14 @@ import {
   canManageAgenda,
   canManageKas,
   canPostAnnouncement,
+  canProposeRoster,
   canUseApp,
+  canViewKas,
+  canViewRoster,
+  canManageRoster,
+  canCreateMassReport,
+  canVoteMassReport,
+  canReviewMassReport,
 } from "./policies"
 
 // Semua role yang ada di sistem Seven Bro!
@@ -22,19 +29,33 @@ const ALL_ROLES = [
 type Role = (typeof ALL_ROLES)[number]
 
 const EXPECTED: Record<string, Role[]> = {
-  canPostAnnouncement: ["HOMEROOM", "KETUA"],
+  canPostAnnouncement: ["HOMEROOM", "KETUA", "SEKRETARIS"],
   canManageAgenda: ["HOMEROOM", "KETUA", "SEKRETARIS"],
   canManageKas: ["HOMEROOM", "BENDAHARA"],
+  canViewKas: ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"],
   canGivePoints: ["HOMEROOM", "TEACHER"],
   canAdmin: ["HOMEROOM"],
+  canViewRoster: ["HOMEROOM", "KETUA"],
+  canManageRoster: ["HOMEROOM"],
+  canProposeRoster: ["KETUA"],
+  canCreateMassReport: ["KETUA"],
+  canVoteMassReport: ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"],
+  canReviewMassReport: ["HOMEROOM"],
 }
 
 const FNS: Record<string, (role: string) => boolean> = {
   canPostAnnouncement,
   canManageAgenda,
   canManageKas,
+  canViewKas,
   canGivePoints,
   canAdmin,
+  canViewRoster,
+  canManageRoster,
+  canProposeRoster,
+  canCreateMassReport,
+  canVoteMassReport,
+  canReviewMassReport,
 }
 
 describe("policies", () => {
@@ -67,6 +88,7 @@ describe("policies", () => {
     expect(canPostAnnouncement("TEACHER")).toBe(false)
     expect(canManageAgenda("")).toBe(false)
     expect(canManageKas("ADMIN")).toBe(false)
+    expect(canViewKas("TEACHER")).toBe(false)
     expect(canGivePoints("KETUA")).toBe(false)
     expect(canAdmin("KETUA")).toBe(false)
   })

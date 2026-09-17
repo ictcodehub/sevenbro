@@ -55,6 +55,39 @@
 - Pertahankan istilah produk yang sudah pas: Leaderboard, Battle Log, Kejar Podium, Scan Mode
 - Ganti slang: Kasih Poin → Beri Poin, kamu → Anda, utang → tunggak, dll.
 
+### Role-Based UI (Pengurus)
+- Homeroom = super admin (union semua policy manage + admin)
+- Menu siswa: Beranda · Kas · Poin — **Info & Agenda disabled untuk murid** (hanya Homeroom aktif)
+- Bendahara: manage Kas penuh (setoran, bayar khusus, pengeluaran, izin, Buku Kas)
+- Ketua & Sekretaris: manage Info + Agenda **saat fitur dibuka lagi**
+- Anggota & pengurus non-manage: Kas/Buku Kas read-only + status iuran pribadi
+- Label role Title Case Indonesia di profil (`formatRoleLabel`)
+- SSOT: `docs/ROLE_UI.md`
+
+### Roster Approval (Ketua → Homeroom)
+- Ketua: lihat roster + usul tambah/edit/hapus/posisi (tidak langsung mutasi)
+- Homeroom: approve/reject usulan di halaman Roster
+- Tabel `roster_proposals` (migration 005)
+- API: `/api/admin/roster-proposals` GET/POST + `[id]` POST decision
+
+### Point System (draft → eksekusi bertahap)
+- SSOT: `docs/POINT_SYSTEM.md`
+- Preset alasan di form Beri Poin (Prestasi / Pelanggaran)
+- Auto +1 “Bayar Uang Kas” saat setoran (maks 1×/siswa/hari)
+- Open: piket, Mass Report, auto −1 kas mingguan
+
+### Notifikasi Server
+- Tabel `notifications` (migration 006) — audience HOMEROOM / email
+- Homeroom dapat notif: usulan roster, Info/Agenda baru dari pengurus, setoran & transaksi kas
+- Ketua dapat notif saat usulan disetujui/ditolak
+- Shade + riwayat pakai `/api/notifications` (bukan demo data)
+
+### Cache & Nama
+- `formatDisplayName` — FULL CAPS → Title Case (display UI semua nama orang)
+- SWR localStorage cache (`sevenbro:swr-cache`) — buka halaman: cache dulu, revalidate
+- PWA runtime caching: static assets + pages + `/api/*` NetworkFirst
+- Logout bersihkan cache SWR + `api-data`
+
 ## Desain
 - SSOT: `docs/DESIGN_SYSTEM.md`, `docs/ROLE_UI.md`
 - Token: page mint, card putih, forest/lime/amber

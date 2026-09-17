@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { resolveEffectiveRole } from "./roles"
+import { resolveEffectiveRole, formatRoleLabel } from "./roles"
 
 describe("resolveEffectiveRole", () => {
   it("HOMEROOM tetap HOMEROOM walau ada di students", () => {
@@ -52,5 +52,23 @@ describe("resolveEffectiveRole", () => {
 
   it("case-sensitive: ketua huruf kecil tidak diizinkan", () => {
     expect(resolveEffectiveRole("STUDENT", "ketua")).toBe("PENDING")
+  })
+})
+
+describe("formatRoleLabel", () => {
+  it("memetakan kode role ke label Title Case Indonesia", () => {
+    expect(formatRoleLabel("HOMEROOM")).toBe("Wali Kelas")
+    expect(formatRoleLabel("TEACHER")).toBe("Guru")
+    expect(formatRoleLabel("KETUA")).toBe("Ketua")
+    expect(formatRoleLabel("BENDAHARA")).toBe("Bendahara")
+    expect(formatRoleLabel("SEKRETARIS")).toBe("Sekretaris")
+    expect(formatRoleLabel("ANGGOTA")).toBe("Anggota")
+    expect(formatRoleLabel("PENDING")).toBe("Menunggu")
+  })
+
+  it("fallback Siswa untuk role kosong / tak dikenal", () => {
+    expect(formatRoleLabel(null)).toBe("Siswa")
+    expect(formatRoleLabel(undefined)).toBe("Siswa")
+    expect(formatRoleLabel("ADMIN")).toBe("Siswa")
   })
 })

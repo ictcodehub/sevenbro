@@ -12,10 +12,10 @@ import {
   Users,
   Shield,
   QrCode,
+  Flag,
 } from "lucide-react"
 import AppShell from "@/components/AppShell"
 import type { AppShellNotification } from "@/components/AppShell"
-import { NOTIFICATIONS } from "@/lib/demo-data"
 import {
   DELETED_KEY,
   NOTIF_EVENT,
@@ -23,6 +23,10 @@ import {
   loadIdSet,
   saveIdSet,
 } from "@/lib/notifications-store"
+import { formatRoleLabel } from "@/lib/roles"
+import { formatDisplayName } from "@/lib/format"
+import { clearSwrCache } from "@/lib/swr-store"
+import { pathForNotification } from "@/lib/notif-nav"
 
 function loadRead(): Set<string> {
   return loadIdSet(READ_KEY)
@@ -40,16 +44,53 @@ function saveDeleted(ids: string[]) {
   saveIdSet(DELETED_KEY, ids)
 }
 
+function timeAgo(iso: string): string {
+  const t = new Date(iso).getTime()
+  if (!Number.isFinite(t)) return ""
+  const diff = Math.max(0, Date.now() - t)
+  const m = Math.floor(diff / 60000)
+  if (m < 1) return "Baru saja"
+  if (m < 60) return `${m} menit lalu`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h} jam lalu`
+  const d = Math.floor(h / 24)
+  if (d < 7) return `${d} hari lalu`
+  return new Date(t).toLocaleDateString("id-ID", { day: "numeric", month: "short" })
+}
+
+type ApiNotif = {
+  id: string
+  title: string
+  body: string
+  kind: string | null
+  actor: string | null
+  created_at: string
+}
+
 // Mapping role -> nav items
+// Siswa aktif (termasuk ANGGOTA) dapat Kas + Poin; manage beda di dalam halaman
+// Info & Agenda: aktif hanya HOMEROOM; murid lihat disabled sampai dibuka lagi
+const STUDENT_NAV_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
+
 function getNavItems(role?: string) {
+  const isHomeroom = role === "HOMEROOM"
   const base = [
     { href: "/app", label: "Beranda", icon: Home },
-    { href: "/app/pengumuman", label: "Info", icon: Megaphone },
-    { href: "/app/agenda", label: "Agenda", icon: CalendarDays },
+    {
+      href: "/app/pengumuman",
+      label: "Info",
+      icon: Megaphone,
+      disabled: !isHomeroom,
+    },
+    {
+      href: "/app/agenda",
+      label: "Agenda",
+      icon: CalendarDays,
+      disabled: !isHomeroom,
+    },
   ]
 
-  if (role === "HOMEROOM" || role === "KETUA" || role === "SEKRETARIS" || role === "BENDAHARA") {
-    // Kas: semua pengurus (manage = Homeroom/Bendahara; lain = read-only)
+  if (role && STUDENT_NAV_ROLES.includes(role)) {
     return [
       ...base,
       { href: "/app/kas", label: "Kas", icon: Wallet },
@@ -58,11 +99,10 @@ function getNavItems(role?: string) {
   }
 
   if (role === "TEACHER") {
-    // Guru non-homeroom: hanya antarmuka beri poin
     return [{ href: "/app/scan", label: "Beri Poin", icon: QrCode }]
   }
 
-  return base
+  return base.map((item) => ({ ...item, disabled: true as const }))
 }
 
 function getAdminItems(role?: string) {
@@ -72,6 +112,12 @@ function getAdminItems(role?: string) {
       { href: "/app/admin/settings", label: "Pengaturan Kelas", icon: Shield },
     ]
   }
+  if (role === "KETUA") {
+    return [
+      { href: "/app/admin/roster", label: "Roster", icon: Users },
+      { href: "/app/report/new", label: "Buat Report", icon: Flag },
+    ]
+  }
   return []
 }
 
@@ -79,7 +125,7 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const { data: session } = useSession()
-  const [notifs, setNotifs] = useState<AppShellNotification[]>(NOTIFICATIONS)
+  const [notifs, setNotifs] = useState<AppShellNotification[]>([])
   const [readIds, setReadIds] = useState<Set<string>>(() => new Set())
   const [deletedIds, setDeletedIds] = useState<Set<string>>(() => new Set())
 
@@ -97,6 +143,38 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  // Muat notifikasi server (aksi pengurus → Homeroom, dll.)
+  useEffect(() => {
+    let cancelled = false
+    const loadNotifs = async () => {
+      try {
+        const r = await fetch("/api/notifications", { headers: { Accept: "application/json" } })
+        if (!r.ok) return
+        const rows = (await r.json()) as ApiNotif[]
+        if (cancelled || !Array.isArray(rows)) return
+        setNotifs(
+          rows.map((n) => ({
+            id: n.id,
+            title: n.title,
+            body: n.body,
+            kind: n.kind,
+            time: timeAgo(n.created_at),
+            read: false,
+          })),
+        )
+      } catch {
+        /* offline / belum login */
+      }
+    }
+    void loadNotifs()
+    const onFocus = () => void loadNotifs()
+    window.addEventListener("focus", onFocus)
+    return () => {
+      cancelled = true
+      window.removeEventListener("focus", onFocus)
+    }
+  }, [session?.user?.email, (session?.user as { role?: string } | undefined)?.role])
+
   const withRead: AppShellNotification[] = notifs
     .filter((n) => !deletedIds.has(n.id))
     .map((n) => ({
@@ -104,12 +182,23 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
       read: n.read || readIds.has(n.id),
     }))
 
-  const markRead = (id: string) => {
-    setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
-    const next = new Set(readIds)
-    next.add(id)
-    setReadIds(next)
-    saveRead([...next])
+  const openNotif = (id: string) => {
+    const n = notifs.find((x) => x.id === id)
+    // Hapus dari shade (hilang permanen dari tampilan aktif)
+    setDeletedIds((prev) => {
+      const next = new Set(prev)
+      next.add(id)
+      saveDeleted([...next])
+      return next
+    })
+    setNotifs((prev) => prev.filter((x) => x.id !== id))
+
+    const to = pathForNotification(n?.kind, n?.title, n?.body)
+    if (role === "TEACHER") {
+      router.replace("/app/scan")
+      return
+    }
+    router.push(to)
   }
 
   const deleteNotif = (id: string) => {
@@ -131,7 +220,7 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
   }
 
   const role = (session?.user as { role?: string } | undefined)?.role
-  const name = session?.user?.name || "Guru"
+  const name = formatDisplayName(session?.user?.name) || "Guru"
   const navItems = getNavItems(role)
   const adminItems = getAdminItems(role)
 
@@ -146,18 +235,19 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
     <AppShell
       brand={{
         logoSrc: "/brand-logo.png",
-        logoAlt: "Seven Bro!",
-        title: "Seven Bro!",
+        logoAlt: "Seven Bro",
+        title: "Seven Bro",
       }}
       nav={{ items: navItems }}
       notifications={withRead}
-      onNotificationClick={markRead}
+      onNotificationClick={openNotif}
       onNotificationDelete={deleteNotif}
       onClearAllNotifications={clearAllNotifs}
-      user={{ name, role }}
+      user={{ name, role: formatRoleLabel(role) }}
       onSettings={() => router.push("/app/settings")}
       onViewHistory={() => router.push("/app/notifications")}
       onSignOut={() => {
+        clearSwrCache()
         void signOut({ callbackUrl: "/login" })
       }}
       adminItems={adminItems}

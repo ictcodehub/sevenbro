@@ -9,11 +9,14 @@ export function Sheet({
   onClose,
   title,
   children,
+  fullHeight = false,
 }: {
   open: boolean
   onClose: () => void
   title: string
   children: ReactNode
+  /** Isi modal tinggi full viewport — tanpa lewat layar */
+  fullHeight?: boolean
 }) {
   useEffect(() => {
     if (!open) return
@@ -39,23 +42,28 @@ export function Sheet({
         aria-modal="true"
         aria-label={title}
         className={cn(
-          "relative w-full max-w-lg bg-white border border-line rounded-t-2xl sm:rounded-2xl",
-          "max-h-[85dvh] overflow-y-auto p-4 space-y-3 shadow-lg",
-          "animate-in",
+          "relative w-full max-w-lg min-w-0 flex flex-col",
+          fullHeight
+            ? "max-h-[100dvh] sm:max-h-[92dvh]"
+            : "max-h-[85dvh]",
+          "bg-white border border-line rounded-t-2xl sm:rounded-2xl shadow-lg",
+          "overflow-hidden",
         )}
       >
-        <div className="flex items-center justify-between -mt-1">
-          <h2 className="text-sm font-bold text-ink">{title}</h2>
+        <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 border-b border-line shrink-0">
+          <h2 className="text-sm font-medium text-ink min-w-0 truncate">{title}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Tutup"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-soft hover:bg-surface"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-soft hover:bg-surface"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
-        {children}
+        <div className="flex-1 min-h-0 scroll-y-only px-4 py-4">
+          <div className="space-y-3 min-w-0">{children}</div>
+        </div>
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { errorResponse } from "@/lib/api-http"
-import { canAdmin, canGivePoints } from "@/lib/policies"
+import { canAdmin, canGivePoints, canManageKas, canViewKas, canViewRoster } from "@/lib/policies"
 import { requireApi } from "@/lib/session"
 import { ensureContextReader } from "@/lib/server-context"
 import { createAdminClient } from "@/lib/db"
@@ -10,11 +10,25 @@ export const dynamic = "force-dynamic"
 export async function GET() {
   ensureContextReader()
   try {
-    // List siswa: homeroom (roster) + teacher/homeroom (kasih poin di /scan)
-    const ctx = await requireApi((role: string) => canAdmin(role) || canGivePoints(role))
+    // Roster: admin/roster · teacher (beri poin) · bendahara (setoran/buku) · viewer kas · ketua (roster)
+    const ctx = await requireApi(
+      (role: string) =>
+        canAdmin(role) ||
+        canGivePoints(role) ||
+        canManageKas(role) ||
+        canViewKas(role) ||
+        canViewRoster(role),
+    )
+    const isAdmin = canAdmin(ctx.role)
+    const isRosterViewer = canViewRoster(ctx.role)
+    const columns = isAdmin
+      ? "id, full_name, email, nis, position, active, created_at"
+      : isRosterViewer
+        ? "id, full_name, email, nis, position, active"
+        : "id, full_name, position, active"
     const { data, error } = await createAdminClient()
       .from("students")
-      .select("id, full_name, email, nis, position, active, created_at")
+      .select(columns)
       .eq("class_id", ctx.classId ?? "")
       .order("full_name", { ascending: true })
     if (error) throw new Error(error.message)

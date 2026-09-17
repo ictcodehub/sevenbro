@@ -16,6 +16,9 @@ import { useAppSWR } from "@/lib/fetcher"
 import { Sheet, Field, inputClass } from "@/components/ui/sheet"
 import { canGivePoints } from "@/lib/policies"
 import { RoleGate } from "@/components/RoleGate"
+import { formatDisplayName } from "@/lib/format"
+import { formatRoleLabel } from "@/lib/roles"
+import { clearSwrCache } from "@/lib/swr-store"
 
 type LeaderRow = {
   student_id: string
@@ -125,7 +128,7 @@ function ScanInner() {
           </p>
           <h1 className="text-lg font-bold text-ink">Beri Poin</h1>
           <p className="text-[11px] text-ink-soft/75">
-            {session?.user?.name} · {role}
+            {formatDisplayName(session?.user?.name)} · {formatRoleLabel(role)}
           </p>
         </div>
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest/10 text-forest">
@@ -154,7 +157,7 @@ function ScanInner() {
           <option value="">Pilih siswa…</option>
           {(students ?? []).map((s) => (
             <option key={s.id} value={s.id}>
-              {s.full_name}
+              {formatDisplayName(s.full_name)}
               {s.position !== "ANGGOTA" ? ` (${s.position})` : ""}
             </option>
           ))}
@@ -253,7 +256,10 @@ function ScanInner() {
 
       <button
         type="button"
-        onClick={() => void signOut({ callbackUrl: "/login" })}
+        onClick={() => {
+          clearSwrCache()
+          void signOut({ callbackUrl: "/login" })
+        }}
         className="w-full text-[11px] font-semibold text-ink-soft py-2"
       >
         Keluar

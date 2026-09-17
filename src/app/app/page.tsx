@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useSession } from "next-auth/react"
 import {
   CalendarDays,
   Megaphone,
@@ -9,17 +10,15 @@ import {
   Trophy,
   Wallet,
   ArrowRight,
-  Zap,
   Crown,
   Award,
 } from "lucide-react"
 import {
   SectionHeader,
-  StatCard,
   ListRow,
 } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
-import { formatIDR, formatDateID, formatTimeID } from "@/lib/format"
+import { formatIDR, formatDateID, formatTimeID, formatDisplayName } from "@/lib/format"
 import { RoleGate } from "@/components/RoleGate"
 
 type Announcement = {
@@ -40,6 +39,19 @@ type EventRow = {
 type Summary = {
   balance: number
   recent: unknown[]
+  month: { title: string; amount: number } | null
+  paidCount: number
+  totalCount: number
+  monthIn: number
+  monthOut: number
+  lastActivity: {
+    kind: string
+    at: string
+    by: string
+    label: string
+    amount: number
+    direction?: "IN" | "OUT"
+  } | null
 }
 
 type PointsPayload = {
@@ -70,10 +82,14 @@ const MEDAL = [
   },
 ] as const
 
-function shortName(full: string) {
-  const parts = full.trim().split(/\s+/)
-  if (parts.length <= 2) return full
-  return `${parts[0]} ${parts[parts.length - 1]}`
+function firstName(full: string) {
+  const w = full.trim().split(/\s+/)
+  return w[0] || full
+}
+
+/** Nama utuh di kartu — jangan potong nama tengah (mis. Li Ming Xin) */
+function personName(full: string) {
+  return formatDisplayName(full)
 }
 
 const HOME_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
@@ -87,8 +103,15 @@ export default function HomePage() {
 }
 
 function HomeInner() {
-  const { data: announcements } = useAppSWR<Announcement[]>("/api/announcements")
-  const { data: events } = useAppSWR<EventRow[]>("/api/events")
+  const { data: session } = useSession()
+  const role = (session?.user as { role?: string } | undefined)?.role
+  const isHomeroom = role === "HOMEROOM"
+  const displayName = firstName(formatDisplayName(session?.user?.name) || "Kelas")
+  // Info & Agenda: hanya Homeroom (menu dinonaktifkan untuk murid)
+  const { data: announcements } = useAppSWR<Announcement[]>(
+    isHomeroom ? "/api/announcements" : null,
+  )
+  const { data: events } = useAppSWR<EventRow[]>(isHomeroom ? "/api/events" : null)
   const { data: kas } = useAppSWR<Summary>("/api/kas/summary")
   const { data: points } = useAppSWR<PointsPayload>("/api/points")
 
@@ -96,18 +119,17 @@ function HomeInner() {
     (announcements ?? []).find((a) => a.pinned) ?? (announcements ?? [])[0]
   const upcoming = (events ?? []).slice(0, 3)
   const top3 = (points?.leaderboard ?? []).slice(0, 3)
-  const totalPoin = (points?.leaderboard ?? []).reduce(
-    (s, p) => s + (p.total_points || 0),
-    0,
-  )
   const totalSiswa = points?.leaderboard?.length ?? 0
+  // Mati kalau top skor masih seri
+  const podiumMuted =
+    top3.length >= 2 && top3.every((p) => p.total_points === top3[0]!.total_points)
 
   return (
     <div className="px-4 py-3 space-y-3">
       {/* ── Sapaan ── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold text-ink">Kelas 7B</h1>
+          <h1 className="text-lg font-bold text-ink">Halo {displayName}</h1>
           <p className="text-[11px] text-ink-soft/75">
             Ringkasan informasi & aktivitas kelas
           </p>
@@ -117,8 +139,8 @@ function HomeInner() {
         </span>
       </div>
 
-      {/* ── 1. Disematkan — paling atas ── */}
-      {pinned ? (
+      {/* ── Disematkan — hanya Homeroom (Info dinonaktifkan untuk murid) ── */}
+      {isHomeroom && pinned ? (
         <Link
           href="/app/pengumuman"
           className="block active:scale-[0.99] transition-transform"
@@ -155,47 +177,48 @@ function HomeInner() {
         </div>
       )}
 
-      {/* ── 2. Tiga kartu inline: Info · Agenda · Poin ── */}
-      <div className="grid grid-cols-3 gap-2">
-        <StatCard
-          href="/app/pengumuman"
-          icon={<Megaphone className="h-5 w-5" />}
-          label="Info"
-          value={`${announcements?.length ?? 0} baru`}
-          tone="forest"
-        />
-        <StatCard
-          href="/app/agenda"
-          icon={<CalendarDays className="h-5 w-5" />}
-          label="Agenda"
-          value={`${events?.length ?? 0} kegiatan`}
-          tone="amber"
-        />
-        <StatCard
-          href="/app/poin"
-          icon={<Trophy className="h-5 w-5" />}
-          label="Poin"
-          value={`${totalPoin} total`}
-          tone="lime"
-        />
-      </div>
+      {/* ── Saldo Kas Kelas ── */}
+      <Link href="/app/kas" className="block active:scale-[0.99] transition-transform">
+        <div className="bg-deep rounded-2xl p-4 text-white">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="flex items-center gap-1.5 text-[10px] font-medium text-white/70">
+              <Wallet className="h-3 w-3" />
+              Saldo Kas Kelas
+            </span>
+            <span className="text-[10px] text-acid">Lihat kas</span>
+          </div>
+          <p className="text-2xl font-bold leading-none text-acid">
+            {formatIDR(kas?.balance ?? 0)}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <span className="inline-flex items-center gap-1 rounded-full bg-lime/15 border border-lime/30 px-2 py-0.5 text-[9px] font-semibold text-lime">
+              + {formatIDR(kas?.monthIn ?? 0)} Masuk
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber/15 border border-amber/30 px-2 py-0.5 text-[9px] font-semibold text-amber">
+              − {formatIDR(kas?.monthOut ?? 0)} Keluar
+            </span>
+          </div>
+        </div>
+      </Link>
 
-      {/* ── 3. Podium Top 3 — piala & bintang ── */}
+      {/* ── Podium Top 3 — piala & bintang ── */}
       <Link href="/app/poin" className="block active:scale-[0.99] transition-transform">
         <div className="bg-white border border-line shadow-sm rounded-2xl p-3.5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber/15">
-                <Trophy className="h-3.5 w-3.5 text-amber" />
+              <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${podiumMuted ? "bg-surface" : "bg-amber/15"}`}>
+                <Trophy className={`h-3.5 w-3.5 ${podiumMuted ? "text-ink-soft/50" : "text-amber"}`} />
               </div>
               <div>
                 <h2 className="text-xs font-semibold text-ink">Peringkat Poin</h2>
-                <p className="text-[9px] text-ink-soft/60">Top 3 kelas 7B</p>
+                <p className="text-[9px] text-ink-soft/60">
+                  {podiumMuted ? "Belum ada selisih poin" : "Top 3 kelas 7B"}
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-0.5 text-amber">
-              <Star className="h-3 w-3 fill-amber" />
-              <Star className="h-3 w-3 fill-amber" />
+            <div className={`flex items-center gap-0.5 ${podiumMuted ? "text-ink-soft/30" : "text-amber"}`}>
+              <Star className={`h-3 w-3 ${podiumMuted ? "" : "fill-amber"}`} />
+              <Star className={`h-3 w-3 ${podiumMuted ? "" : "fill-amber"}`} />
               <Star className="h-3 w-3" />
             </div>
           </div>
@@ -204,6 +227,13 @@ function HomeInner() {
             <p className="text-[10px] text-ink-soft/60 py-2 text-center">
               Belum ada poin
             </p>
+          ) : podiumMuted ? (
+            <div className="rounded-xl border border-dashed border-line bg-surface/40 px-3 py-4 text-center">
+              <p className="text-[12px] font-bold text-ink-soft/60">—  ·  —  ·  —</p>
+              <p className="text-[9px] text-ink-soft/55 mt-1.5">
+                Belum ada selisih poin
+              </p>
+            </div>
           ) : (
             <div className="space-y-2">
               {/* Juara 1 dulu — lebih menonjol */}
@@ -220,7 +250,7 @@ function HomeInner() {
                       <div className="flex items-center gap-1">
                         <Crown className="h-3 w-3 text-amber shrink-0" />
                         <p className="text-[12px] font-bold text-ink truncate">
-                          {shortName(p.full_name)}
+                          {personName(p.full_name)}
                         </p>
                       </div>
                       <p className="text-[9px] text-ink-soft/70">{m.label} · {m.note}</p>
@@ -253,7 +283,7 @@ function HomeInner() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-[11px] font-semibold text-ink truncate">
-                          {shortName(p.full_name)}
+                          {personName(p.full_name)}
                         </p>
                         <p className="text-[9px] text-ink-soft/60">{m.label}</p>
                       </div>
@@ -275,35 +305,14 @@ function HomeInner() {
         </div>
       </Link>
 
-      {/* ── 4. Saldo Kas (tetap) ── */}
-      <Link href="/app/kas" className="block active:scale-[0.99] transition-transform">
-        <div className="bg-deep rounded-2xl p-4 text-white">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="flex items-center gap-1.5 text-[10px] font-medium text-white/70">
-              <Wallet className="h-3 w-3" />
-              Saldo Kas Kelas
-            </span>
-            <span className="text-[10px] text-acid">Lihat kas</span>
-          </div>
-          <p className="text-2xl font-bold leading-none text-acid">
-            {formatIDR(kas?.balance ?? 0)}
-          </p>
-          <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between">
-            <span className="text-[10px] text-white/45">
-              {kas?.recent?.length ?? 0} transaksi
-            </span>
-            <Zap className="h-4 w-4 text-acid/50" />
-          </div>
-        </div>
-      </Link>
-
-      {/* ── 5. Agenda (tetap bentuknya) ── */}
-      <div>
-        <SectionHeader
-          title="Agenda Terdekat"
-          count={events?.length ?? 0}
-          action={{ href: "/app/agenda", label: "Semua" }}
-        />
+      {/* ── Agenda — hanya Homeroom (menu dinonaktifkan untuk murid) ── */}
+      {isHomeroom && (
+        <div>
+          <SectionHeader
+            title="Agenda Terdekat"
+            count={events?.length ?? 0}
+            action={{ href: "/app/agenda", label: "Semua" }}
+          />
         <div className="space-y-1.5">
           {upcoming.map((e) => (
             <ListRow
@@ -322,7 +331,8 @@ function HomeInner() {
             </div>
           )}
         </div>
-      </div>
+        </div>
+      )}
 
       <div className="h-2" />
     </div>

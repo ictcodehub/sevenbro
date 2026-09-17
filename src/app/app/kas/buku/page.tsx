@@ -18,7 +18,7 @@ import {
 } from "lucide-react"
 import { EmptyState } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
-import { formatIDR, formatDateID, formatTimeID } from "@/lib/format"
+import { formatIDR, formatDateID, formatTimeID, formatDisplayName } from "@/lib/format"
 import { RoleGate } from "@/components/RoleGate"
 
 type Tx = {
@@ -34,7 +34,8 @@ type Tx = {
 
 type LedgerRow = Tx & { saldo: number }
 
-const PAGE_ROLES = ["HOMEROOM", "BENDAHARA"]
+/** Buku Kas: manage view tetap untuk semua yang boleh lihat kas (read-only) */
+const PAGE_ROLES = ["HOMEROOM", "BENDAHARA", "KETUA", "SEKRETARIS", "ANGGOTA"]
 
 function sortKey(t: Tx) {
   const time = (t.created_at.split("T")[1] ?? "00:00:00").slice(0, 8)
@@ -418,7 +419,7 @@ function BukuKasInner() {
         .at(-1)
       return {
         id: s.id,
-        name: s.full_name,
+        name: formatDisplayName(s.full_name),
         position: s.position,
         times: pays.length,
         total,
@@ -427,11 +428,19 @@ function BukuKasInner() {
     }).sort((a, b) => a.times - b.times || a.name.localeCompare(b.name))
   }, [rows, students, periodFrom])
 
-  // Matriks: siswa × minggu aktual bulan berjalan (Sen–Min)
+  // Filter tanggal → per BUKAN (bukan per hari saja)
+  const dateMonth = date ? date.slice(0, 7) : ""
+
+  // Matriks: siswa × minggu bulan terpilih (filter tanggal) atau bulan berjalan
   const matriks = useMemo(() => {
     const now = new Date()
-    const y = now.getFullYear()
-    const m = now.getMonth()
+    let y = now.getFullYear()
+    let m = now.getMonth()
+    if (dateMonth) {
+      const [sy, sm] = dateMonth.split("-")
+      y = Number(sy)
+      m = Number(sm) - 1
+    }
     const daysInMonth = new Date(y, m + 1, 0).getDate()
 
     // Potong minggu Senin–Minggu yang menyentuh bulan ini
@@ -464,14 +473,14 @@ function BukuKasInner() {
           return match && t.occurred_on >= from && t.occurred_on <= to
         }).length
       })
-      return { id: s.id, name: s.full_name, perWeek }
+      return { id: s.id, name: formatDisplayName(s.full_name), perWeek }
     })
     return {
       weeks,
       rows: rowsOut,
       monthLabel: `${MONTHS_ID[m]} ${y}`,
     }
-  }, [rows, students])
+  }, [rows, students, dateMonth])
 
   const allWithSaldo: LedgerRow[] = useMemo(() => {
     const sorted = [...(rows ?? [])].sort((a, b) => sortKey(a).localeCompare(sortKey(b)))
@@ -481,9 +490,6 @@ function BukuKasInner() {
       return { ...t, saldo: run }
     })
   }, [rows])
-
-  // Filter tanggal → per BUKAN (bukan per hari saja)
-  const dateMonth = date ? date.slice(0, 7) : ""
 
   const display = useMemo(
     () =>

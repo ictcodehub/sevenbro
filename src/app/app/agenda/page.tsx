@@ -26,7 +26,8 @@ type EventRow = {
   starts_at: string
 }
 
-const PAGE_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
+// Sementara: hanya Homeroom — menu Agenda dinonaktifkan untuk murid
+const PAGE_ROLES = ["HOMEROOM"]
 
 function dayKey(d: Date) {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`

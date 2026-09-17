@@ -4,6 +4,8 @@ import { canManageKas } from "@/lib/policies"
 import { requireApi } from "@/lib/session"
 import { ensureContextReader } from "@/lib/server-context"
 import { createAdminClient } from "@/lib/db"
+import { notifyHomeroom } from "@/lib/notify"
+import { formatDisplayName, formatIDR } from "@/lib/format"
 
 export const dynamic = "force-dynamic"
 
@@ -59,12 +61,45 @@ export async function POST(req: Request) {
 
     if (error) throw new Error(error.message)
 
+    // Auto +1 poin “Bayar Uang Kas” (docs/POINT_SYSTEM.md A1) — max 1× per siswa per hari
+    const paidIds = (students ?? []).map((s) => s.id)
+    const { data: already } = await db
+      .from("points")
+      .select("student_id, created_at")
+      .in("student_id", paidIds)
+      .eq("reason", "Bayar Uang Kas")
+    const todayStart = new Date(today + "T00:00:00Z").toISOString()
+    const gotToday = new Set(
+      (already ?? [])
+        .filter((p) => p.created_at >= todayStart)
+        .map((p) => p.student_id),
+    )
+    const toPoint = (students ?? []).filter((s) => !gotToday.has(s.id))
+    if (toPoint.length > 0) {
+      const { error: pErr } = await db.from("points").insert(
+        toPoint.map((s) => ({
+          student_id: s.id,
+          kind: "PRESTASI",
+          delta: 1,
+          reason: "Bayar Uang Kas",
+          created_by: "system@mutiarabangsa.sch.id",
+        })),
+      )
+      if (pErr) console.warn("kas points:", pErr.message)
+    }
+
     const total = amountPer * rows.length
+    await notifyHomeroom(ctx, {
+      title: "Setoran kas dicatat",
+      body: `${formatDisplayName(ctx.name) || "Bendahara"} mencatat setoran ${rows.length} siswa · ${formatIDR(total)}${toPoint.length > 0 ? ` · +1 poin ${toPoint.length} siswa` : ""}.`,
+      kind: "kas",
+    })
     return NextResponse.json(
       {
         ok: rows.length,
         total,
         amountPer,
+        pointsAwarded: toPoint.length,
         message: `${rows.length} siswa · ${total.toLocaleString("id-ID")} tercatat`,
       },
       { status: 201 },

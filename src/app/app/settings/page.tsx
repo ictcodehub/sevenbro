@@ -21,6 +21,9 @@ import {
   showBrowserNotification,
   type Prefs,
 } from "@/lib/prefs"
+import { formatDisplayName } from "@/lib/format"
+import { formatRoleLabel } from "@/lib/roles"
+import { clearSwrCache } from "@/lib/swr-store"
 
 function Toggle({
   label,
@@ -99,11 +102,11 @@ export default function SettingsPage() {
       {session?.user && (
         <div className="bg-white border border-line shadow-sm rounded-2xl p-3.5">
           <p className="text-[11px] font-semibold text-ink truncate">
-            {session.user.name}
+            {formatDisplayName(session.user.name)}
           </p>
           <p className="text-[10px] text-ink-soft/75 truncate">{session.user.email}</p>
           <p className="mt-1 inline-flex items-center bg-forest/10 text-forest text-[9px] font-bold px-2 py-0.5 rounded-full">
-            {(session.user as { role?: string }).role ?? "PENDING"}
+            {formatRoleLabel((session.user as { role?: string }).role)}
           </p>
         </div>
       )}
@@ -178,6 +181,7 @@ export default function SettingsPage() {
         variant="outline"
         className="w-full h-12 text-red-600 hover:bg-red-50 hover:text-red-600"
         onClick={() => {
+          clearSwrCache()
           void signOut({ callbackUrl: "/login" }).then(() => router.push("/login"))
         }}
       >

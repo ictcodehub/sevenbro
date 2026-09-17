@@ -4,6 +4,8 @@ import { canManageKas } from "@/lib/policies"
 import { requireApi } from "@/lib/session"
 import { ensureContextReader } from "@/lib/server-context"
 import { createAdminClient } from "@/lib/db"
+import { notifyHomeroom } from "@/lib/notify"
+import { formatDisplayName } from "@/lib/format"
 
 export const dynamic = "force-dynamic"
 
@@ -86,6 +88,14 @@ export async function POST(req: Request) {
           if (e2) skipped.push(row.student_id)
           else ok.push(one)
         }
+        const actor = formatDisplayName(ctx.name) || "Bendahara"
+        if (ok.length > 0) {
+          await notifyHomeroom(ctx, {
+            title: "Iuran ditandai lunas",
+            body: `${actor} menandai ${ok.length} siswa lunas${skipped.length > 0 ? ` · ${skipped.length} sudah lunas` : ""}.`,
+            kind: "kas",
+          })
+        }
         return NextResponse.json(
           {
             ok: ok.length,
@@ -101,6 +111,11 @@ export async function POST(req: Request) {
       throw new Error(error.message)
     }
 
+    await notifyHomeroom(ctx, {
+      title: "Iuran ditandai lunas",
+      body: `${formatDisplayName(ctx.name) || "Bendahara"} menandai ${data?.length ?? studentIds.length} siswa lunas.`,
+      kind: "kas",
+    })
     return NextResponse.json(
       {
         ok: data?.length ?? 0,

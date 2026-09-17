@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { formatIDR, monthKeyWIB, monthLabel, formatDateID, formatTimeID } from "./format"
+import { formatIDR, monthKeyWIB, monthLabel, formatDateID, formatTimeID, formatDisplayName, isUniformPoints } from "./format"
 
 describe("formatIDR", () => {
   it("memformat angka dengan pemisah ribuan titik", () => {
@@ -31,6 +31,58 @@ describe("formatIDR", () => {
   it("mengembalikan Rp. 0 untuk nilai non-finite (data kotor)", () => {
     expect(formatIDR(Number.NaN)).toBe("Rp. 0")
     expect(formatIDR(Number.POSITIVE_INFINITY)).toBe("Rp. 0")
+  })
+})
+
+describe("formatDisplayName", () => {
+  it("FULL CAPS diubah ke Title Case", () => {
+    expect(formatDisplayName("KEIKO KHOLIS")).toBe("Keiko Kholis")
+    expect(formatDisplayName("PAULINE JOICE WIDJADJA")).toBe("Pauline Joice Widjadja")
+  })
+
+  it("mixed case dibiarkan", () => {
+    expect(formatDisplayName("Tio ICT")).toBe("Tio ICT")
+    expect(formatDisplayName("Li Ming Xin")).toBe("Li Ming Xin")
+    expect(formatDisplayName("Edmund Gracio Wirjo")).toBe("Edmund Gracio Wirjo")
+  })
+
+  it("handle apostrof dan spasi ekstra", () => {
+    expect(formatDisplayName("O'BRIEN  SMITH")).toBe("O'Brien Smith")
+  })
+
+  it("null/kosong → string kosong", () => {
+    expect(formatDisplayName(null)).toBe("")
+    expect(formatDisplayName(undefined)).toBe("")
+    expect(formatDisplayName("   ")).toBe("")
+  })
+})
+
+describe("isUniformPoints", () => {
+  it("true saat semua skor sama (mis. seed 25)", () => {
+    expect(
+      isUniformPoints([
+        { total_points: 25 },
+        { total_points: 25 },
+        { total_points: 25 },
+      ]),
+    ).toBe(true)
+  })
+
+  it("false saat ada selisih walau 1 poin", () => {
+    expect(
+      isUniformPoints([
+        { total_points: 28 },
+        { total_points: 27 },
+        { total_points: 25 },
+      ]),
+    ).toBe(false)
+  })
+
+  it("false untuk list kosong / 1 orang / null", () => {
+    expect(isUniformPoints([])).toBe(false)
+    expect(isUniformPoints([{ total_points: 25 }])).toBe(false)
+    expect(isUniformPoints(null)).toBe(false)
+    expect(isUniformPoints(undefined)).toBe(false)
   })
 })
 
