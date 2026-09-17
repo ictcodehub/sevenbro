@@ -235,7 +235,7 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
     <AppShell
       brand={{
         logoSrc: "/brand-logo.png",
-        logoAlt: "Seven Bro",
+        logoAlt: "Seven Bro!",
         title: "Seven Bro",
       }}
       nav={{ items: navItems }}

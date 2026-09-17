@@ -352,7 +352,7 @@ export default function AppShell({
     <div className="h-dvh flex flex-col overflow-hidden bg-page">
       {/* Header — selalu di atas, tidak ikut scroll */}
       <header className="shrink-0 sticky top-0 z-40 bg-white border-b border-line">
-          <div className="flex items-center justify-between gap-2 min-w-0 px-4 h-14 overflow-hidden">
+          <div className="flex items-center justify-between gap-2 min-w-0 px-4 h-[50px] overflow-hidden">
             <div className="flex items-center gap-2.5 min-w-0">
               {brand.logoSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -368,11 +368,14 @@ export default function AppShell({
                   {brand.title.slice(0, 2)}
                 </div>
               )}
-              <div className="min-w-0 flex-1">
-                <p className="text-[18px] leading-none truncate font-brocklyns brand-title">
-                  {brand.title}
-                </p>
-                <p className="brand-caption truncate">7B Class Management</p>
+              <div className="min-w-0 flex-1 flex flex-col justify-center">
+                <span className="brand-burst-wrap truncate">
+                  <span className="text-[17px] brand-title leading-[1.15]">
+                    <span className="font-brocklyns">Seven Bro</span>
+                    <span className="font-sans font-black text-[1.1em] ml-0.5">!</span>
+                  </span>
+                </span>
+                <span className="brand-caption truncate block leading-none">7B Class Management</span>
               </div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
