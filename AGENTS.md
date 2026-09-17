@@ -80,20 +80,35 @@ codegraph status
 
 ---
 
-## 4. Bootstrap di PC lain (checklist)
+## 4. Bootstrap di PC lain
 
+Jalankan berurutan (copy-paste):
+
+```bash
+git clone https://github.com/ictcodehub/sevenbro.git && cd sevenbro && npm install
+# salin .env.local dari PC lama (JANGAN commit) — format di §5
+npm i -g @colbymchenry/codegraph && codegraph install --yes
+codegraph init
+```
+
+Lalu:
+
+```bash
+npm run dev   # http://localhost:3000
+codegraph status
+```
+
+Checklist:
 ```text
-[ ] git clone https://github.com/ictcodehub/sevenbro.git
-[ ] npm install
-[ ] Salin .env.local (JANGAN commit) — lihat §5
-[ ] npm i -g @colbymchenry/codegraph
-[ ] codegraph install --yes
-[ ] codegraph init
-[ ] npm run dev  → http://localhost:3000
+[ ] clone + npm install
+[ ] .env.local lengkap (tanpa commit)
+[ ] codegraph install --yes   (sekali per mesin)
+[ ] codegraph init            (sekali per clone)
+[ ] typecheck + vitest hijau sebelum edit
 [ ] Baca AGENTS.md + docs/DESIGN_SYSTEM.md + docs/ROLE_UI.md
 ```
 
-Script cepat: `npm run setup:agent` (install CLI jika perlu + `codegraph init`).
+Shortcut: `npm run setup:agent` (= `codegraph init` di folder project).
 
 ---
 
