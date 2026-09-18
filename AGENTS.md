@@ -25,9 +25,31 @@
 | Prioritas | File | Isi |
 |---|---|---|
 | 1 | **AGENTS.md** (ini) | Rules kerja, CodeGraph, bootstrap |
-| 2 | `docs/DESIGN_SYSTEM.md` | SSOT visual: warna, tipografi, spacing |
-| 3 | `docs/ROLE_UI.md` | Matriks role → aksi UI |
-| 4 | `docs/PROGRESS.md` | Snapshot selesai / open |
+| 2 | **docs/SESSION_SYNC.md** | Otak bersama lintas session + keputusan sinkron |
+| 3 | `docs/DESIGN_SYSTEM.md` | SSOT visual: warna, tipografi, spacing |
+| 4 | `docs/ROLE_UI.md` | Matriks role → aksi UI |
+| 5 | `docs/POINT_SYSTEM.md` | Faktor tambah/kurang poin + Mass Report |
+| 6 | `docs/PROGRESS.md` | Snapshot selesai / open |
+
+**Lintas session:** semua session di project ini share workspace. Chat session lain TIDAK otomatis. Wajib baca `SESSION_SYNC.md` di awal, dan update bagian **Keputusan sinkron** setelah keputusan produk. Cepat cek otak bersama:
+
+```bash
+node scripts/session-brain.mjs
+```
+
+### Automation session-sync (OTOMATIS)
+
+Di **setiap session** (MiMo Desktop, Claude Code, Cursor, dll.), **sebelum kerja nyata**, jalankan:
+
+```bash
+node scripts/session-sync-workflow.mjs
+# atau: npm run session:sync
+```
+
+Workflow lengkap: `docs/workflows/session-sync.md`  
+Entry lintas tool: `CLAUDE.md` (pointer ke AGENTS.md).
+
+Setelah keputusan produk / commit: update `docs/SESSION_SYNC.md` + `docs/PROGRESS.md`, lalu `codegraph sync` bila perlu.
 | 5 | `src/lib/policies.ts` | SSOT policy server |
 | 6 | `android/README.md` | Android shell build, system bars, update policy |
 

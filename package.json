@@ -9,6 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "setup:agent": "codegraph init",
+    "session:sync": "node scripts/session-sync-workflow.mjs",
     "cg:status": "codegraph status",
     "cg:explore": "codegraph explore"
   },
