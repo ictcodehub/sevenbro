@@ -80,35 +80,18 @@ function notifIcon(title: string) {
   return Bell
 }
 
-/** Ikon mailbox — flat, palette forest/lime */
+/** Empty state notifikasi — animated WebP transparan */
 function MailIcon() {
   return (
-    <svg
-      width="56"
-      height="56"
-      viewBox="0 0 64 64"
-      fill="none"
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/notif-empty.webp"
+      alt=""
       aria-hidden="true"
-    >
-      <path
-        d="M8 30c0-2.2 1.8-4 4-4h40c2.2 0 4 1.8 4 4v18a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V30z"
-        fill="#D7F2A4"
-      />
-      <path
-        d="M8 30l20-12h24l-20 12H8z"
-        fill="#A3E635"
-      />
-      <path
-        d="M8 30l12 10h24l12-10"
-        stroke="#144D36"
-        strokeWidth="2"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <rect x="38" y="10" width="18" height="14" rx="2" fill="#fff" stroke="#144D36" strokeWidth="1.5"/>
-      <path d="M42 16h10M42 20h7" stroke="#A3E635" strokeWidth="1.5" strokeLinecap="round"/>
-      <circle cx="52" cy="12" r="4" fill="#FBA94C"/>
-    </svg>
+      className="h-14 w-auto object-contain bg-transparent"
+      width={56}
+      height={45}
+    />
   )
 }
 

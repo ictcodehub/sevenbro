@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: Android WebView shell 1.0.5 + adaptive system bars.
+> Status terakhir: empty-state notif = animated WebP transparan + session-sync workflow ter-commit.
 
 ## Selesai
 
@@ -36,6 +36,9 @@
 - Server table (006); API `/api/notifications`
 - Tap → navigasi + hapus dari shade; **Hapus Semua**
 - pathForNotification: report / roster / info / agenda / kas
+- Empty state ikon: animated **WebP transparan** `public/notif-empty.webp` (+ `notif-empty.png` fallback)
+  - Source user: `notif.gif` — GIF putih di browser, diganti WebP alpha
+  - Render: `AppShell.tsx` `MailIcon`, `h-14`, tanpa kartu putih
 
 ### Role UI
 - **Info & Agenda disabled untuk murid** (homeroom only sampai dibuka lagi)
