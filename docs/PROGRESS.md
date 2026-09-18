@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir setelah commit docs/UI Mass Report & shell.
+> Status terakhir: Android WebView shell 1.0.5 + adaptive system bars.
 
 ## Selesai
 
@@ -48,6 +48,24 @@
 - **UI install banner/tombol dihapus** — user install lewat menu browser
 - Google OAuth: `prompt=select_account`
 - QR scan: origin asli di prod; `NEXT_PUBLIC_APP_URL` hanya untuk localhost
+- Viewport `viewportFit: cover` (browser PWA)
+- Bottom nav: `env(safe-area-inset-bottom)` untuk install PWA di browser
+
+### Android WebView Shell (`android/`)
+- Native Kotlin shell **remote URL** — bukan bundel web assets
+- Loads `https://sevenbro.vercel.app` (`BuildConfig.APP_URL`)
+- Package `com.sevenbro.app` · versi shell **1.0.5** (versionCode 6)
+- **Update konten = deploy Vercel saja**; APK rebuild hanya untuk perubahan native
+- Full-screen tanpa address bar Chrome; pull-to-refresh; back = history WebView
+- Scale match Chrome: `loadWithOverviewMode=false`, `textZoom=100` (anti downscale)
+- **System bars (Xiaomi-safe):** `decorFitsSystemWindows(false)` + padding **native** di root layout (bukan inject px ke CSS WebView)
+- Status/nav bar + ikon adaptif light/dark via bridge `SevenBroShell.setChrome(dark)`
+- Web CSS var `--sevenbro-status-bar-inset` / `--sevenbro-nav-bar-inset` di-set `0` oleh shell (anti double-pad)
+- File picker + kamera (Mass Report); FileProvider
+- OAuth tetap di WebView (cookies tidak pindah ke Chrome Custom Tab)
+- Signing: `android/keystore.properties` + keystore lokal (**gitignored**)
+- Build/install: lihat `android/README.md`
+- APK distribusi: `android/dist/SevenBro-1.0.5-release.apk` (tidak di-commit)
 
 ### Cache
 - SWR localStorage + PWA NetworkFirst `/api/*`
@@ -63,11 +81,14 @@
 - Checklist piket (A4/B3)
 - Auto −1 kas mingguan + izin 3× beruntun
 - Buka kembali Info/Agenda untuk murid (policy + nav + PAGE_ROLES)
+- Android shell: QA login Google + foto report + dark mode di device fisik
+- Distribusi APK ke siswa (sideload; Play Store closed testing = opsional hilangkan warning Play Protect)
 
 ## Deploy
 - https://sevenbro.vercel.app
 - Supabase `gdmqmoigudtgknkgomeu` — migrations 003–009
 - Redirect Google: prod `…/api/auth/callback/google` + localhost (opsional)
+- Android shell: `vercel deploy --prod` untuk konten; APK di `android/dist/`
 
 ## Stack
-Next.js 15 · React 19 · Tailwind 4 · next-auth v4 · Supabase · SWR · Vitest
+Next.js 15 · React 19 · Tailwind 4 · next-auth v4 · Supabase · SWR · Vitest · Android Kotlin WebView shell

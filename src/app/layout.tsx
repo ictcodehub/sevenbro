@@ -39,6 +39,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  // Edge-to-edge for Android WebView shell + installed PWA
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

@@ -285,8 +285,11 @@ export default function AppShell({
 
   return (
     <div className="h-dvh flex flex-col overflow-hidden bg-page">
-      {/* Header — selalu di atas, tidak ikut scroll */}
-      <header className="shrink-0 sticky top-0 z-40 bg-white border-b border-line">
+      {/* Header — selalu di atas; bg ikut light/dark via token bg-white → .dark */}
+      <header
+        className="sevenbro-header shrink-0 sticky top-0 z-40 bg-white border-b border-line"
+        style={{ paddingTop: "var(--sevenbro-status-bar-inset, 0px)" }}
+      >
           <div className="flex items-center justify-between gap-2 min-w-0 px-4 h-[50px] overflow-hidden">
             <div className="flex items-center gap-2.5 min-w-0">
               {brand.logoSrc ? (
@@ -366,7 +369,12 @@ export default function AppShell({
         inert={!showNotif}
       >
         {/* Header */}
-        <div className="shrink-0 px-3 pt-3 pb-1 border-b border-line/60 bg-page/95 backdrop-blur-lg">
+        <div
+          className="shrink-0 px-3 pb-1 border-b border-line/60 bg-page/95 backdrop-blur-lg"
+          style={{
+            paddingTop: "calc(var(--sevenbro-status-bar-inset, 0px) + 0.75rem)",
+          }}
+        >
           <div className="relative flex items-center justify-center h-10">
             <button
               type="button"
@@ -586,8 +594,12 @@ export default function AppShell({
 
       {/* Bottom nav — selalu menempel di bawah */}
       <nav
-        className="shrink-0 sticky bottom-0 z-40 bg-white border-t border-line"
+        className="sevenbro-nav shrink-0 sticky bottom-0 z-40 bg-white border-t border-line"
         aria-label="Navigasi utama"
+        style={{
+          paddingBottom:
+            "calc(var(--sevenbro-nav-bar-inset, 0px) + env(safe-area-inset-bottom, 0px))",
+        }}
       >
         <div
           className="grid w-full max-w-lg mx-auto py-1"

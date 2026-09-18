@@ -7,15 +7,16 @@
 
 ## 1. Project
 
-**Seven Bro!** — PWA manajemen kelas 7B (Mutiara Bangsa 2 JHS): Kas, Pengumuman (Info), Agenda, Poin.
+**Seven Bro!** — PWA manajemen kelas 7B (Mutiara Bangsa 2 JHS): Kas, Pengumuman (Info), Agenda, Poin. Plus **Android WebView shell** (`android/`) yang wrap PWA remote.
 
 | | |
 |---|---|
-| Stack | Next.js 15 App Router · React 19 · Tailwind 4 · next-auth v4 (Google) · Supabase · SWR · Vitest |
+| Stack | Next.js 15 App Router · React 19 · Tailwind 4 · next-auth v4 (Google) · Supabase · SWR · Vitest · Android Kotlin WebView |
 | Repo | `https://github.com/ictcodehub/sevenbro` |
 | Prod (beta) | `https://sevenbro.vercel.app` |
 | Supabase | project `gdmqmoigudtgknkgomeu` |
 | Homeroom | Tio (super admin) |
+| Android shell | `com.sevenbro.app` · docs `android/README.md` · konten selalu dari prod |
 
 ---
 
@@ -28,6 +29,7 @@
 | 3 | `docs/ROLE_UI.md` | Matriks role → aksi UI |
 | 4 | `docs/PROGRESS.md` | Snapshot selesai / open |
 | 5 | `src/lib/policies.ts` | SSOT policy server |
+| 6 | `android/README.md` | Android shell build, system bars, update policy |
 
 Jangan “invent” style atau role baru tanpa update dokumen di atas.
 
@@ -190,6 +192,7 @@ src/components/        # AppShell, ui/, ui-primitives
 src/lib/               # auth, db, policies, prefs, format, demo-data
 supabase/migrations/   # SQL — push via `supabase db push`
 docs/                  # DESIGN_SYSTEM, ROLE_UI, PROGRESS
+android/               # Kotlin WebView shell (remote PWA URL) — lihat android/README.md
 .codegraph/            # index lokal (gitignore)
 ```
 
@@ -200,6 +203,12 @@ docs/                  # DESIGN_SYSTEM, ROLE_UI, PROGRESS
 - Vercel project `kirimtugas-projects/sevenbro` → alias `sevenbro.vercel.app`
 - Deploy: `vercel deploy --prod` (env sudah di Vercel Production)
 - Supabase: `supabase link --project-ref gdmqmoigudtgknkgomeu && supabase db push`
+- **Android shell:** konten web = deploy Vercel; APK native = rebuild `android/` (jangan bump versionCode untuk perubahan UI web)
+
+### Android shell rules
+- Jangan inject Android physical px ke CSS WebView (system bar insets → root layout padding)
+- Jangan commit keystore / `local.properties` / `android/dist/`
+- Update policy lengkap: `android/README.md`
 
 ---
 

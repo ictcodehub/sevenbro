@@ -56,3 +56,19 @@ supabase/.temp/
 # agent local
 .mimocode/
 .codegraph/
+
+# android shell (build artifacts + secrets)
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/*.keystore
+android/keystore.properties
+android/.idea/
+android/*.iml
+android/captures/
+android/dist/
+
+# local agent/UI check dirs
+.playwright-cli/
+.ui-check/

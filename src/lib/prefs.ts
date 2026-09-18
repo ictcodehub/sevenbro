@@ -31,10 +31,20 @@ export function savePrefs(prefs: Prefs): void {
   }
 }
 
-/** Toggle class `dark` di <html> — token CSS ikut flip */
+/** Toggle class `dark` di <html> — token CSS ikut flip; sinkron status bar shell Android */
 export function applyDarkMode(enabled: boolean): void {
   if (typeof document === "undefined") return
   document.documentElement.classList.toggle("dark", enabled)
+  try {
+    const shell = (
+      window as typeof window & {
+        SevenBroShell?: { setChrome?: (dark: boolean) => void }
+      }
+    ).SevenBroShell
+    shell?.setChrome?.(enabled)
+  } catch {
+    /* browser PWA tanpa bridge */
+  }
 }
 
 export function pushSupported(): boolean {

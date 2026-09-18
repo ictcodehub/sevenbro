@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- DESIGN_SYSTEM tokens -->
+    <color name="forest">#144D36</color>
+    <color name="lime">#A3E635</color>
+    <color name="page">#F3F7F4</color>
+    <color name="ink">#111827</color>
+    <color name="white">#FFFFFF</color>
+</resources>
