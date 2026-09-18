@@ -1,110 +1,73 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status per commit ini. Info & Agenda masih dalam pengerjaan.
+> Status terakhir setelah commit docs/UI Mass Report & shell.
 
 ## Selesai
 
 ### Auth & Role
 - Login Google `@mutiarabangsa.sch.id`
-- Role efektif: Homeroom, Teacher, Ketua, Bendahara, Sekretaris, Anggota, Pending
-- RoleGate client + policy API (`canAdmin`, `canManageKas`, `canGivePoints`)
-- TEACHER dibatasi ke `/app/scan` (Beri Poin via QR)
+- Role: Homeroom, Teacher, Ketua, Bendahara, Sekretaris, Anggota, Pending
+- RoleGate + `policies.ts`; TEACHER hanya `/app/scan`
 
 ### Kas
-- Setoran harian Rp 2.000/orang (Selasa & Kamis), checklist Bayar/Izin eksklusif
-- Izin harian (`kas_izin`) + tunggak kumulatif semester
-- Bayar Khusus & Pengeluaran (kartu di samping Saldo)
-- Buku Kas: tab Transaksi / Per Siswa / Matriks; filter per bulan
-- Nominal format `Rp. …`
+- Setoran Sel/Kam Rp 2.000; Bayar Khusus; Pengeluaran; Izin
+- Tunggak kumulatif semester; Buku Kas (Transaksi / Per Siswa / Matriks, filter bulan)
+- Tunggak tetap dihitung walau data kas kosong (kalender semester)
 
-### Poin (Arena)
-- Arena gamified: podium, Leaderboard, Battle Log, Kejar Podium
-- Form Beri Poin (Homeroom/Teacher) + scan mode untuk guru
-- QR Beri Poin (ikon di header arena, Homeroom saja)
+### Poin
+- Arena: Leaderboard · Battle Log · **Report**
+- Podium **muted** (abu, “—”) bila skor top masih seri
+- Nama UI lengkap via `formatDisplayName`
+- Preset Beri Poin; auto +1 Bayar Uang Kas (1×/siswa/hari)
+
+### Mass Report
+- Ketua: **Buat Report** dari menu profil → `/app/report/new`
+- Preset + Custom + foto bukti (kompres → DB)
+- Vote **YES/NO** modal global; pelapor/target tidak vote
+- Threshold **≥10 vote** → READY
+- Homeroom: review + edit deskripsi custom → `report_presets`
+- Detail pemilih (No | Nama | Votes); riwayat tabel + tanggal
+- Notif: siswa saat report dibuka; hasil vote ke pemilih
+
+### Roster
+- Homeroom mutasi + review usulan Ketua (`roster_proposals`, migration 005)
 
 ### Notifikasi
-- Shade iOS-style, slide dari atas, palette white-green
-- Swipe-to-delete, tandai dibaca, riwayat + pulihkan (`/app/notifications`)
-- Badge lonceng (unread count), sinkron localStorage + custom event
-- Quick actions di shade: Push / Mode Gelap / Hemat Data
+- Server table (006); API `/api/notifications`
+- Tap → navigasi + hapus dari shade; **Hapus Semua**
+- pathForNotification: report / roster / info / agenda / kas
 
-### Pengaturan
-- Toggle tersimpan di localStorage (`sevenbro:settings-prefs`)
-- Mode Gelap: class `.dark`, token grey netral, kontras forest di dark
-- Push: minta izin Notification API + notifikasi tes (on-device, bukan web-push server)
-- Riwayat Notifikasi diakses dari Pengaturan
+### Role UI
+- **Info & Agenda disabled untuk murid** (homeroom only sampai dibuka lagi)
+- Nav item disabled (abu); Beranda hanya tampilkan info/agenda untuk Homeroom
+- Kas read-only semua siswa; manage Homeroom + Bendahara
 
-### Roster (Homeroom)
-- Tambah siswa bulk, daftarkan guru, tautkan akun pending
-- Ubah posisi, aktif/nonaktif siswa
-- **Edit data siswa** (nama, email, NIS) & **edit data guru** (nama, email) via sheet
-- Hapus guru
+### Branding & PWA
+- Header: logo duck + **Seven Bro!** (Brocklyns + “!” font sistem) + caption Chillin on Sunday
+- Ikon PWA/favicon duck (purpose any + maskable)
+- **UI install banner/tombol dihapus** — user install lewat menu browser
+- Google OAuth: `prompt=select_account`
+- QR scan: origin asli di prod; `NEXT_PUBLIC_APP_URL` hanya untuk localhost
 
-### Info (Pengumuman)
-- CRUD: buat, ubah (judul/isi/sematan), sematkan, hapus
-- Expand “Baca selengkapnya”, author name (bukan email)
-- Policy: Homeroom & Ketua
+### Cache
+- SWR localStorage + PWA NetworkFirst `/api/*`
+- Logout bersihkan cache
 
-### Agenda
-- CRUD + edit (judul, lokasi, waktu) via API PATCH
-- Label Hari Ini / Besok, jam di chip forest
-- Policy: Homeroom, Ketua, Sekretaris
+### Migrations
+005 roster_proposals · 006 notifications · 007 mass_reports · 008 custom+photo · 009 vote YES/NO
 
-### Copy / Bahasa
-- Audit UI: formal Indonesia + Title Case
-- Pertahankan istilah produk yang sudah pas: Leaderboard, Battle Log, Kejar Podium, Scan Mode
-- Ganti slang: Kasih Poin → Beri Poin, kamu → Anda, utang → tunggak, dll.
+## Open
+- Web-push server (VAPID)
+- Persist toggle offline ke SW
+- Agenda lampau
+- Checklist piket (A4/B3)
+- Auto −1 kas mingguan + izin 3× beruntun
+- Buka kembali Info/Agenda untuk murid (policy + nav + PAGE_ROLES)
 
-### Role-Based UI (Pengurus)
-- Homeroom = super admin (union semua policy manage + admin)
-- Menu siswa: Beranda · Kas · Poin — **Info & Agenda disabled untuk murid** (hanya Homeroom aktif)
-- Bendahara: manage Kas penuh (setoran, bayar khusus, pengeluaran, izin, Buku Kas)
-- Ketua & Sekretaris: manage Info + Agenda **saat fitur dibuka lagi**
-- Anggota & pengurus non-manage: Kas/Buku Kas read-only + status iuran pribadi
-- Label role Title Case Indonesia di profil (`formatRoleLabel`)
-- SSOT: `docs/ROLE_UI.md`
-
-### Roster Approval (Ketua → Homeroom)
-- Ketua: lihat roster + usul tambah/edit/hapus/posisi (tidak langsung mutasi)
-- Homeroom: approve/reject usulan di halaman Roster
-- Tabel `roster_proposals` (migration 005)
-- API: `/api/admin/roster-proposals` GET/POST + `[id]` POST decision
-
-### Point System (draft → eksekusi bertahap)
-- SSOT: `docs/POINT_SYSTEM.md`
-- Preset alasan di form Beri Poin (Prestasi / Pelanggaran)
-- Auto +1 “Bayar Uang Kas” saat setoran (maks 1×/siswa/hari)
-- Open: piket, Mass Report, auto −1 kas mingguan
-
-### Notifikasi Server
-- Tabel `notifications` (migration 006) — audience HOMEROOM / email
-- Homeroom dapat notif: usulan roster, Info/Agenda baru dari pengurus, setoran & transaksi kas
-- Ketua dapat notif saat usulan disetujui/ditolak
-- Shade + riwayat pakai `/api/notifications` (bukan demo data)
-
-### Cache & Nama
-- `formatDisplayName` — FULL CAPS → Title Case (display UI semua nama orang)
-- SWR localStorage cache (`sevenbro:swr-cache`) — buka halaman: cache dulu, revalidate
-- PWA runtime caching: static assets + pages + `/api/*` NetworkFirst
-- Logout bersihkan cache SWR + `api-data`
-
-## Desain
-- SSOT: `docs/DESIGN_SYSTEM.md`, `docs/ROLE_UI.md`
-- Token: page mint, card putih, forest/lime/amber
-- Dark mode: page `#0b0f14`, card `#151b23`, text-forest `#6ee7b7`
-
-## Belum / Open
-- Web-push server (VAPID) belum; sekarang Notification API lokal
-- Persist toggle offline ke service worker belum
-- Agenda lampau (API hanya kirim mendatang)
-- Tunggak lintas bulan: asumsi Jul/Des ganjil & Jan/Genap genap
-
-## Deploy (Beta)
-- GitHub: `ictcodehub/sevenbro` master `07054e0+`
-- Vercel: https://sevenbro.vercel.app
-- Supabase: `gdmqmoigudtgknkgomeu` (migrations 003/004 applied)
-- **Wajib**: Google Console → Authorized redirect URI
-  `https://sevenbro.vercel.app/api/auth/callback/google`
+## Deploy
+- https://sevenbro.vercel.app
+- Supabase `gdmqmoigudtgknkgomeu` — migrations 003–009
+- Redirect Google: prod `…/api/auth/callback/google` + localhost (opsional)
 
 ## Stack
-Next.js 15 · React 19 · Tailwind 4 · next-auth v4 Google · Supabase · SWR · Vitest (116 tests)
+Next.js 15 · React 19 · Tailwind 4 · next-auth v4 · Supabase · SWR · Vitest

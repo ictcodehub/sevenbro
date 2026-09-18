@@ -166,8 +166,9 @@ npx vitest run
 Keduanya harus hijau. Untuk perubahan UI besar: `npm run build`.
 
 ### Git
+- **Hanya commit / push / deploy kalau user suruh eksplisit.** Jangan auto-commit, auto-push, atau `vercel deploy` tanpa perintah.
 - Commit message: `feat|fix|style|docs(scope): ringkas` + body jika perlu.
-- Push ke `origin master` (user minta push reguler).
+- Push ke `origin master` (setelah user minta).
 - Jangan force-push / amend published commit.
 
 ---

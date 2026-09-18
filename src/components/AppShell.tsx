@@ -15,8 +15,6 @@ import {
   ArrowLeft,
   Moon,
   WifiOff,
-  Download,
-  Flag,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -29,7 +27,6 @@ import {
   type Prefs,
 } from "@/lib/prefs"
 import MassReportVoteModal from "@/components/MassReportVoteModal"
-import PwaInstallModal from "@/components/PwaInstallModal"
 
 export type AppShellNav = {
   href: string
@@ -37,11 +34,6 @@ export type AppShellNav = {
   icon: LucideIcon
   /** Item tampil tapi tidak bisa ditap */
   disabled?: boolean
-}
-
-type BeforeInstallPromptEvent = Event & {
-  prompt: () => Promise<void>
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>
 }
 
 export type AppShellNotification = {
@@ -256,67 +248,12 @@ export default function AppShell({
   const [showProfile, setShowProfile] = useState(false)
   const [showQuick, setShowQuick] = useState(false)
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS)
-  const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null)
-  const [isStandalone, setIsStandalone] = useState(false)
-  const [installHint, setInstallHint] = useState(false)
-  const [installDismissed, setInstallDismissed] = useState(false)
 
   useEffect(() => {
     const stored = loadPrefs()
     setPrefs(stored)
     applyDarkMode(stored.dark)
   }, [])
-
-  // PWA install — tampil selama app belum terpasang di device ini
-  useEffect(() => {
-    const standalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (navigator as Navigator & { standalone?: boolean }).standalone === true
-    setIsStandalone(standalone)
-    try {
-      // Bersihkan dismiss lama (localStorage) — tombol selalu tampil di browser
-      localStorage.removeItem("sevenbro:install-dismissed")
-      setInstallDismissed(sessionStorage.getItem("sevenbro:install-dismissed") === "1")
-    } catch {}
-
-    const onPrompt = (e: Event) => {
-      e.preventDefault()
-      setInstallEvent(e as BeforeInstallPromptEvent)
-    }
-    const onInstalled = () => {
-      setInstallEvent(null)
-      setIsStandalone(true)
-      setInstallDismissed(false)
-    }
-    window.addEventListener("beforeinstallprompt", onPrompt)
-    window.addEventListener("appinstalled", onInstalled)
-    return () => {
-      window.removeEventListener("beforeinstallprompt", onPrompt)
-      window.removeEventListener("appinstalled", onInstalled)
-    }
-  }, [])
-
-  const showInstall = !isStandalone && !installDismissed
-
-  const handleInstall = async () => {
-    if (installEvent) {
-      try {
-        await installEvent.prompt()
-        const choice = await installEvent.userChoice
-        if (choice.outcome === "accepted") {
-          setInstallEvent(null)
-          setIsStandalone(true)
-        }
-      } catch {
-        setInstallHint(true)
-        setTimeout(() => setInstallHint(false), 6000)
-      }
-      return
-    }
-    // Chrome Android kadang belum kasih prompt — tampilkan cara manual
-    setInstallHint(true)
-    setTimeout(() => setInstallHint(false), 6000)
-  }
 
   const updatePrefs = async (patch: Partial<Prefs>) => {
     const next = await applyPrefsPatch(prefs, patch)
@@ -377,16 +314,6 @@ export default function AppShell({
               </div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
-            {showInstall && (
-              <button
-                type="button"
-                onClick={() => void handleInstall()}
-                className="inline-flex items-center gap-1.5 rounded-full bg-forest text-white text-[11px] font-semibold px-2.5 py-1.5 shadow-sm active:scale-[0.97] transition-transform shrink-0"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Install App
-              </button>
-            )}
             <button
               type="button"
               onClick={() => {
@@ -429,17 +356,6 @@ export default function AppShell({
           </div>
         </div>
       </header>
-
-      {installHint && (
-        <div className="sticky top-[50px] z-30 px-4 pt-2">
-          <div className="rounded-xl bg-amber/15 border border-amber/30 px-3 py-2 text-[10px] text-amber-900 leading-snug">
-            Di Chrome Android: menu <span className="font-semibold">⋮</span> →{" "}
-            <span className="font-semibold">Tambahkan ke layar utama</span> · Di iPhone:
-            tombol <span className="font-semibold">Bagikan</span> →{" "}
-            <span className="font-semibold">Tambahkan ke Layar Utama</span>
-          </div>
-        </div>
-      )}
 
       {/* Notification shade — slide dari atas, palette white-green */}
       <div
@@ -667,9 +583,6 @@ export default function AppShell({
 
       {/* Modal vote mass report — tampil global saat report VOTING */}
       <MassReportVoteModal />
-
-      {/* Smart install prompt — muncul bila PWA belum terpasang */}
-      <PwaInstallModal />
 
       {/* Bottom nav — selalu menempel di bawah */}
       <nav

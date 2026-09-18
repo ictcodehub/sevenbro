@@ -41,12 +41,17 @@ DT/PT di form: pilih mapel di alasan (mis. “Perfect Score DT Matematika”).
 Izin kas: **tidak dihapus** dari sistem — hanya **tidak bayar + tidak izin** yang −1 mingguan. Izin beruntun **3×** = −1 (penyesuaian).
 
 ### Alur Mass Report
-1. **Ketua** → avatar → **Buat Report** (merah, di bawah Roster) → form full-screen `/app/report/new`
-2. Alasan: dropdown preset (+ preset custom yang sudah disetujui) atau **Custom Report**
-3. Custom: vote jalan langsung dengan draft ketua; Homeroom bisa **edit deskripsi** lalu Apply → jadi preset baru
-4. Target: checklist lingkaran; opsional **foto bukti** (dikompres di perangkat, simpan di DB)
-5. **Anggota** → Arena Poin → **Vote Setuju**
-6. Vote ≥ 50% kelas → READY → Homeroom **Terima / Tolak**
+1. **Ketua** → avatar → **Buat Report** (menu profil, di bawah Roster) → `/app/report/new`
+2. Alasan: dropdown preset + **Custom Report**
+3. Custom: vote jalan dengan draft ketua; Homeroom edit deskripsi → **preset baru** saat Apply
+4. Target: checklist nama; opsional **foto bukti** (kompres lokal → DB)
+5. **Siswa** → modal global **Vote Setuju / Tidak Setuju** (pelapor & target tidak vote)
+6. Threshold **≥ 10 vote** (bukan semua siswa) → READY
+7. **Homeroom** → modal → **Poin · Report** → Terima / Tolak; bisa lihat **siapa yang vote**
+8. Hasil vote → notif ke pemilih; approve → −poin + notif target
+
+### Tabs Arena Poin
+**Leaderboard** · **Battle Log** · **Report** (badge lingkaran bila ada report aktif)
 
 ---
 
@@ -57,7 +62,7 @@ Izin kas: **tidak dihapus** dari sistem — hanya **tidak bayar + tidak izin** y
 | 1 | Preset alasan di form Beri Poin | ✅ |
 | 2 | Auto +1 saat setoran kas (A1) | ✅ (max 1×/siswa/hari) |
 | 3 | Checklist piket A4 / B3 | ⬜ |
-| 4 | Mass Report + vote + Homeroom approve | ✅ (UI di Arena Poin) |
+| 4 | Mass Report + vote YES/NO + review + foto + custom preset | ✅ |
 | 5 | Auto −1 kas mingguan (B1) + izin 3× (B4) | ⬜ |
 
 ---
