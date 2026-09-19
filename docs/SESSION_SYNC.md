@@ -72,6 +72,7 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-19 | Hapus Info → notif ikut hilang: FK `ref_id` cascade + fallback judul/body | migration 016, `announcements/[id]` |
 | 2026-09-19 | **Commit `90d6c0c` push + `supabase db push` 016 + `vercel deploy --prod` selesai** | prod `sevenbro.vercel.app` |
 | 2026-09-19 | Gap bawah form/nav: Sheet fullHeight **wajib** height calc dvh (bukan `h-full`); AppShell `fixed inset-0`; var `--sevenbro-safe-bottom` | `sheet.tsx`, `AppShell.tsx`, `globals.css`, shell inject |
+| 2026-09-19 | **`bc3a379` push + Vercel deploy + APK shell 1.1.0 (vc 11) selesai** | gap fix live di prod + dist APK |
 
 ---
 

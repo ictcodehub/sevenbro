@@ -92,7 +92,7 @@ window.SevenBroShell.getFcmToken()           // string | null
 4. Sekretaris terbitkan brief → HP muncul notif  
 5. Tap notif → buka Info  
 
-| Shell version | **1.0.7** (versionCode 8) — CLI build OK tanpa Android Studio |
+| Shell version | **1.1.0** (versionCode 11) — CLI build OK tanpa Android Studio |
 
 ### Build CLI (tanpa Android Studio)
 
@@ -100,10 +100,11 @@ JDK 17 + Android SDK (`AppData/Local/Android/Sdk`) + `google-services.json` suda
 
 ```powershell
 $env:JAVA_HOME = "C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot"
-$env:ANDROID_HOME = "C:\Users\$env:USERNAME\AppData\Local\Android\Sdk"
+$env:ANDROID_HOME = "C:\Users\HeyTAYO\AppData\Local\Android\Sdk"
 cd D:\Workspace\sevenbro\android
 .\gradlew.bat assembleRelease --no-daemon
-# APK: android/dist/SevenBro-1.0.6-release.apk
+# APK: android/app/build/outputs/apk/release/app-release.apk
+# dist: android/dist/SevenBro-1.1.0-release.apk
 ```
 
 - Push **gagal silent** — tidak boleh membatalkan aksi utama
