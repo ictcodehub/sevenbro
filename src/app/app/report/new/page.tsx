@@ -147,7 +147,7 @@ function NewReportInner() {
   }
 
   return (
-    <div className="min-h-dvh bg-page flex flex-col">
+    <div className="min-h-full bg-page flex flex-col">
       <header className="sticky top-0 z-40 bg-white border-b border-line">
         <div className="flex items-center gap-2 px-4 h-14">
           <Link

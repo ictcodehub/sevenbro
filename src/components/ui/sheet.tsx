@@ -5,14 +5,17 @@ import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 /**
- * Tinggi full viewport, aman untuk shell Android + browser PWA:
- * - Shell sudah pad root untuk system bar → set --sevenbro-safe-bottom: 0
- * - Browser: kurangi env(safe-area-inset-bottom) (viewport-fit=cover)
- * JANGAN pakai h-full/% — parent fixed bisa bikin height resolve ke auto
- * sehingga sheet hanya setinggi konten dan bottom nav bocor di bawah.
+ * Tinggi/posisi aman untuk shell Android + browser PWA:
+ * - Shell: root native sudah pad system bar → --sevenbro-safe-bottom: 0
+ * - Browser: env(safe-area-inset-bottom) via --sevenbro-safe-bottom
+ * fullHeight & bottom-sheet sama-sama absolute (bukan h-full / flex stretch)
+ * supaya tidak pernah resolve ke auto / meninggalkan gap ke nav.
  */
 const FULL_HEIGHT =
   "calc(100dvh - var(--sevenbro-nav-bar-inset, 0px) - var(--sevenbro-safe-bottom, env(safe-area-inset-bottom, 0px)))"
+
+const CONTENT_PB =
+  "calc(1rem + var(--sevenbro-nav-bar-inset, 0px) + var(--sevenbro-safe-bottom, env(safe-area-inset-bottom, 0px)))"
 
 export function Sheet({
   open,
@@ -40,59 +43,56 @@ export function Sheet({
   if (!open) return null
 
   return (
-    <div
-      className={cn(
-        // z di atas bottom nav (z-40) + notif shade (z-50)
-        "fixed inset-0 z-[60] flex justify-center",
-        fullHeight ? "" : "items-end sm:items-center",
-      )}
-    >
+    <div className="fixed inset-0 z-[60]">
       <button
         type="button"
         aria-label="Tutup"
         className="absolute inset-0 bg-deep/40"
         onClick={onClose}
       />
+      {/* Panel: fullHeight = isi viewport · bottom sheet = nempel di bawah */}
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
         className={cn(
-          "relative w-full max-w-lg min-w-0 flex flex-col bg-white shadow-lg overflow-hidden",
-          fullHeight
-            ? "rounded-none border-0 sm:rounded-2xl sm:border sm:border-line"
-            : "max-h-[min(85dvh,calc(85dvh-env(safe-area-inset-bottom,0px)))] rounded-t-2xl sm:rounded-2xl border border-line",
+          "absolute inset-x-0 flex justify-center px-0",
+          fullHeight ? "inset-y-0" : "bottom-0",
         )}
-        style={
-          fullHeight
-            ? {
-                height: FULL_HEIGHT,
-                maxHeight: FULL_HEIGHT,
-                // pastikan menutup nav bawah walau flex stretch gagal
-                alignSelf: "stretch",
-              }
-            : undefined
-        }
       >
-        <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 border-b border-line shrink-0">
-          <h2 className="text-sm font-medium text-ink min-w-0 truncate">{title}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Tutup"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-soft hover:bg-surface"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
         <div
-          className="flex-1 min-h-0 scroll-y-only px-4 py-4"
-          style={{
-            paddingBottom:
-              "calc(1rem + var(--sevenbro-nav-bar-inset, 0px) + var(--sevenbro-safe-bottom, env(safe-area-inset-bottom, 0px)))",
-          }}
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+          className={cn(
+            "relative w-full max-w-lg min-w-0 flex flex-col bg-white shadow-lg overflow-hidden",
+            fullHeight
+              ? "h-full rounded-none border-0 sm:rounded-2xl sm:border sm:border-line"
+              : "max-h-[85dvh] rounded-t-2xl sm:rounded-2xl border-t border-line sm:border sm:border-line",
+          )}
+          style={
+            fullHeight
+              ? { height: FULL_HEIGHT, maxHeight: FULL_HEIGHT }
+              : {
+                  // pastikan tepi bawah sheet = bawah viewport (tidak floating)
+                  marginBottom: 0,
+                }
+          }
         >
-          <div className="space-y-3 min-w-0">{children}</div>
+          <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 border-b border-line shrink-0">
+            <h2 className="text-sm font-medium text-ink min-w-0 truncate">{title}</h2>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Tutup"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-soft hover:bg-surface"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div
+            className="flex-1 min-h-0 scroll-y-only px-4 py-4"
+            style={{ paddingBottom: CONTENT_PB }}
+          >
+            <div className="space-y-3 min-w-0">{children}</div>
+          </div>
         </div>
       </div>
     </div>

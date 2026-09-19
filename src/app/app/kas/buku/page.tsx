@@ -1147,7 +1147,13 @@ function BukuKasInner() {
             )}
           </div>
 
-          <div className="px-4 pb-4 pt-2 bg-white border-t border-line">
+          <div
+            className="px-4 pt-2 bg-white border-t border-line"
+            style={{
+              paddingBottom:
+                "calc(1rem + var(--sevenbro-nav-bar-inset, 0px) + var(--sevenbro-safe-bottom, env(safe-area-inset-bottom, 0px)))",
+            }}
+          >
             <button
               type="button"
               onClick={() => setDetail(null)}

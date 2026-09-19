@@ -221,7 +221,7 @@ export default function MassReportVoteModal() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="mass-report-title"
-        className="relative w-full max-w-sm max-h-[90vh] flex flex-col rounded-2xl bg-white border border-line shadow-lg overflow-hidden"
+        className="relative w-full max-w-sm max-h-[min(90dvh,calc(90dvh-env(safe-area-inset-bottom,0px)))] flex flex-col rounded-2xl bg-white border border-line shadow-lg overflow-hidden"
       >
         {header}
 

@@ -86,11 +86,16 @@ Bottom nav AppShell:
   padding-bottom = calc(var(--sevenbro-nav-bar-inset, 0px) + var(--sevenbro-safe-bottom, env(safe-area-inset-bottom, 0px)))
 
 Sheet fullHeight (modal brief, dll.):
-  height = calc(100dvh - var(--sevenbro-nav-bar-inset, 0px) - var(--sevenbro-safe-bottom, env(safe-area-inset-bottom, 0px)))
+  Wrapper: absolute inset-x-0 inset-y-0 · panel height = calc(100dvh - inset - safe-bottom)
   JANGAN h-full / height:100% — bisa resolve ke auto → sheet hanya setinggi konten,
   bottom nav bocor di bawah backdrop (gap + nav terlihat).
   JANGAN 100dvh polos di browser — menutup gesture bar Android.
   Content scroll: pb ikut formula yang sama
+
+Sheet bottom (Agenda +Tambah, Kas, Poin, Roster, dll.):
+  Wrapper: absolute inset-x-0 bottom-0 (BUKAN flex items-end)
+  Panel: max-h-[85dvh] rounded-t-2xl · menempel di bawah viewport
+  Content pb: calc(1rem + inset + safe-bottom) — sama dengan fullHeight
 ```
 
 WebView shell (`android/`) men-set `--sevenbro-*-inset` + `--sevenbro-safe-bottom` ke `0`; browser PWA pakai `env(safe-area-inset-bottom)`.

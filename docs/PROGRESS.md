@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: Gap bawah form/nav fixed — **pushed `bc3a379` + Vercel deployed + APK 1.1.0 built** (2026-09-19).
+> Status terakhir: Gap sheet semua halaman (absolute positioning) — **commit + Vercel deploy 2026-09-19**; APK shell 1.1.0 sudah dibuat sebelumnya; `allowBackup` tetap `true`.
 
 ## Selesai
 
@@ -8,6 +8,7 @@
 - Login Google `@mutiarabangsa.sch.id`
 - Role: Homeroom, Teacher, Ketua, Bendahara, Sekretaris, Anggota, Pending
 - RoleGate + `policies.ts`; TEACHER hanya `/app/scan`
+- Session JWT 30 hari · **`allowBackup=true` tetap ON** (session selamat uninstall→install; user decision 2026-09-19)
 
 ### Kas
 - Setoran Sel/Kam Rp 2.000; Bayar Khusus; Pengeluaran; Izin
@@ -83,12 +84,13 @@
 - **System bars (Xiaomi-safe):** `decorFitsSystemWindows(false)` + padding **native** di root layout (bukan inject px ke CSS WebView)
 - Status/nav bar + ikon adaptif light/dark via bridge `SevenBroShell.setChrome(dark)`
 - Web CSS var `--sevenbro-status-bar-inset` / `--sevenbro-nav-bar-inset` / `--sevenbro-safe-bottom` di-set `0` oleh shell (anti double-pad)
-- **Gap bawah form:** Sheet fullHeight pakai `calc(100dvh - inset)` (bukan `h-full`); AppShell `fixed inset-0`; WebView bg = nav (putih)
+- **Gap bawah form/nav:** Sheet fullHeight **dan** bottom-sheet pakai `absolute` + `calc(100dvh - inset)` (bukan `h-full`/`items-end`); AppShell `fixed inset-0`; WebView bg = nav (putih)
+- Overlay lain: Buku Kas detail pb-safe · report/new `min-h-full` · vote modal `max-h` dvh
 - File picker + kamera (Mass Report); FileProvider
 - OAuth tetap di WebView (cookies tidak pindah ke Chrome Custom Tab)
 - Signing: `android/keystore.properties` + keystore lokal (**gitignored**)
 - Build/install: lihat `android/README.md`
-- APK distribusi: `android/dist/SevenBro-1.0.5-release.apk` (tidak di-commit)
+- APK distribusi: `android/dist/SevenBro-1.1.0-release.apk` (tidak di-commit)
 
 ### Cache
 - SWR localStorage + PWA NetworkFirst `/api/*`
