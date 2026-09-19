@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: Sheet **portal body** + Agenda form = Info Umum (fullHeight) · siap deploy 2026-09-19 · doc cleanup; APK 1.1.0; `allowBackup` tetap `true`.
+> Status terakhir: Sheet **portal body** + Agenda form = Info Umum · **deployed `aff8856` 2026-09-19** · doc cleanup; APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 
@@ -119,7 +119,7 @@
 **Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · APK 1.1.0 build · Vercel `4fdd07f`
 
 ## Deploy
-- https://sevenbro.vercel.app — **deployed 2026-09-19** (`4fdd07f` sheet absolute gap fix; sebelumnya `bc3a379`, `90d6c0c`)
+- https://sevenbro.vercel.app — **deployed 2026-09-19** (`aff8856` Sheet portal + Agenda=Umum; sebelumnya `4fdd07f`, `bc3a379`, `90d6c0c`)
 - Supabase `gdmqmoigudtgknkgomeu` — migrations 003–014, **016 applied**
 - Redirect Google: prod `…/api/auth/callback/google` + localhost (opsional)
 - Android shell **1.1.0** (versionCode 11) — `android/dist/SevenBro-1.1.0-release.apk` (tidak di-commit)

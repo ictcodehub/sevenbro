@@ -81,6 +81,7 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-19 | **`/deploy-it` skill** (`.mimocode/skills/deploy-it/`): sync docs+MEMORY → codegraph → quality gate → commit → push → Vercel · **`= izin eksplisit`** | AGENTS § Git; user tidak perlu ketik perintah terpisah |
 | 2026-09-19 | Sheet **portal `document.body`** — fixed di dalam main/AppShell masih bikin gap Agenda (nav bocor); semua Sheet lewat `createPortal` | `sheet.tsx`, DESIGN_SYSTEM § safe area |
 | 2026-09-19 | Agenda **+Tambah** disamakan dengan Info **+Umum**: `fullHeight` + input forest + tombol `rounded-full` | `agenda/page.tsx` |
+| 2026-09-19 | **`aff8856` push + Vercel deploy** Sheet portal + Agenda=Umum · otak bersama di-update | prod `sevenbro.vercel.app` |
 
 ---
 
