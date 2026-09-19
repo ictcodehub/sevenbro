@@ -119,7 +119,7 @@
 **Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · **notif hard-delete + 1-baris** · **Agenda timeline + deskripsi** · **Beri Poin multi-siswa + section card** · **StudentSelect SSOT** · APK 1.1.0 build · Vercel `0af39a4`
 
 ## Deploy
-- https://sevenbro.vercel.app — **deployed 2026-09-19** (`aff8856` Sheet portal + Agenda=Umum; sebelumnya `4fdd07f`, `bc3a379`, `90d6c0c`)
+- https://sevenbro.vercel.app — **deployed 2026-09-19** (`0af39a4` batch UI; sebelumnya `aff8856`, `4fdd07f`, `bc3a379`, `90d6c0c`)
 - Supabase `gdmqmoigudtgknkgomeu` — migrations 003–014, **016 applied**
 - Redirect Google: prod `…/api/auth/callback/google` + localhost (opsional)
 - Android shell **1.1.0** (versionCode 11) — `android/dist/SevenBro-1.1.0-release.apk` (tidak di-commit)
