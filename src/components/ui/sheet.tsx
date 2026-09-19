@@ -4,6 +4,16 @@ import { type ReactNode, useEffect } from "react"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+/**
+ * Tinggi full viewport, aman untuk shell Android + browser PWA:
+ * - Shell sudah pad root untuk system bar → set --sevenbro-safe-bottom: 0
+ * - Browser: kurangi env(safe-area-inset-bottom) (viewport-fit=cover)
+ * JANGAN pakai h-full/% — parent fixed bisa bikin height resolve ke auto
+ * sehingga sheet hanya setinggi konten dan bottom nav bocor di bawah.
+ */
+const FULL_HEIGHT =
+  "calc(100dvh - var(--sevenbro-nav-bar-inset, 0px) - var(--sevenbro-safe-bottom, env(safe-area-inset-bottom, 0px)))"
+
 export function Sheet({
   open,
   onClose,
@@ -32,7 +42,8 @@ export function Sheet({
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex justify-center",
+        // z di atas bottom nav (z-40) + notif shade (z-50)
+        "fixed inset-0 z-[60] flex justify-center",
         fullHeight ? "" : "items-end sm:items-center",
       )}
     >
@@ -49,9 +60,19 @@ export function Sheet({
         className={cn(
           "relative w-full max-w-lg min-w-0 flex flex-col bg-white shadow-lg overflow-hidden",
           fullHeight
-            ? "h-full rounded-t-2xl border-t border-line"
-            : "max-h-[85dvh] rounded-t-2xl sm:rounded-2xl border border-line",
+            ? "rounded-none border-0 sm:rounded-2xl sm:border sm:border-line"
+            : "max-h-[min(85dvh,calc(85dvh-env(safe-area-inset-bottom,0px)))] rounded-t-2xl sm:rounded-2xl border border-line",
         )}
+        style={
+          fullHeight
+            ? {
+                height: FULL_HEIGHT,
+                maxHeight: FULL_HEIGHT,
+                // pastikan menutup nav bawah walau flex stretch gagal
+                alignSelf: "stretch",
+              }
+            : undefined
+        }
       >
         <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 border-b border-line shrink-0">
           <h2 className="text-sm font-medium text-ink min-w-0 truncate">{title}</h2>
@@ -64,7 +85,13 @@ export function Sheet({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="flex-1 min-h-0 scroll-y-only px-4 py-4 pb-6">
+        <div
+          className="flex-1 min-h-0 scroll-y-only px-4 py-4"
+          style={{
+            paddingBottom:
+              "calc(1rem + var(--sevenbro-nav-bar-inset, 0px) + var(--sevenbro-safe-bottom, env(safe-area-inset-bottom, 0px)))",
+          }}
+        >
           <div className="space-y-3 min-w-0">{children}</div>
         </div>
       </div>

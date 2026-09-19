@@ -71,6 +71,7 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-19 | Notif hapus = **soft-delete server** (`deleted_at`); install ulang tidak memunculkan lagi; Riwayat bisa pulihkan | migration 016, `/api/notifications*`, layout + history |
 | 2026-09-19 | Hapus Info → notif ikut hilang: FK `ref_id` cascade + fallback judul/body | migration 016, `announcements/[id]` |
 | 2026-09-19 | **Commit `90d6c0c` push + `supabase db push` 016 + `vercel deploy --prod` selesai** | prod `sevenbro.vercel.app` |
+| 2026-09-19 | Gap bawah form/nav: Sheet fullHeight **wajib** height calc dvh (bukan `h-full`); AppShell `fixed inset-0`; var `--sevenbro-safe-bottom` | `sheet.tsx`, `AppShell.tsx`, `globals.css`, shell inject |
 
 ---
 

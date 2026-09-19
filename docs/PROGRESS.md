@@ -74,7 +74,7 @@
 ### Android WebView Shell (`android/`)
 - Native Kotlin shell **remote URL** — bukan bundel web assets
 - Loads `https://sevenbro.vercel.app` (`BuildConfig.APP_URL`)
-- Package `com.sevenbro.app` · versi shell **1.0.7** (versionCode 8)
+- Package `com.sevenbro.app` · versi shell **1.1.0** (versionCode 11)
 - FCM push + `getFcmToken` bridge · cookie flush untuk persist login
 - Ikon: `pixel-duck.png` HD · bg putih · safe-zone circle · nama **Seven BRO!**
 - **Update konten = deploy Vercel saja**; APK rebuild hanya untuk perubahan native
@@ -82,7 +82,8 @@
 - Scale match Chrome: `loadWithOverviewMode=false`, `textZoom=100` (anti downscale)
 - **System bars (Xiaomi-safe):** `decorFitsSystemWindows(false)` + padding **native** di root layout (bukan inject px ke CSS WebView)
 - Status/nav bar + ikon adaptif light/dark via bridge `SevenBroShell.setChrome(dark)`
-- Web CSS var `--sevenbro-status-bar-inset` / `--sevenbro-nav-bar-inset` di-set `0` oleh shell (anti double-pad)
+- Web CSS var `--sevenbro-status-bar-inset` / `--sevenbro-nav-bar-inset` / `--sevenbro-safe-bottom` di-set `0` oleh shell (anti double-pad)
+- **Gap bawah form:** Sheet fullHeight pakai `calc(100dvh - inset)` (bukan `h-full`); AppShell `fixed inset-0`; WebView bg = nav (putih)
 - File picker + kamera (Mass Report); FileProvider
 - OAuth tetap di WebView (cookies tidak pindah ke Chrome Custom Tab)
 - Signing: `android/keystore.properties` + keystore lokal (**gitignored**)

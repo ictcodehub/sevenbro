@@ -443,6 +443,14 @@ html,
 body {
   overflow-x: clip;
   max-width: 100%;
+  height: 100%;
+}
+
+/* Shell Android: root sudah pad system bar — jangan double-count env() */
+html.sevenbro-shell {
+  --sevenbro-safe-bottom: 0px;
+  --sevenbro-status-bar-inset: 0px;
+  --sevenbro-nav-bar-inset: 0px;
 }
 
 /* Skor seri — podium nonaktif: monokrom, tanpa animasi */

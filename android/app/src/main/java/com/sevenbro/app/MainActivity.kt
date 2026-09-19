@@ -223,7 +223,8 @@ class MainActivity : AppCompatActivity() {
         val page = if (dark) 0xFF0B0F14.toInt() else 0xFFF3F7F4.toInt()
         findViewById<View>(R.id.root)?.setBackgroundColor(chrome)
         swipeRefresh.setBackgroundColor(page)
-        webView.setBackgroundColor(page)
+        // Samakan dengan bottom nav (putih/gelap) — hindari strip warna page di bawah nav
+        webView.setBackgroundColor(chrome)
         @Suppress("DEPRECATION")
         window.statusBarColor = chrome
         @Suppress("DEPRECATION")
@@ -331,14 +332,18 @@ class MainActivity : AppCompatActivity() {
                 root.classList.add('sevenbro-shell');
                 root.style.setProperty('--sevenbro-status-bar-inset', '0px');
                 root.style.setProperty('--sevenbro-nav-bar-inset', '0px');
+                // Root native sudah pad system bar — env() WebView jangan dihitung lagi
+                root.style.setProperty('--sevenbro-safe-bottom', '0px');
                 var st = document.getElementById('sevenbro-shell-css');
                 if (!st) {
                   st = document.createElement('style');
                   st.id = 'sevenbro-shell-css';
                   st.textContent = [
-                    'html,body{overflow-x:hidden;max-width:100%;}',
+                    'html,body{overflow-x:hidden;max-width:100%;height:100%;}',
                     'header.sevenbro-header,header.sticky.top-0{padding-top:0 !important;}',
-                    'nav.sevenbro-nav,nav.sticky.bottom-0{padding-bottom:0 !important;}'
+                    'nav.sevenbro-nav,nav.sticky.bottom-0{padding-bottom:0 !important;}',
+                    // WebView bg = nav putih → strip bawah tidak terlihat sebagai gap
+                    'body{background:#ffffff;}'
                   ].join('');
                   root.appendChild(st);
                 }

@@ -77,16 +77,23 @@ Card hover        →  (none — mobile)
 ### Mobile / Android safe area (WAJIB)
 
 ```
+SSOT var (pakai di nav, Sheet, main):
+  --sevenbro-nav-bar-inset   (shell set 0; default 0)
+  --sevenbro-safe-bottom     = env(safe-area-inset-bottom) di browser;
+                               shell set 0 (root native sudah pad system bar)
+
 Bottom nav AppShell:
-  padding-bottom = calc(var(--sevenbro-nav-bar-inset, 0px) + env(safe-area-inset-bottom, 0px))
+  padding-bottom = calc(var(--sevenbro-nav-bar-inset, 0px) + var(--sevenbro-safe-bottom, env(safe-area-inset-bottom, 0px)))
 
 Sheet fullHeight (modal brief, dll.):
-  tinggi = 100dvh - nav-bar-inset - safe-area-inset-bottom
-  JANGAN 100dvh polos — itu menutup navigasi / gesture bar Android
+  height = calc(100dvh - var(--sevenbro-nav-bar-inset, 0px) - var(--sevenbro-safe-bottom, env(safe-area-inset-bottom, 0px)))
+  JANGAN h-full / height:100% — bisa resolve ke auto → sheet hanya setinggi konten,
+  bottom nav bocor di bawah backdrop (gap + nav terlihat).
+  JANGAN 100dvh polos di browser — menutup gesture bar Android.
   Content scroll: pb ikut formula yang sama
 ```
 
-WebView shell (`android/`) men-set `--sevenbro-nav-bar-inset`; browser PWA pakai `env(safe-area-inset-bottom)`.
+WebView shell (`android/`) men-set `--sevenbro-*-inset` + `--sevenbro-safe-bottom` ke `0`; browser PWA pakai `env(safe-area-inset-bottom)`.
 
 ### Buttons (SSOT FINAL — acuan Brief Harian / Umum)
 

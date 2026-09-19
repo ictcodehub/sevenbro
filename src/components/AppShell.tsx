@@ -275,7 +275,8 @@ export default function AppShell({
   }, [showNotif])
 
   return (
-    <div className="h-dvh flex flex-col overflow-hidden bg-page">
+    // fixed inset-0: selalu isi viewport penuh (lebih andal dari h-dvh di WebView)
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-page">
       {/* Header — selalu di atas; bg ikut light/dark via token bg-white → .dark */}
       <header
         className="sevenbro-header shrink-0 sticky top-0 z-40 bg-white border-b border-line"
@@ -589,7 +590,7 @@ export default function AppShell({
         aria-label="Navigasi utama"
         style={{
           paddingBottom:
-            "calc(var(--sevenbro-nav-bar-inset, 0px) + env(safe-area-inset-bottom, 0px))",
+            "calc(var(--sevenbro-nav-bar-inset, 0px) + var(--sevenbro-safe-bottom, env(safe-area-inset-bottom, 0px)))",
         }}
       >
         <div

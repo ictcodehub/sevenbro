@@ -18,7 +18,7 @@ Browser PWA still shows address bar / toolbar. This shell is a full-screen WebVi
 | Min SDK | 26 (Android 8) |
 | Target / compile SDK | 35 |
 | Loads | `BuildConfig.APP_URL` = `https://sevenbro.vercel.app` |
-| Shell version | **1.0.8** (versionCode 9) — CLI build tanpa Android Studio |
+| Shell version | **1.1.0** (versionCode 11) — CLI build tanpa Android Studio |
 
 ## System bars (important)
 
