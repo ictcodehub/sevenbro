@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: Sheet **portal body** + Agenda form = Info Umum · **deployed `aff8856` 2026-09-19** · doc cleanup; APK 1.1.0; `allowBackup` tetap `true`.
+> Status terakhir: Batch UI (Beri Poin · notif hard-delete · Agenda timeline · Beranda accent) · siap deploy 2026-09-19 · APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 
@@ -116,7 +116,7 @@
 - Distribusi APK **1.1.0** ke siswa (sideload; Play Store closed testing = opsional hilangkan warning Play Protect)
 - Aktivasi FCM end-to-end di device (env Vercel sudah ada)
 
-**Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · APK 1.1.0 build · Vercel `aff8856`
+**Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · **notif hard-delete + 1-baris** · **Agenda timeline + deskripsi** · **Beri Poin multi-siswa + section card** · **StudentSelect SSOT** · APK 1.1.0 build · Vercel `aff8856`
 
 ## Deploy
 - https://sevenbro.vercel.app — **deployed 2026-09-19** (`aff8856` Sheet portal + Agenda=Umum; sebelumnya `4fdd07f`, `bc3a379`, `90d6c0c`)

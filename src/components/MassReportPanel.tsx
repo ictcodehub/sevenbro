@@ -474,7 +474,7 @@ export default function MassReportPanel() {
               value={editReason}
               onChange={(e) => setEditReason(e.target.value)}
               rows={2}
-              className={inputClass + " mt-1 resize-none"}
+              className={inputClass + " mt-1 resize-none scroll-y-only"}
             />
             <p className="mt-1 text-[9px] text-ink-soft/55">
               Jika report custom, teks ini menjadi preset baru untuk kelas.

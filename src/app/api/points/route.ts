@@ -95,11 +95,20 @@ export async function POST(req: Request) {
   try {
     const ctx = await requireApi(canGivePoints)
     const body = await req.json().catch(() => ({}))
-    const studentId = String(body?.studentId ?? "").trim()
+    // Multi: studentIds[] · Single (legacy/scan): studentId
+    const studentIds = (
+      Array.isArray(body?.studentIds)
+        ? body.studentIds
+        : body?.studentId
+          ? [body.studentId]
+          : []
+    )
+      .map((id: unknown) => String(id ?? "").trim())
+      .filter(Boolean)
     const kind = String(body?.kind ?? "").toUpperCase()
     const reason = String(body?.reason ?? "").trim()
     const abs = Math.abs(Number(body?.delta))
-    if (!studentId || !reason) {
+    if (studentIds.length === 0 || !reason) {
       return NextResponse.json({ error: "Siswa dan alasan wajib diisi" }, { status: 400 })
     }
     if (kind !== "PRESTASI" && kind !== "PELANGGARAN") {
@@ -109,17 +118,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Poin harus 1–100" }, { status: 400 })
     }
     const delta = kind === "PRESTASI" ? Math.round(abs) : -Math.round(abs)
+    const rows = studentIds.map((student_id: string) => ({
+      student_id,
+      kind,
+      delta,
+      reason,
+      created_by: ctx.email ?? ctx.name,
+    }))
     const { data, error } = await createAdminClient()
       .from("points")
-      .insert({
-        student_id: studentId,
-        kind,
-        delta,
-        reason,
-        created_by: ctx.email ?? ctx.name,
-      })
+      .insert(rows)
       .select("*")
-      .single()
     if (error) throw new Error(error.message)
     return NextResponse.json(data, { status: 201 })
   } catch (e) {

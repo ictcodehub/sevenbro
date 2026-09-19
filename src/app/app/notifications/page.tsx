@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { RotateCcw } from "lucide-react"
+import { RotateCcw, X } from "lucide-react"
 import {
-  NOTIF_EVENT,
   READ_KEY,
   loadIdSet,
   migrateLocalDeletedToServer,
@@ -31,11 +30,12 @@ function timeAgo(iso: string): string {
   const m = Math.floor(diff / 60000)
   if (m < 1) return "Baru saja"
   if (m < 60) return `${m} menit lalu`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h} jam lalu`
-  const d = Math.floor(h / 24)
-  if (d < 7) return `${d} hari lalu`
-  return new Date(t).toLocaleDateString("id-ID", { day: "numeric", month: "short" })
+  // ≥ 60 menit → jam posting (mis. 23:00)
+  return new Date(t).toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
 }
 
 export default function NotificationHistoryPage() {
@@ -72,11 +72,17 @@ export default function NotificationHistoryPage() {
   }
 
   const deleteAll = () => {
-    const ids = new Set(items.filter((n) => !n.deleted_at).map((n) => n.id))
-    setItems((prev) =>
-      prev.map((n) => (ids.has(n.id) ? { ...n, deleted_at: new Date().toISOString() } : n)),
-    )
+    setItems([])
     void fetch("/api/notifications/clear", { method: "DELETE" }).catch(() => {})
+    notifyNotificationsChanged()
+  }
+
+  /** Hard-delete 1 baris — hapus dari DB, bukan soft-delete */
+  const removeOne = (id: string) => {
+    setItems((prev) => prev.filter((n) => n.id !== id))
+    void fetch(`/api/notifications/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }).catch(() => {})
     notifyNotificationsChanged()
   }
 
@@ -143,36 +149,57 @@ export default function NotificationHistoryPage() {
             return (
               <li
                 key={n.id}
-                onClick={() => openNotif(n)}
-                className={`px-3.5 py-3 rounded-xl bg-white border border-line shadow-sm cursor-pointer active:scale-[0.99] transition-transform ${
+                className={`flex items-stretch rounded-xl bg-white border border-line ${
                   deleted ? "opacity-65" : ""
                 }`}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <p
-                    className={`text-[11px] leading-snug truncate ${
-                      read ? "font-medium text-ink/80" : "font-semibold text-ink"
-                    }`}
+                <div className="min-w-0 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => openNotif(n)}
+                    className="w-full text-left px-2.5 pt-2.5 pb-1 active:opacity-80"
                   >
-                    {n.title}
-                  </p>
-                  <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-                    <span className="text-[10px] text-ink-soft/50">{timeAgo(n.created_at)}</span>
-                    {!read && !deleted && <span className="h-1.5 w-1.5 rounded-full bg-forest" />}
-                  </div>
+                    <div className="flex items-center gap-2 min-w-0">
+                      {!read && !deleted && (
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-forest" />
+                      )}
+                      <span
+                        className={`min-w-0 flex-1 truncate text-[11px] ${
+                          read ? "font-medium text-ink/80" : "font-semibold text-ink"
+                        }`}
+                      >
+                        {n.title}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 truncate text-xs text-ink-soft/75">{n.body}</p>
+                    <p className="mt-0.5 text-[11px] text-ink-soft/55">
+                      {timeAgo(n.created_at)}
+                    </p>
+                  </button>
                 </div>
-                <p className="text-[10px] text-ink-soft/70 mt-1 leading-snug">{n.body}</p>
-                {deleted && (
+                {deleted ? (
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation()
                       restore(n.id)
                     }}
-                    className="mt-2 inline-flex items-center gap-1 text-[10px] font-medium text-forest active:opacity-70"
+                    aria-label="Pulihkan"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center self-center rounded-lg text-forest active:bg-surface mr-1"
                   >
-                    <RotateCcw className="h-3 w-3" />
-                    Pulihkan ke Notifikasi
+                    <RotateCcw className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeOne(n.id)
+                    }}
+                    aria-label="Hapus notifikasi"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center self-center rounded-lg text-ink-soft/70 active:bg-alert-bg active:text-alert mr-1"
+                  >
+                    <X className="h-4 w-4" />
                   </button>
                 )}
               </li>

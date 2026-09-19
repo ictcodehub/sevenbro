@@ -7,7 +7,7 @@ import { createAdminClient } from "@/lib/db"
 
 export const dynamic = "force-dynamic"
 
-/** Soft-delete semua notifikasi milik user — tetap di Riwayat, tidak muncul lagi setelah install ulang */
+/** Hard-delete semua notifikasi milik user — hilang permanen dari DB */
 export async function DELETE() {
   ensureContextReader()
   try {
@@ -22,10 +22,9 @@ export async function DELETE() {
     if (!audiences.length) return NextResponse.json({ ok: true })
     await createAdminClient()
       .from("notifications")
-      .update({ deleted_at: new Date().toISOString() })
+      .delete()
       .eq("class_id", ctx.classId ?? "")
       .in("audience", audiences)
-      .is("deleted_at", null)
     return NextResponse.json({ ok: true })
   } catch (e) {
     return errorResponse(e)

@@ -37,6 +37,9 @@ DT/PT di form: pilih mapel di alasan (mis. “Perfect Score DT Matematika”).
 | Tidak Patuh Aturan Kelas | −2 |
 | Ganggu Proses Belajar | −3 |
 | Kasar / Tidak Sopan | −3 |
+| Tidak Mengerjakan / Mengumpulkan Tugas, PR, dll | −3 |
+| Melanggar Aturan Sekolah | −5 |
+| Merusak Fasilitas Sekolah | −10 |
 
 Izin kas: **tidak dihapus** dari sistem — hanya **tidak bayar + tidak izin** yang −1 mingguan. Izin beruntun **3×** = −1 (penyesuaian).
 

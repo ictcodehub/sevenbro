@@ -4,8 +4,9 @@ import { useRef } from "react"
 import { Copy, Pencil, Trash2 } from "lucide-react"
 
 /**
- * Tap content → onOpen (edit). Swipe left → Edit / [Duplicate] / Delete.
+ * Tap content → onOpen. Swipe/drag left → Edit / [Duplicate] / Delete.
  * Swipe right or tap after swipe → close.
+ * Pointer events: jalan di touch + mouse (desktop).
  */
 export function SwipeRow({
   children,
@@ -26,23 +27,26 @@ export function SwipeRow({
 }) {
   const startX = useRef(0)
   const dragging = useRef(false)
+  const moved = useRef(false)
   const width = onDuplicate ? 144 : 96
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    startX.current = e.touches[0].clientX
+  const onPointerDown = (e: React.PointerEvent) => {
+    startX.current = e.clientX
     dragging.current = true
+    moved.current = false
   }
 
-  const onTouchEnd = (e: React.TouchEvent) => {
+  const onPointerUp = (e: React.PointerEvent) => {
     if (!dragging.current) return
     dragging.current = false
-    const dx = e.changedTouches[0].clientX - startX.current
+    const dx = e.clientX - startX.current
+    if (Math.abs(dx) > 8) moved.current = true
     if (dx < -40) setOpen(true)
     else if (dx > 40) setOpen(false)
   }
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative overflow-hidden rounded-2xl">
       <div className="absolute inset-y-0 right-0 flex">
         <button
           type="button"
@@ -80,18 +84,23 @@ export function SwipeRow({
           aria-label="Delete"
         >
           <Trash2 className="h-3.5 w-3.5" />
-          <span className="text-[8px] font-semibold">Delete</span>
+          <span className="text-[8px] font-semibold">Hapus</span>
         </button>
       </div>
 
       <div
-        className="relative bg-white transition-transform duration-150 touch-pan-y cursor-pointer"
+        className="relative transition-transform duration-150 touch-pan-y"
         style={{ transform: open ? `translateX(-${width}px)` : "translateX(0)" }}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
         onClick={() => {
           if (open) {
             setOpen(false)
+            return
+          }
+          if (moved.current) {
+            moved.current = false
             return
           }
           onOpen?.()

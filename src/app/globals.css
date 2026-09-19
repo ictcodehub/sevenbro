@@ -23,29 +23,40 @@
   letter-spacing: 0.02em;
 }
 
-/* Judul brand: shine berulang halus */
+/* Judul brand: shine berulang halus — fallback solid bila clip-text gagal */
 .brand-title {
-  background: linear-gradient(
-    105deg,
-    #144d36 0%,
-    #144d36 30%,
-    #a3e635 50%,
-    #144d36 70%,
-    #144d36 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  display: inline-block;
+  color: #144d36;
   line-height: 1.15;
   padding-top: 0.04em;
-  animation: brand-shine 2.8s ease-in-out infinite;
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .brand-title {
+    background-image: linear-gradient(
+      105deg,
+      #144d36 0%,
+      #144d36 28%,
+      #a3e635 50%,
+      #144d36 72%,
+      #144d36 100%
+    );
+    background-size: 200% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: brand-shine 2.8s ease-in-out infinite;
+    will-change: background-position;
+  }
 }
 
 /* Wrap untuk pop + glow — jangan animasikan teks clip-text */
 .brand-burst-wrap {
   position: relative;
-  display: block;
+  display: inline-block;
+  max-width: 100%;
   transform-origin: left center;
   animation: brand-pop 3s ease-in-out infinite;
   will-change: transform;
@@ -136,6 +147,7 @@
     animation: none;
     color: #144d36;
     background: none;
+    -webkit-text-fill-color: #144d36;
   }
   .brand-burst-wrap {
     animation: none;
@@ -438,6 +450,19 @@
   height: 0;
   display: none;
 }
+
+/* PWA ala native: textarea scroll tanpa scrollbar vertikal */
+textarea {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+textarea::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+  background: transparent !important;
+}
+
 /* Cegah scroll horizontal tanpa merusak sticky / scroll vertikal */
 html,
 body {
@@ -451,6 +476,71 @@ html.sevenbro-shell {
   --sevenbro-safe-bottom: 0px;
   --sevenbro-status-bar-inset: 0px;
   --sevenbro-nav-bar-inset: 0px;
+}
+
+/* Float + shine — card accent terdekat (Agenda Beranda) */
+.accent-pulse {
+  position: relative;
+  overflow: hidden;
+  animation: accent-float 2.8s ease-in-out infinite;
+  will-change: transform;
+}
+
+.accent-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 70%
+  );
+  background-size: 220% 100%;
+  background-position: 120% 0;
+  pointer-events: none;
+  animation: accent-shine 2.8s ease-in-out infinite;
+}
+
+@keyframes accent-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes accent-shine {
+  0% {
+    background-position: 120% 0;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  50% {
+    background-position: -20% 0;
+    opacity: 0.85;
+  }
+  80% {
+    opacity: 0;
+  }
+  100% {
+    background-position: -20% 0;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accent-pulse,
+  .accent-pulse::after {
+    animation: none;
+  }
+  .accent-pulse::after {
+    opacity: 0;
+  }
 }
 
 /* Skor seri — podium nonaktif: monokrom, tanpa animasi */

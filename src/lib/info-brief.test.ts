@@ -40,8 +40,8 @@ describe("info-brief date helpers", () => {
     expect(relativeDayLabel("2026-09-20", now)).toBe("")
   })
 
-  it("briefTitleForDate format fix", () => {
-    expect(briefTitleForDate("2026-09-21")).toBe("Info Harian - Senin, 21 September 2026")
+  it("briefTitleForDate tanpa hari/tanggal", () => {
+    expect(briefTitleForDate("2026-09-21")).toBe("Info Harian")
   })
 })
 

@@ -18,9 +18,8 @@ export async function GET() {
       .from("events")
       .select("*")
       .eq("class_id", ctx.classId)
-      .gte("starts_at", new Date().toISOString())
-      .order("starts_at", { ascending: true })
-      .limit(50)
+      .order("starts_at", { ascending: false })
+      .limit(100)
     if (error) throw new Error(error.message)
     return NextResponse.json(data ?? [])
   } catch (e) {

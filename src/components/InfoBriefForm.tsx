@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Copy, Check, X, ChevronDown, User, Pencil } from "lucide-react"
+import { Copy, Check, X, Pencil } from "lucide-react"
 import { Sheet, Field } from "@/components/ui/sheet"
 import {
   autoTugasGroupsForDate,
@@ -28,13 +28,7 @@ import {
   type SubjectTeacherRow,
 } from "@/lib/info-brief"
 import { formatDisplayName } from "@/lib/format"
-
-type StudentLite = {
-  id: string
-  full_name: string
-  position?: string | null
-  active?: boolean
-}
+import { StudentMultiSelect, type StudentLite } from "@/components/StudentSelect"
 
 type FormSubject = {
   subject_id: string | null
@@ -143,98 +137,6 @@ function BriefSectionCard({
 
 /** Alias token form — sama dengan FIELD_SELECT (tanpa aksen amber) */
 const actionFieldClass = FIELD_SELECT
-
-/** Multi-select siswa — SSOT: User icon + truncate + naked radio list */
-function StudentMultiSelect({
-  students,
-  selectedIds,
-  selectedNames,
-  onChange,
-  placeholder = "Pilih Nama Siswa",
-}: {
-  students: StudentLite[]
-  selectedIds: string[]
-  selectedNames: string[]
-  onChange: (ids: string[], names: string[]) => void
-  placeholder?: string
-}) {
-  const [open, setOpen] = useState(false)
-  const display =
-    selectedNames.length > 0 ? selectedNames.join(", ") : placeholder
-
-  const toggleStudent = (id: string, name: string) => {
-    const idx = selectedIds.indexOf(id)
-    if (idx >= 0) {
-      onChange(
-        selectedIds.filter((x) => x !== id),
-        selectedNames.filter((_, i) => i !== idx),
-      )
-    } else {
-      onChange([...selectedIds, id], [...selectedNames, name])
-    }
-  }
-
-  return (
-    <div className="min-w-0">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="min-h-11 w-full flex items-center gap-2 border-b border-forest/40 py-2 text-left"
-      >
-        <User className="h-4 w-4 shrink-0 text-ink-soft/70" />
-        <span
-          className={`min-w-0 flex-1 truncate text-[12px] ${
-            selectedNames.length ? "text-ink" : "text-ink-soft/60"
-          }`}
-        >
-          {display}
-        </span>
-        <ChevronDown
-          className={`h-4 w-4 shrink-0 text-ink-soft transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
-      {open && (
-        <div className="pb-1">
-          <button
-            type="button"
-            onClick={() => onChange([], [])}
-            className="min-h-10 w-full py-2 text-left text-[12px] font-medium text-forest"
-          >
-            Semua siswa
-          </button>
-          {students.map((s) => {
-            const on = selectedIds.includes(s.id)
-            return (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => toggleStudent(s.id, formatDisplayName(s.full_name))}
-                className="min-h-10 w-full py-2 text-left"
-              >
-                <span className="flex items-center gap-2">
-                  <span
-                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-                      on ? "border-forest bg-forest text-white" : "border-line bg-white"
-                    }`}
-                  >
-                    {on && <Check className="h-2.5 w-2.5" />}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-[12px] text-ink">
-                    {formatDisplayName(s.full_name)}
-                  </span>
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
-}
 
 /** Field teks opsional — SSOT deskripsi (label + dotted token line) */
 function OptionalTextField({
@@ -774,26 +676,26 @@ export default function InfoBriefForm({
       title={editBrief ? "Ubah Brief Harian" : "Brief Info Harian"}
       fullHeight
     >
-      <div className="rounded-2xl bg-forest px-3 py-3 flex items-center justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70">
-            Judul Brief
-          </p>
-          <p className="text-[13px] font-bold text-white mt-0.5 leading-snug">
+      <div className="rounded-2xl bg-forest px-3 py-3.5 flex items-center justify-between gap-3 min-h-[4.5rem]">
+        <div className="min-w-0 flex-1 space-y-1">
+          <p className="text-[13px] font-bold text-white leading-tight">
             {fixedTitle}
           </p>
-          <p className="text-[9px] text-white/55 mt-1">Otomatis dari tanggal brief</p>
+          <p className="text-[11px] font-semibold text-lime leading-tight">
+            {formatBriefDateLong(dateKey)}
+          </p>
+          <p className="text-[9px] text-white/55 leading-tight">
+            Otomatis dari tanggal brief
+          </p>
         </div>
         <button
           type="button"
           onClick={() => setPinned((v) => !v)}
           aria-pressed={pinned}
           aria-label="Pin ke Beranda"
-          className="flex shrink-0 flex-col items-center gap-1.5"
+          className="flex shrink-0 items-center gap-2"
         >
-          <span className="text-[10px] font-normal text-lime">
-            Pin ke Beranda
-          </span>
+          <span className="text-[10px] font-semibold text-white/85">Pin</span>
           <span
             className={`h-5 w-9 rounded-full relative transition-colors ${
               pinned ? "bg-lime" : "bg-white/30"
@@ -1314,7 +1216,7 @@ export default function InfoBriefForm({
           </button>
         }
       >
-        <pre className="whitespace-pre-wrap text-[10px] text-ink-soft/85 leading-relaxed font-sans max-h-40 overflow-y-auto rounded-xl bg-page border border-line px-3 py-2">
+        <pre className="whitespace-pre-wrap text-[10px] text-ink-soft/85 leading-relaxed font-sans max-h-40 overflow-y-auto scroll-y-only rounded-xl bg-page border border-line px-3 py-2">
           {preview}
         </pre>
       </BriefSectionCard>

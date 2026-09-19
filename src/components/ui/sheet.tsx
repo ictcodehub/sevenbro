@@ -115,12 +115,13 @@ export function Field({
   children: ReactNode
   hint?: string
 }) {
+  // div, bukan label — label merambatkan :active/click ke semua kontrol di dalamnya
   return (
-    <label className="block space-y-1">
-      <span className="text-[11px] font-semibold text-ink">{label}</span>
+    <div className="block space-y-1.5">
+      <span className="text-sm font-semibold text-ink">{label}</span>
       {children}
-      {hint && <span className="block text-[9px] text-ink-soft/70">{hint}</span>}
-    </label>
+      {hint && <span className="block text-xs text-ink-soft/70">{hint}</span>}
+    </div>
   )
 }
 

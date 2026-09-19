@@ -4,12 +4,14 @@ import { useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import {
+  AlertTriangle,
   ArrowDownRight,
-  ArrowUpRight,
   Check,
+  ChevronDown,
   Flame,
   History,
   Inbox,
+  Minus,
   Plus,
   QrCode,
   Sparkles,
@@ -19,7 +21,8 @@ import {
 } from "lucide-react"
 import { SectionHeader, EmptyState } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
-import { Sheet, Field, inputClass } from "@/components/ui/sheet"
+import { Sheet, Field } from "@/components/ui/sheet"
+import { StudentMultiSelect } from "@/components/StudentSelect"
 import { canGivePoints, canAdmin } from "@/lib/policies"
 import { RoleGate } from "@/components/RoleGate"
 import FeatureGate from "@/components/FeatureGate"
@@ -54,12 +57,9 @@ type PointsPayload = {
 type StudentOpt = { id: string; full_name: string; position: string }
 type StudentDetail = { student: LeaderRow | null; history: PointLog[] }
 
-const AMOUNTS = [5, 10, 20]
-
-/** Preset alasan — SSOT di docs/POINT_SYSTEM.md */
+/** Preset alasan manual — SSOT docs/POINT_SYSTEM.md (A1 kas = auto; delta = saran; skor manual) */
 const POINT_PRESETS = {
   PRESTASI: [
-    { label: "Bayar Uang Kas", delta: 1 },
     { label: "Perfect Score DT", delta: 5 },
     { label: "Perfect Score PT", delta: 5 },
     { label: "Mengerjakan Piket", delta: 1 },
@@ -70,10 +70,36 @@ const POINT_PRESETS = {
     { label: "Tidak Patuh Aturan Kelas", delta: 2 },
     { label: "Ganggu Proses Belajar", delta: 3 },
     { label: "Kasar / Tidak Sopan", delta: 3 },
+    { label: "Tidak Mengerjakan / Mengumpulkan Tugas, PR, dll", delta: 3 },
+    { label: "Melanggar Aturan Sekolah", delta: 5 },
+    { label: "Merusak Fasilitas Sekolah", delta: 10 },
   ],
 } as const
 
 type PointPresetKind = keyof typeof POINT_PRESETS
+
+/** Section card — frame putih seperti Brief Info, ukuran teks normal */
+function FormSectionCard({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string
+  subtitle?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="rounded-2xl border border-line bg-white shadow-sm">
+      <div className="border-b border-line bg-page px-3.5 py-3 rounded-t-2xl">
+        <p className="text-sm font-bold text-ink">{title}</p>
+        {subtitle && (
+          <p className="text-xs text-ink-soft/70 leading-snug mt-0.5">{subtitle}</p>
+        )}
+      </div>
+      <div className="p-3.5 space-y-4">{children}</div>
+    </div>
+  )
+}
 
 const RANK_LABEL: Record<number, string> = {
   1: "Peringkat 1",
@@ -345,10 +371,11 @@ function PoinInner() {
     detailId ? `/api/points?studentId=${detailId}` : null,
   )
 
-  const [studentId, setStudentId] = useState("")
+  const [studentIds, setStudentIds] = useState<string[]>([])
   const [kind, setKind] = useState<"PRESTASI" | "PELANGGARAN">("PRESTASI")
-  const [amount, setAmount] = useState(10)
+  const [amount, setAmount] = useState(2)
   const [reason, setReason] = useState("")
+  const [quickOpen, setQuickOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
@@ -356,6 +383,11 @@ function PoinInner() {
   const [reportCount, setReportCount] = useState(0)
   const searchParams = useSearchParams()
   const tabParam = searchParams.get("tab")
+
+  const nameById = new Map(
+    (students ?? []).map((s) => [s.id, formatDisplayName(s.full_name)] as const),
+  )
+  const selectedNames = studentIds.map((id) => nameById.get(id) ?? "")
 
   useEffect(() => {
     if (tabParam === "report") setTab("report")
@@ -401,8 +433,13 @@ function PoinInner() {
 
   const submit = async () => {
     setErr(null)
-    if (!studentId || !reason.trim()) {
+    if (studentIds.length === 0 || !reason.trim()) {
       setErr("Pilih siswa dan isi alasan")
+      return
+    }
+    const abs = Math.abs(Math.round(amount))
+    if (!Number.isFinite(abs) || abs < 1 || abs > 100) {
+      setErr("Skor harus 1–100")
       return
     }
     setSaving(true)
@@ -410,14 +447,19 @@ function PoinInner() {
       const r = await fetch("/api/points", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId, kind, delta: amount, reason: reason.trim() }),
+        body: JSON.stringify({
+          studentIds,
+          kind,
+          delta: abs,
+          reason: reason.trim(),
+        }),
       })
       const body = await r.json().catch(() => null)
       if (!r.ok) throw new Error(body?.error || `Gagal (${r.status})`)
       setOpen(false)
-      setStudentId("")
+      setStudentIds([])
       setReason("")
-      setAmount(10)
+      setAmount(2)
       setKind("PRESTASI")
       flash("Poin berhasil disimpan.")
       await mutate()
@@ -955,122 +997,214 @@ function PoinInner() {
       </Sheet>
 
       {/* Form beri poin */}
-      <Sheet open={open} onClose={() => setOpen(false)} title="Beri Poin">
+      <Sheet open={open} onClose={() => setOpen(false)} title="Beri Poin" fullHeight>
         {err && (
-          <p className="text-[11px] text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
+          <p className="text-sm text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
             {err}
           </p>
         )}
-        <Field label="Pemain">
-          <select
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
-            className={inputClass}
+
+        <FormSectionCard
+          title="Form Beri Poin"
+          subtitle="Siswa, tipe, alasan, skor"
+        >
+          <Field
+            label="Siswa"
+            hint={studentIds.length > 0 ? `${studentIds.length} terpilih` : undefined}
           >
-            <option value="">Pilih siswa…</option>
-            {(students ?? []).map((s) => (
-              <option key={s.id} value={s.id}>
-                {formatDisplayName(s.full_name)}
-                {s.position !== "ANGGOTA" ? ` (${s.position})` : ""}
-              </option>
-            ))}
-          </select>
-        </Field>
+            <StudentMultiSelect
+              students={students ?? []}
+              selectedIds={studentIds}
+              selectedNames={selectedNames}
+              onChange={(ids) => setStudentIds(ids)}
+              placeholder="Pilih Nama Siswa"
+              selectAllLabel="Pilih Semua"
+              selectAllMode="all"
+            />
+          </Field>
 
-        <div className="space-y-1">
-          <span className="text-[11px] font-semibold text-ink">Tipe</span>
-          <div className="grid grid-cols-2 gap-2">
-            {(["PRESTASI", "PELANGGARAN"] as const).map((k) => (
-              <button
-                key={k}
-                type="button"
-                onClick={() => setKind(k)}
-                className={`rounded-xl py-2 text-[11px] font-bold border transition ${
-                  kind === k
-                    ? k === "PRESTASI"
-                      ? "bg-forest text-white border-forest"
-                      : "bg-alert text-white border-alert"
-                    : "bg-white text-ink border-line"
-                }`}
-              >
-                {k === "PRESTASI" ? "⚡ Prestasi" : "↓ Pelanggaran"}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <span className="text-[11px] font-semibold text-ink">Alasan cepat</span>
-          <div className="flex flex-wrap gap-1.5">
-            {POINT_PRESETS[kind as PointPresetKind].map((p) => {
-              const active = reason.trim() === p.label
-              return (
+          <div className="space-y-1.5">
+            <span className="text-sm font-semibold text-ink">Tipe</span>
+            <div className="grid grid-cols-2 gap-2">
+              {(["PRESTASI", "PELANGGARAN"] as const).map((k) => (
                 <button
-                  key={p.label}
+                  key={k}
                   type="button"
-                  onClick={() => {
-                    setReason(p.label)
-                    setAmount(Math.abs(p.delta))
-                  }}
-                  className={`text-[10px] font-semibold px-2 py-1.5 rounded-full border transition ${
-                    active
-                      ? kind === "PRESTASI"
+                  onClick={() => setKind(k)}
+                  className={`flex items-center justify-center gap-1.5 rounded-full py-2.5 text-sm font-semibold border transition active:scale-[0.97] ${
+                    k === "PELANGGARAN"
+                      ? kind === k
+                        ? "bg-alert text-white border-alert ring-2 ring-alert/35"
+                        : "bg-alert/15 text-alert border-alert/35"
+                      : kind === k
                         ? "bg-forest text-white border-forest"
-                        : "bg-alert text-white border-alert"
-                      : "bg-white text-ink border-line"
+                        : "bg-white text-ink border-line"
                   }`}
                 >
-                  {p.label} · {p.delta > 0 ? "+" : "−"}
-                  {Math.abs(p.delta)}
+                  {k === "PRESTASI" ? (
+                    <Trophy className="h-4 w-4" />
+                  ) : (
+                    <AlertTriangle className="h-4 w-4" />
+                  )}
+                  {k === "PRESTASI" ? "Prestasi" : "Pelanggaran"}
                 </button>
-              )
-            })}
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-1">
-          <span className="text-[11px] font-semibold text-ink">Skor</span>
-          <div className="grid grid-cols-3 gap-2">
-            {AMOUNTS.map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setAmount(n)}
-                className={`rounded-xl py-2.5 text-[12px] font-black border transition ${
-                  amount === n
-                    ? "bg-amber text-deep border-amber shadow"
-                    : "bg-white text-ink border-line"
+          <div className="relative w-full min-w-0 space-y-1.5">
+            <span className="text-sm font-semibold text-ink">Alasan Cepat</span>
+            <button
+              type="button"
+              onClick={() => setQuickOpen((v) => !v)}
+              aria-expanded={quickOpen}
+              className="min-h-11 w-full flex items-center gap-2 rounded-lg border border-forest/40 bg-white px-3 text-left focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
+            >
+              <span
+                className={`min-w-0 flex-1 truncate text-sm font-medium ${
+                  reason.trim() ? "text-ink" : "text-ink-soft/60"
                 }`}
               >
-                {kind === "PRESTASI" ? "+" : "−"}
-                {n}
-              </button>
-            ))}
+                {reason.trim() || "Pilih alasan cepat…"}
+              </span>
+              <ChevronDown
+                className={`h-4 w-4 shrink-0 text-ink-soft transition-transform ${
+                  quickOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {quickOpen && (
+              <div
+                role="listbox"
+                aria-label="Alasan cepat"
+                className="absolute left-0 right-0 top-full z-30 mt-1 w-full max-h-[16rem] overflow-y-auto scroll-y-only bg-white border border-line rounded-xl shadow-lg py-1"
+              >
+                {POINT_PRESETS[kind as PointPresetKind].map((p) => {
+                  const active = reason.trim() === p.label
+                  const sign = kind === "PRESTASI" ? "+" : "−"
+                  return (
+                    <button
+                      key={p.label}
+                      type="button"
+                      onClick={() => {
+                        setReason(p.label)
+                        setAmount(Math.abs(p.delta))
+                        setQuickOpen(false)
+                      }}
+                      className="flex min-h-10 w-full items-center gap-2 px-3 py-2 text-left active:bg-surface"
+                    >
+                      <span
+                        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+                          active
+                            ? "border-forest bg-forest text-white"
+                            : "border-line bg-white"
+                        }`}
+                      >
+                        {active && <Check className="h-2.5 w-2.5" />}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-sm text-ink">
+                        {p.label}
+                      </span>
+                      <span className="shrink-0 text-xs font-bold tabular-nums text-ink-soft/70">
+                        {sign}
+                        {Math.abs(p.delta)}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
-        </div>
 
-        <Field label="Alasan" hint="Wajib — tampil di Battle Log semua siswa">
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            rows={3}
-            placeholder={
-              kind === "PRESTASI"
-                ? "Perfect Score DT Matematika…"
-                : "Tidak mengerjakan piket hari ini…"
-            }
-            className={inputClass + " resize-none"}
-          />
-        </Field>
+          <Field label="Skor">
+            {/* Pill tetap flex-1 · −/+ manual membatalkan listening Alasan Cepat */}
+            <div className="flex w-full items-center gap-1">
+              <button
+                type="button"
+                aria-label="Kurangi skor"
+                onClick={() => {
+                  setReason("")
+                  setQuickOpen(false)
+                  setAmount((v) => Math.max(1, (Number(v) || 0) - 1))
+                }}
+                className="flex h-11 w-10 shrink-0 items-center justify-center rounded-lg text-ink-soft transition-colors active:bg-surface active:text-ink"
+              >
+                <Minus className="h-4 w-4" strokeWidth={2.5} />
+              </button>
+
+              <div
+                className={`flex min-w-0 flex-1 items-center justify-center gap-0.5 h-11 rounded-full bg-deep px-3 shadow-sm ring-1 ${
+                  kind === "PRESTASI" ? "ring-lime/25" : "ring-alert/30"
+                }`}
+              >
+                <span
+                  className={`shrink-0 text-[15px] font-black leading-none tabular-nums ${
+                    kind === "PRESTASI" ? "text-lime" : "text-alert"
+                  }`}
+                >
+                  {kind === "PRESTASI" ? "+" : "−"}
+                </span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={100}
+                  value={amount === 0 ? "" : amount}
+                  placeholder="2"
+                  aria-label="Skor"
+                  onChange={(e) => {
+                    const raw = e.target.value
+                    if (raw === "") {
+                      setAmount(0)
+                      return
+                    }
+                    const n = Number(raw)
+                    if (Number.isFinite(n)) {
+                      setAmount(Math.max(0, Math.min(100, Math.floor(n))))
+                    }
+                  }}
+                  className="w-8 shrink-0 bg-transparent text-center text-[16px] font-black text-acid tabular-nums outline-none placeholder:text-white/30 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                />
+              </div>
+
+              <button
+                type="button"
+                aria-label="Tambah skor"
+                onClick={() => {
+                  setReason("")
+                  setQuickOpen(false)
+                  setAmount((v) => Math.min(100, (Number(v) || 0) + 1))
+                }}
+                className="flex h-11 w-10 shrink-0 items-center justify-center rounded-lg text-ink-soft transition active:scale-90 active:bg-surface active:text-ink"
+              >
+                <Plus className="h-4 w-4" strokeWidth={2.5} />
+              </button>
+            </div>
+          </Field>
+
+          <Field label="Alasan" hint="Wajib — tampil di Battle Log semua siswa">
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              placeholder={
+                kind === "PRESTASI"
+                  ? "Perfect Score DT Matematika…"
+                  : "Tidak mengerjakan piket hari ini…"
+              }
+              className="min-h-11 w-full resize-none scroll-y-only rounded-xl border border-forest/45 bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink-soft/45 focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
+            />
+          </Field>
+        </FormSectionCard>
 
         <button
           type="button"
           disabled={saving}
           onClick={() => void submit()}
-          className="w-full bg-forest text-white text-[12px] font-black py-3 rounded-xl flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-[0.98]"
+          className="flex w-full items-center justify-center gap-1.5 rounded-full bg-forest px-3 py-3 text-sm font-semibold text-white active:scale-[0.97] transition-transform disabled:opacity-50"
         >
           <Check className="h-4 w-4" />
-          {saving ? "Menyimpan…" : "Sebar Poin"}
+          {saving ? "Menyimpan…" : "Beri Poin"}
         </button>
       </Sheet>
 

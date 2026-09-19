@@ -583,7 +583,7 @@ export default function AdminRosterPage() {
             onChange={(e) => setBulkNames(e.target.value)}
             rows={5}
             placeholder={"Nama siswa 1\nNama siswa 2"}
-            className="w-full text-[11px] border border-line rounded-xl p-2 bg-page text-ink resize-none"
+            className="w-full text-[11px] border border-line rounded-xl p-2 bg-page text-ink resize-none scroll-y-only"
           />
           <button
             type="button"

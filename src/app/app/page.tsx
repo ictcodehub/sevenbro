@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useEffect, useRef, useState } from "react"
 import { useSession } from "next-auth/react"
 import {
   CalendarDays,
@@ -10,6 +11,7 @@ import {
   Trophy,
   Wallet,
   ArrowRight,
+  ArrowUpRight,
   Crown,
   Award,
 } from "lucide-react"
@@ -92,6 +94,40 @@ function personName(full: string) {
   return formatDisplayName(full)
 }
 
+/** Hanya untuk kartu Beranda — buang “ - Senin, 21 September 2026” dari judul */
+function homeTitle(title: string) {
+  const i = title.indexOf(" - ")
+  return i > 0 ? title.slice(0, i) : title
+}
+
+/** Hanya untuk kartu Beranda — buang *bold* jadi teks polos (source tidak diubah) */
+function homeBody(body: string) {
+  return body.replace(/\*([^*\n]+)\*/g, "$1")
+}
+
+/** True bila teks melebihi 2 baris (untuk tampilkan .... di baris 3) */
+function useOverflow2Lines() {
+  const ref = useRef<HTMLParagraphElement>(null)
+  const [overflow, setOverflow] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const measure = () => {
+      // 2 baris ≈ 2 × line-height
+      const styles = window.getComputedStyle(el)
+      const lh = parseFloat(styles.lineHeight) || parseFloat(styles.fontSize) * 1.45
+      setOverflow(el.scrollHeight > lh * 2 + 1)
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  return { ref, overflow }
+}
+
 const HOME_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
 
 export default function HomePage() {
@@ -111,10 +147,14 @@ function HomeInner() {
   const { data: events } = useAppSWR<EventRow[]>("/api/events")
   const { data: kas } = useAppSWR<Summary>("/api/kas/summary")
   const { data: points } = useAppSWR<PointsPayload>("/api/points")
+  const bodyClip = useOverflow2Lines()
 
   const pinned =
     (announcements ?? []).find((a) => a.pinned) ?? (announcements ?? [])[0]
-  const upcoming = (events ?? []).slice(0, 3)
+  // Agenda Terdekat → tanggal terdekat di atas
+  const upcoming = [...(events ?? [])]
+    .sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at))
+    .slice(0, 3)
   const top3 = (points?.leaderboard ?? []).slice(0, 3)
   const totalSiswa = points?.leaderboard?.length ?? 0
   // Mati kalau top skor masih seri
@@ -143,19 +183,25 @@ function HomeInner() {
           className="block active:scale-[0.99] transition-transform"
         >
           <div className="bg-deep rounded-2xl p-4 text-white">
-            <div className="flex items-center justify-between mb-2">
-              <span className="inline-flex items-center gap-1 bg-amber/20 text-amber rounded-full px-2 py-0.5 text-[9px] font-bold">
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <h3 className="text-sm font-bold leading-tight min-w-0 flex-1">
+                {homeTitle(pinned.title)}
+              </h3>
+              <span className="inline-flex shrink-0 items-center gap-1 bg-amber/20 text-amber rounded-full px-2 py-0.5 text-[9px] font-bold mt-0.5">
                 <Pin className="h-2.5 w-2.5" />
                 {pinned.pinned ? "Disematkan" : "Terbaru"}
               </span>
-              <span className="text-[10px] text-white/45">Info kelas</span>
             </div>
-            <h3 className="text-sm font-bold leading-tight mb-1">
-              {pinned.title}
-            </h3>
-            <p className="text-[11px] text-white/65 leading-relaxed line-clamp-2">
-              {pinned.body}
+            <p
+              ref={bodyClip.ref}
+              className="text-[11px] text-white/65 leading-relaxed whitespace-pre-wrap overflow-hidden"
+              style={{ maxHeight: "calc(2 * 1.45em)" }}
+            >
+              {homeBody(pinned.body)}
             </p>
+            {bodyClip.overflow && (
+              <p className="text-[11px] text-white/65 leading-relaxed">....</p>
+            )}
             <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between">
               <span className="text-[10px] text-acid font-semibold flex items-center gap-0.5">
                 Baca selengkapnya <ArrowRight className="h-3 w-3" />
@@ -182,7 +228,10 @@ function HomeInner() {
               <Wallet className="h-3 w-3" />
               Saldo Kas Kelas
             </span>
-            <span className="text-[10px] text-acid">Lihat kas</span>
+            <span className="inline-flex items-center gap-0.5 text-[10px] text-acid">
+              <ArrowUpRight className="h-3 w-3" />
+              Lihat Kas
+            </span>
           </div>
           <p className="text-2xl font-bold leading-none text-acid">
             {formatIDR(kas?.balance ?? 0)}
@@ -309,8 +358,8 @@ function HomeInner() {
           count={events?.length ?? 0}
           action={{ href: "/app/agenda", label: "Semua" }}
         />
-        <div className="space-y-1.5">
-          {upcoming.map((e) => (
+        <div className="space-y-1.5 mt-1">
+          {upcoming.map((e, i) => (
             <ListRow
               key={e.id}
               icon={<CalendarDays className="h-3.5 w-3.5 text-forest" />}
@@ -319,6 +368,7 @@ function HomeInner() {
               rightTop={formatTimeID(new Date(e.starts_at))}
               rightBottom={formatDateID(new Date(e.starts_at))}
               href="/app/agenda"
+              accent={i === 0}
             />
           ))}
           {upcoming.length === 0 && (

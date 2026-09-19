@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, type ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -15,6 +15,7 @@ import {
   ArrowLeft,
   Moon,
   WifiOff,
+  X,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -97,7 +98,7 @@ function MailIcon() {
   )
 }
 
-/** Kartu notifikasi ala iOS — tanpa avatar, swipe-to-delete */
+/** Kartu notifikasi — title · body · waktu di bawah · tombol X */
 function NotifCard({
   n,
   onDelete,
@@ -107,68 +108,53 @@ function NotifCard({
   onDelete: () => void
   onOpen: () => void
 }) {
-  const [dx, setDx] = useState(0)
-  const startRef = useRef<number | null>(null)
-  const dragging = useRef(false)
-  const THRESHOLD = 80
-
-  const onDown = (e: React.PointerEvent) => {
-    startRef.current = e.clientX
-    dragging.current = true
-  }
-  const onMove = (e: React.PointerEvent) => {
-    if (!dragging.current || startRef.current == null) return
-    const delta = e.clientX - startRef.current
-    if (delta < 0) setDx(Math.max(delta, -100))
-  }
-  const onUp = () => {
-    if (!dragging.current) return
-    dragging.current = false
-    if (dx < -THRESHOLD) onDelete()
-    else if (dx > -THRESHOLD) setDx(0)
-    // biarkan dx negatif kecil, click handler yang putuskan
-  }
-
   return (
-    <li
-      className={`relative select-none touch-pan-y transition-opacity duration-200 ${
-        dx < -40 ? "opacity-40" : "opacity-100"
-      }`}
-    >
+    <li className="relative select-none">
       <div
-        onPointerDown={onDown}
-        onPointerMove={onMove}
-        onPointerUp={onUp}
-        onPointerCancel={onUp}
-        onClick={(e) => {
-          e.preventDefault()
-          if (dx > -40) onOpen()
-          setDx(0)
-        }}
+        onClick={onOpen}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") onOpen()
         }}
-        className={`relative px-3.5 py-3 cursor-pointer active:opacity-95 rounded-2xl bg-white shadow-sm ${
-          dx !== 0 ? "" : "transition-transform duration-200"
-        }`}
-        style={{ transform: `translateX(${dx}px)` }}
+        className="flex items-stretch rounded-xl bg-white border border-line cursor-pointer active:opacity-95"
       >
-        <div className="flex items-start justify-between gap-2">
-          <p
-            className={`text-[13px] leading-snug truncate ${
-              n.read ? "font-medium text-ink/80" : "font-semibold text-ink"
-            }`}
+        <div className="min-w-0 flex-1">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              onOpen()
+            }}
+            className="w-full text-left px-2.5 pt-2.5 pb-1"
           >
-            {n.title}
-          </p>
-          <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-            <span className="text-[10px] text-ink-soft/50">{n.time}</span>
-            {!n.read && <span className="h-1.5 w-1.5 rounded-full bg-forest" />}
-          </div>
+            <div className="flex items-center gap-2 min-w-0">
+              {!n.read && (
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-forest" />
+              )}
+              <span
+                className={`min-w-0 flex-1 truncate text-[11px] ${
+                  n.read ? "font-medium text-ink/80" : "font-semibold text-ink"
+                }`}
+              >
+                {n.title}
+              </span>
+            </div>
+            <p className="mt-0.5 truncate text-[10px] text-ink-soft/75">{n.body}</p>
+            <p className="mt-0.5 text-[10px] text-ink-soft/55">{n.time}</p>
+          </button>
         </div>
-        <p className="text-[12px] text-ink-soft/70 mt-1 leading-snug">{n.body}</p>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete()
+          }}
+          aria-label="Hapus notifikasi"
+          className="flex h-10 w-10 shrink-0 items-center justify-center self-center rounded-lg text-ink-soft/70 active:bg-alert-bg active:text-alert mr-1"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
     </li>
   )
@@ -299,7 +285,7 @@ export default function AppShell({
                 </div>
               )}
               <div className="min-w-0 flex-1 flex flex-col justify-center">
-                <span className="brand-burst-wrap truncate">
+                <span className="brand-burst-wrap">
                   <span className="text-[17px] brand-title leading-[1.15]">
                     <span className="font-brocklyns">Seven Bro</span>
                     <span className="font-sans font-black text-[1.1em] ml-0.5">!</span>
@@ -321,7 +307,7 @@ export default function AppShell({
             >
               <Bell className="h-5 w-5" />
               {unread > 0 && (
-                <span className="absolute -top-1 -right-1 z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-amber px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
+                <span className="absolute top-0 right-0 z-10 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-amber px-0.5 text-[9px] font-bold leading-none text-white ring-1 ring-white">
                   {unread > 9 ? "9+" : unread}
                 </span>
               )}

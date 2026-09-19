@@ -82,6 +82,7 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-19 | Sheet **portal `document.body`** — fixed di dalam main/AppShell masih bikin gap Agenda (nav bocor); semua Sheet lewat `createPortal` | `sheet.tsx`, DESIGN_SYSTEM § safe area |
 | 2026-09-19 | Agenda **+Tambah** disamakan dengan Info **+Umum**: `fullHeight` + input forest + tombol `rounded-full` | `agenda/page.tsx` |
 | 2026-09-19 | **`aff8856` push + Vercel deploy** Sheet portal + Agenda=Umum · otak bersama di-update | prod `sevenbro.vercel.app` |
+| 2026-09-19 | Batch UI: Beri Poin form+multi siswa · notif 1-baris hard-delete · Agenda timeline+deskripsi · Beranda accent float/shine · brief header · brand anim fix | pages + `StudentSelect` + `globals.css` + APIs |
 
 ---
 
@@ -127,5 +128,6 @@ Setelah kerja selesai: update `PROGRESS.md` Open + baris **Keputusan sinkron** d
 
 
 
+
 ### Automation log
-- last session-sync: `2026-09-19T10:15:06.164Z` · branch `master`
+- last session-sync: `2026-09-19T13:09:07.719Z` · branch `master`

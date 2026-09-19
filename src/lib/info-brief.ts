@@ -647,9 +647,9 @@ export function relativeDayLabel(dateKey: string, now = new Date()): string {
   return ""
 }
 
-/** Judul brief fix: Info Harian - Senin, 21 September 2026 */
-export function briefTitleForDate(dateKey: string): string {
-  return `Info Harian - ${formatBriefDateLong(dateKey)}`
+/** Judul brief — tanpa hari/tanggal (tanggal tampil di meta card) */
+export function briefTitleForDate(_dateKey: string): string {
+  return "Info Harian"
 }
 
 export function generateBriefBody(

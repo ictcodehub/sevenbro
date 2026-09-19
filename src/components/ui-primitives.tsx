@@ -5,7 +5,7 @@
 
 import type { ReactNode } from "react"
 import Link from "next/link"
-import { ArrowRight, CheckCircle2, Clock, MapPin } from "lucide-react"
+import { ArrowRight, Check, Clock, MapPin } from "lucide-react"
 
 // ── Section Header ──
 export function SectionHeader({
@@ -18,7 +18,7 @@ export function SectionHeader({
   action?: { href: string; label: string }
 }) {
   return (
-    <div className="flex items-center justify-between mb-2">
+    <div className="flex items-center justify-between mb-3">
       <h2 className="text-xs font-semibold text-ink">{title}</h2>
       {action ? (
         <Link
@@ -28,7 +28,11 @@ export function SectionHeader({
           {action.label} <ArrowRight className="h-2.5 w-2.5" />
         </Link>
       ) : count !== undefined ? (
-        <span className="bg-surface text-ink-soft text-[9px] px-1.5 py-0.5 rounded-full font-medium">
+        <span
+          className="inline-flex items-center gap-1 rounded-full bg-forest text-white text-[10px] font-bold px-2 py-0.5 tabular-nums"
+          title={`${count}`}
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-lime" />
           {count}
         </span>
       ) : null}
@@ -78,6 +82,7 @@ export function ListRow({
   rightTop,
   rightBottom,
   href,
+  accent,
 }: {
   icon: ReactNode
   title: string
@@ -85,23 +90,41 @@ export function ListRow({
   rightTop?: string
   rightBottom?: string
   href?: string
+  /** Accent tipis di kiri — item terdekat */
+  accent?: boolean
 }) {
   const body = (
-    <div className="bg-white border border-line shadow-sm rounded-xl p-2.5 flex items-center gap-2.5">
+    <div
+      className={`border shadow-sm rounded-xl p-2.5 flex items-center gap-2.5 ${
+        accent
+          ? "border-lime/50 bg-lime/20 accent-pulse"
+          : "border-line bg-white"
+      }`}
+    >
       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface shrink-0">
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-semibold text-ink truncate">{title}</p>
-        <div className="flex items-center gap-1 text-[10px] text-ink-soft/75">
+        <p className={`text-[11px] font-semibold truncate ${accent ? "text-forest" : "text-ink"}`}>
+          {title}
+        </p>
+        <div className={`flex items-center gap-1 text-[10px] ${accent ? "text-forest/75" : "text-ink-soft/75"}`}>
           <MapPin className="h-2.5 w-2.5 shrink-0" />
           <span className="truncate">{subtitle}</span>
         </div>
       </div>
       {(rightTop || rightBottom) && (
         <div className="text-right shrink-0">
-          {rightTop && <p className="text-[11px] font-bold text-ink">{rightTop}</p>}
-          {rightBottom && <p className="text-[9px] text-ink-soft/75">{rightBottom}</p>}
+          {rightTop && (
+            <p className={`text-[11px] font-bold ${accent ? "text-forest" : "text-ink"}`}>
+              {rightTop}
+            </p>
+          )}
+          {rightBottom && (
+            <p className={`text-[9px] ${accent ? "text-forest/70" : "text-ink-soft/75"}`}>
+              {rightBottom}
+            </p>
+          )}
         </div>
       )}
     </div>
@@ -116,69 +139,92 @@ export function ListRow({
   )
 }
 
-// ── Timeline Item (legacy — prefer dense list layout for long lists) ──
+// ── Timeline Item — node sejajar meta · rail sampai lokasi ──
 export function TimelineItem({
   time,
   timeEnd,
   title,
   location,
+  description,
   isActive,
   isLast,
+  actions,
 }: {
   time: string
   timeEnd?: string
   title: string
   location: string
+  description?: string | null
   isActive?: boolean
   isLast?: boolean
+  actions?: ReactNode
 }) {
+  const plainDesc = description
+    ? description
+        .replace(/\*([^*\n]+)\*/g, "$1")
+        .replace(/\s+/g, " ")
+        .trim()
+    : null
+
   return (
-    <div className="relative flex gap-2.5">
-      <div className="relative z-10 flex flex-col items-center">
-        <div
-          className={`flex h-5 w-5 items-center justify-center rounded-full ${
-            isActive ? "bg-forest text-white" : "bg-white border border-line"
+    <div className={`min-w-0 ${isLast ? "pb-2" : "pb-6"}`}>
+      {/* Baris 1: node · tanggal — aksi absolute sejajar tanggal */}
+      <div className="relative flex items-center gap-2 pr-16">
+        <span
+          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ring-2 ${
+            isActive
+              ? "bg-forest ring-white"
+              : "border border-forest/50 bg-white ring-white"
           }`}
+          aria-hidden
         >
           {isActive ? (
-            <CheckCircle2 className="h-3 w-3" />
+            <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
           ) : (
-            <div className="h-1.5 w-1.5 rounded-full bg-line" />
+            <span className="h-1.5 w-1.5 rounded-full bg-forest" />
           )}
-        </div>
-      </div>
-      <div className={`flex-1 ${isLast ? "" : "pb-2"}`}>
-        <div
-          className={`rounded-xl p-2.5 ${
-            isActive ? "bg-deep text-white" : "bg-white border border-line shadow-sm"
+        </span>
+        <p
+          className={`min-w-0 flex-1 text-[11px] font-medium leading-snug truncate ${
+            isActive ? "text-forest" : "text-ink-soft/65"
           }`}
         >
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <span className={`text-[11px] font-bold ${isActive ? "text-acid" : "text-ink"}`}>
-              {time}
-            </span>
-            {timeEnd && (
-              <span className={`text-[9px] ${isActive ? "text-white/55" : "text-ink-soft/75"}`}>
-                — {timeEnd}
-              </span>
-            )}
+          {time}
+          {timeEnd ? ` — ${timeEnd}` : ""}
+        </p>
+        {actions && (
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-0">
+            {actions}
           </div>
+        )}
+      </div>
+
+      {/* Judul — jarak seperti sebelumnya */}
+      <div className="mt-1 pl-6">
+        <h3
+          className={`text-[13px] font-semibold leading-snug truncate ${
+            isActive ? "text-forest" : "text-ink"
+          }`}
+        >
+          {title}
+        </h3>
+        {plainDesc && (
           <p
-            className={`text-[11px] font-semibold leading-tight truncate ${
-              isActive ? "text-white" : "text-ink"
+            className={`mt-1 text-[11px] leading-relaxed line-clamp-2 ${
+              isActive ? "text-forest/80" : "text-ink-soft/70"
             }`}
           >
-            {title}
+            {plainDesc}
           </p>
-          <div
-            className={`flex items-center gap-1 text-[10px] mt-0.5 ${
-              isActive ? "text-acid" : "text-ink-soft/75"
-            }`}
-          >
-            <MapPin className="h-2.5 w-2.5 shrink-0" />
-            <span className="truncate">{location}</span>
-          </div>
-        </div>
+        )}
+        <p
+          className={`mt-2 flex items-center gap-1 text-[11px] leading-snug min-w-0 ${
+            isActive ? "text-forest/85" : "text-ink-soft/75"
+          }`}
+        >
+          <MapPin className="h-3 w-3 shrink-0" />
+          <span className="min-w-0 truncate">{location}</span>
+        </p>
       </div>
     </div>
   )
@@ -187,8 +233,12 @@ export function TimelineItem({
 export function Timeline({ children }: { children: ReactNode }) {
   return (
     <div className="relative">
-      <div className="absolute left-[10px] top-2 bottom-2 w-px bg-surface" />
-      <div>{children}</div>
+      {/* Rail — center node h-4 → left 7px (w-4/2 - 0.5) */}
+      <div
+        aria-hidden
+        className="absolute left-[7px] top-2 bottom-2 w-0.5 rounded-full bg-forest/25"
+      />
+      <div className="relative">{children}</div>
     </div>
   )
 }

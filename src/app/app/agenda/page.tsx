@@ -4,15 +4,13 @@ import { useSession } from "next-auth/react"
 import { useMemo, useState } from "react"
 import {
   CalendarDays,
-  Clock,
-  MapPin,
   Inbox,
   Plus,
-  Trash2,
   Check,
   Pencil,
+  Trash2,
 } from "lucide-react"
-import { SectionHeader, EmptyState } from "@/components/ui-primitives"
+import { EmptyState, Timeline, TimelineItem } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
 import { formatDateID, formatTimeID } from "@/lib/format"
 import { Sheet, Field } from "@/components/ui/sheet"
@@ -24,25 +22,13 @@ type EventRow = {
   id: string
   title: string
   location: string | null
+  description: string | null
   starts_at: string
 }
 
 // Agenda dibuka untuk siswa aktif; manage tetap via canManageAgenda
 const PAGE_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
-
-function dayKey(d: Date) {
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
-}
-
-function dayLabel(d: Date) {
-  const today = new Date()
-  const tomorrow = new Date(today)
-  tomorrow.setDate(today.getDate() + 1)
-  const base = formatDateID(d)
-  if (dayKey(d) === dayKey(today)) return `Hari Ini · ${base}`
-  if (dayKey(d) === dayKey(tomorrow)) return `Besok · ${base}`
-  return base
-}
+const PAGE_LIMIT = 15
 
 function toLocalInputValue(iso: string) {
   const d = new Date(iso)
@@ -71,22 +57,27 @@ function AgendaInner() {
   const [editing, setEditing] = useState<EventRow | null>(null)
   const [title, setTitle] = useState("")
   const [location, setLocation] = useState("")
+  const [description, setDescription] = useState("")
   const [when, setWhen] = useState("")
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [page, setPage] = useState(0)
 
-  const groups = useMemo(() => {
-    const map = new Map<string, { date: Date; events: EventRow[] }>()
-    for (const ev of data ?? []) {
-      const d = new Date(ev.starts_at)
-      const key = dayKey(d)
-      const entry = map.get(key) ?? { date: d, events: [] }
-      entry.events.push(ev)
-      map.set(key, entry)
-    }
-    return [...map.entries()]
+  // Paling dekat “sekarang” di atas → timeline vertical
+  const sorted = useMemo(() => {
+    const now = Date.now()
+    return [...(data ?? [])].sort((a, b) => {
+      const da = Math.abs(+new Date(a.starts_at) - now)
+      const db = Math.abs(+new Date(b.starts_at) - now)
+      if (da !== db) return da - db
+      return +new Date(a.starts_at) - +new Date(b.starts_at)
+    })
   }, [data])
+
+  const pageCount = Math.max(1, Math.ceil(sorted.length / PAGE_LIMIT))
+  const safePage = Math.min(page, pageCount - 1)
+  const pageItems = sorted.slice(safePage * PAGE_LIMIT, (safePage + 1) * PAGE_LIMIT)
 
   const flash = (msg: string) => {
     setToast(msg)
@@ -97,6 +88,7 @@ function AgendaInner() {
     setEditing(null)
     setTitle("")
     setLocation("")
+    setDescription("")
     setWhen("")
     setErr(null)
     setOpen(true)
@@ -106,6 +98,7 @@ function AgendaInner() {
     setEditing(ev)
     setTitle(ev.title)
     setLocation(ev.location ?? "")
+    setDescription(ev.description ?? "")
     setWhen(toLocalInputValue(ev.starts_at))
     setErr(null)
     setOpen(true)
@@ -133,6 +126,7 @@ function AgendaInner() {
             title: title.trim(),
             starts_at: startsAt,
             location: location.trim() || null,
+            description: description.trim() || null,
           }),
         })
         const b = await r.json().catch(() => null)
@@ -146,6 +140,7 @@ function AgendaInner() {
             title: title.trim(),
             starts_at: startsAt,
             location: location.trim() || null,
+            description: description.trim() || null,
           }),
         })
         const b = await r.json().catch(() => null)
@@ -155,6 +150,7 @@ function AgendaInner() {
       closeSheet()
       setTitle("")
       setLocation("")
+      setDescription("")
       setWhen("")
       await mutate()
     } catch (e) {
@@ -200,59 +196,67 @@ function AgendaInner() {
 
       {error ? (
         <EmptyState icon={<Inbox className="h-6 w-6" />} message="Gagal memuat agenda" />
-      ) : groups.length === 0 ? (
+      ) : pageItems.length === 0 ? (
         <EmptyState
           icon={<CalendarDays className="h-6 w-6" />}
           message="Belum ada agenda mendatang"
         />
       ) : (
-        groups.map(([, { date, events }]) => (
-          <div key={dayKey(date)}>
-            <SectionHeader title={dayLabel(date)} count={String(events.length)} />
-            <div className="space-y-1.5">
-              {events.map((ev) => (
-                <div
-                  key={ev.id}
-                  className="bg-white border border-line shadow-sm rounded-xl p-2.5 flex items-center gap-2.5"
-                >
-                  <div className="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-forest/10 shrink-0">
-                    <span className="text-[11px] font-bold text-forest leading-none">
-                      {formatTimeID(new Date(ev.starts_at))}
-                    </span>
-                    <Clock className="h-2.5 w-2.5 text-forest/60 mt-0.5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-semibold text-ink truncate">{ev.title}</p>
-                    <p className="flex items-center gap-1 text-[10px] text-ink-soft/75">
-                      <MapPin className="h-2.5 w-2.5 shrink-0" />
-                      <span className="truncate">{ev.location || "Lokasi belum ditentukan"}</span>
-                    </p>
-                  </div>
-                  {canEdit && (
-                    <div className="flex items-center gap-0.5 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => openEdit(ev)}
-                        aria-label="Ubah agenda"
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-ink-soft hover:bg-surface"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void remove(ev)}
-                        aria-label="Hapus agenda"
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-alert hover:bg-alert-bg"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))
+        <Timeline>
+          {pageItems.map((ev, i) => {
+            const d = new Date(ev.starts_at)
+            const isNearest = i === 0
+            const isLast = i === pageItems.length - 1
+
+            return (
+              <TimelineItem
+                key={ev.id}
+                time={`${formatDateID(d)} · ${formatTimeID(d)}`}
+                title={ev.title}
+                location={ev.location || "Lokasi belum ditentukan"}
+                description={ev.description}
+                isActive={isNearest}
+                isLast={isLast}
+                actions={
+                  canEdit ? (
+                    <button
+                      type="button"
+                      onClick={() => openEdit(ev)}
+                      aria-label="Ubah agenda"
+                      className="flex h-10 w-9 items-center justify-center rounded-lg text-ink-soft active:bg-surface"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  ) : undefined
+                }
+              />
+            )
+          })}
+        </Timeline>
+      )}
+
+      {sorted.length > PAGE_LIMIT && (
+        <div className="flex items-center justify-between pt-1">
+          <button
+            type="button"
+            disabled={safePage <= 0}
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            className="min-h-9 rounded-full border border-line bg-white px-3 text-[10px] font-semibold text-ink disabled:opacity-40"
+          >
+            Sebelumnya
+          </button>
+          <span className="text-[10px] text-ink-soft/70">
+            {safePage + 1} / {pageCount} · max {PAGE_LIMIT} per halaman
+          </span>
+          <button
+            type="button"
+            disabled={safePage >= pageCount - 1}
+            onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+            className="min-h-9 rounded-full border border-line bg-white px-3 text-[10px] font-semibold text-ink disabled:opacity-40"
+          >
+            Berikutnya
+          </button>
+        </div>
       )}
 
       {toast && (
@@ -296,6 +300,20 @@ function AgendaInner() {
             className="min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-[12px] font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
           />
         </Field>
+        {/* Field opsional — SSOT DESIGN_SYSTEM § Field opsional */}
+        <label className="block space-y-1 min-w-0">
+          <span className="block text-[10px] font-medium text-ink-soft">
+            Deskripsi
+            <span className="ml-1 font-normal text-ink-soft/55">opsional</span>
+          </span>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={12}
+            placeholder="Detail tambahan agenda…"
+            className="min-h-[14rem] w-full resize-none scroll-y-only rounded-xl border border-forest/45 bg-white px-3 py-2.5 text-[12px] text-ink placeholder:text-ink-soft/45 focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
+          />
+        </label>
         <button
           type="button"
           disabled={saving}
@@ -305,6 +323,17 @@ function AgendaInner() {
           <Check className="h-3.5 w-3.5" />
           {saving ? "Menyimpan…" : editing ? "Simpan Perubahan" : "Simpan Agenda"}
         </button>
+        {/* Hapus — hanya di editor (bukan saat create) */}
+        {editing && (
+          <button
+            type="button"
+            onClick={() => void remove(editing)}
+            className="flex w-full items-center justify-center gap-1.5 rounded-full border border-alert/40 bg-white px-2.5 py-2.5 text-[12px] font-semibold text-alert active:scale-[0.97] transition-transform"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Hapus Agenda
+          </button>
+        )}
       </Sheet>
 
       <div className="h-2" />

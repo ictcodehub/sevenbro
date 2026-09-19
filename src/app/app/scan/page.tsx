@@ -234,7 +234,7 @@ function ScanInner() {
               ? "Membantu teman…"
               : "Terlambat / tidak nurut…"
           }
-          className={inputClass + " resize-none"}
+          className={inputClass + " resize-none scroll-y-only"}
         />
       </Field>
 

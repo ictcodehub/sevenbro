@@ -193,7 +193,7 @@ function NewReportInner() {
                 onChange={(e) => setCustomText(e.target.value)}
                 rows={3}
                 placeholder="Contoh: Memukul teman…"
-                className={inputClass + " resize-none"}
+                className={inputClass + " resize-none scroll-y-only"}
               />
             </div>
           )}
@@ -300,7 +300,7 @@ function NewReportInner() {
             onChange={(e) => setNote(e.target.value)}
             rows={3}
             placeholder="Detail kejadian, waktu, saksi…"
-            className={inputClass + " resize-none"}
+            className={inputClass + " resize-none scroll-y-only"}
           />
         </div>
 

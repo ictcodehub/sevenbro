@@ -5,7 +5,6 @@ import { useState } from "react"
 import {
   Megaphone,
   Pin,
-  PinOff,
   Inbox,
   Plus,
   Trash2,
@@ -13,7 +12,7 @@ import {
   Pencil,
   PenLine,
 } from "lucide-react"
-import { SectionHeader, EmptyState } from "@/components/ui-primitives"
+import { EmptyState } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
 import { Sheet, Field } from "@/components/ui/sheet"
 import { canPostAnnouncement } from "@/lib/policies"
@@ -123,6 +122,44 @@ function authorLabel(raw: string | null) {
   if (!raw) return "Kelas 7B"
   if (raw.includes("@")) return raw.split("@")[0]
   return formatDisplayName(raw)
+}
+
+/** Buang “ - Senin, 21 September 2026” dari judul brief lama di DB */
+function briefDisplayTitle(title: string) {
+  const i = title.indexOf(" - ")
+  return i > 0 ? title.slice(0, i) : title
+}
+
+/** Toggle pin di pojok kanan-atas card — ON amber · OFF abu + coretan */
+function PinCardToggle({
+  pinned,
+  onToggle,
+}: {
+  pinned: boolean
+  onToggle: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={pinned ? "Lepas sematan" : "Sematkan"}
+      aria-pressed={pinned}
+      title={pinned ? "Lepas sematan" : "Sematkan"}
+      className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg active:bg-amber/10 ${
+        pinned ? "text-amber" : "text-ink-soft/40"
+      }`}
+    >
+      <span className="relative inline-flex h-4 w-4 items-center justify-center">
+        <Pin className="h-4 w-4" />
+        {!pinned && (
+          <span
+            aria-hidden
+            className="absolute left-[-2px] right-[-2px] top-1/2 h-px -translate-y-1/2 rotate-[-45deg] bg-current"
+          />
+        )}
+      </span>
+    </button>
+  )
 }
 
 const PAGE_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
@@ -344,7 +381,17 @@ function PengumumanInner() {
       </div>
 
       <div>
-        <SectionHeader title="Semua Pengumuman" count={String(sorted.length)} />
+        {/* Header section — ringkas, count tetap noticeable */}
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <h2 className="text-xs font-semibold text-ink">Semua Pengumuman</h2>
+          <span
+            className="inline-flex items-center gap-1 rounded-full bg-forest text-white text-[10px] font-bold px-2 py-0.5 tabular-nums"
+            title={`${sorted.length} pengumuman`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-lime" />
+            {sorted.length}
+          </span>
+        </div>
         {error ? (
           <EmptyState
             icon={<Inbox className="h-6 w-6" />}
@@ -377,7 +424,7 @@ function PengumumanInner() {
                         Brief
                       </span>
                       <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-ink">
-                        {a.title}
+                        {briefDisplayTitle(a.title)}
                       </span>
                       <span className="shrink-0 text-[10px] text-ink-soft/65">
                         {timeLabel(a.created_at)}
@@ -397,7 +444,7 @@ function PengumumanInner() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <h2 className="text-[12px] font-bold text-ink leading-snug">
-                          {a.title}
+                          {briefDisplayTitle(a.title)}
                         </h2>
                         <p className="mt-0.5 text-[9px] text-ink-soft/70">
                           {relativeDayLabel(brief.date)}
@@ -405,13 +452,11 @@ function PengumumanInner() {
                           {formatBriefDateLong(brief.date)}
                         </p>
                       </div>
-                      {a.pinned && (
-                        <span
-                          className="shrink-0 mt-0.5 text-amber"
-                          title="Disematkan"
-                        >
-                          <Pin className="h-3.5 w-3.5" />
-                        </span>
+                      {canEdit && (
+                        <PinCardToggle
+                          pinned={Boolean(a.pinned)}
+                          onToggle={() => void togglePin(a)}
+                        />
                       )}
                     </div>
                     <WaBody text={a.body} />
@@ -424,18 +469,6 @@ function PengumumanInner() {
                       </p>
                       {canEdit && (
                         <div className="flex items-center gap-0.5 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => void togglePin(a)}
-                            aria-label={a.pinned ? "Lepas sematan" : "Sematkan"}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg text-amber active:bg-amber/10"
-                          >
-                            {a.pinned ? (
-                              <PinOff className="h-3.5 w-3.5" />
-                            ) : (
-                              <Pin className="h-3.5 w-3.5" />
-                            )}
-                          </button>
                           <button
                             type="button"
                             onClick={() => openEdit(a)}
@@ -464,16 +497,16 @@ function PengumumanInner() {
                   key={a.id}
                   className="bg-white border border-line shadow-sm rounded-2xl p-3.5"
                 >
-                  <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                    {a.pinned && (
-                      <span className="inline-flex items-center gap-0.5 bg-amber/15 text-amber rounded-full px-1.5 py-0.5 text-[9px] font-bold">
-                        <Pin className="h-2.5 w-2.5" />
-                        Disematkan
-                      </span>
-                    )}
-                    <span className="text-[10px] text-ink-soft/75">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <span className="text-[10px] text-ink-soft/75 pt-1">
                       {timeLabel(a.created_at)}
                     </span>
+                    {canEdit && (
+                      <PinCardToggle
+                        pinned={Boolean(a.pinned)}
+                        onToggle={() => void togglePin(a)}
+                      />
+                    )}
                   </div>
                   <h2 className="text-[13px] font-bold text-ink leading-snug">
                     {a.title}
@@ -488,18 +521,6 @@ function PengumumanInner() {
                     </p>
                     {canEdit && (
                       <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => void togglePin(a)}
-                          aria-label={a.pinned ? "Lepas sematan" : "Sematkan"}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-amber active:bg-amber/10"
-                        >
-                          {a.pinned ? (
-                            <PinOff className="h-3.5 w-3.5" />
-                          ) : (
-                            <Pin className="h-3.5 w-3.5" />
-                          )}
-                        </button>
                         <button
                           type="button"
                           onClick={() => openEdit(a)}
@@ -588,7 +609,7 @@ function PengumumanInner() {
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={16}
-            className="min-h-11 w-full resize-none rounded-xl border border-forest/45 bg-white px-3 py-2.5 text-[12px] text-ink placeholder:text-ink-soft/45 focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
+            className="min-h-11 w-full resize-none scroll-y-only rounded-xl border border-forest/45 bg-white px-3 py-2.5 text-[12px] text-ink placeholder:text-ink-soft/45 focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
             placeholder="Tulis info untuk kelas…"
           />
         </Field>

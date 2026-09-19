@@ -46,11 +46,12 @@ function timeAgo(iso: string): string {
   const m = Math.floor(diff / 60000)
   if (m < 1) return "Baru saja"
   if (m < 60) return `${m} menit lalu`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h} jam lalu`
-  const d = Math.floor(h / 24)
-  if (d < 7) return `${d} hari lalu`
-  return new Date(t).toLocaleDateString("id-ID", { day: "numeric", month: "short" })
+  // ≥ 60 menit → jam posting (mis. 23:00)
+  return new Date(t).toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
 }
 
 type ApiNotif = {
@@ -217,7 +218,7 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
 
   const deleteNotif = (id: string) => {
     setNotifs((prev) => prev.filter((x) => x.id !== id))
-    // Soft-delete permanen di server — install ulang tidak memunculkan lagi
+    // Hard-delete dari DB — tidak jadi tabungan, tidak muncul lagi
     void fetch(`/api/notifications/${encodeURIComponent(id)}`, { method: "DELETE" }).catch(() => {})
   }
 

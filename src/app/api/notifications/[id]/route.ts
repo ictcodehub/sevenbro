@@ -26,7 +26,7 @@ async function loadOwned(id: string) {
   return { ctx, db, row }
 }
 
-/** Soft-delete 1 notif — permanen di server, tetap ada di Riwayat untuk dipulihkan */
+/** Hard-delete 1 notif dari DB — tidak jadi tabungan, tidak muncul lagi */
 export async function DELETE(_req: Request, { params }: Params) {
   ensureContextReader()
   try {
@@ -34,17 +34,14 @@ export async function DELETE(_req: Request, { params }: Params) {
     const { db, row, forbidden } = await loadOwned(id)
     if (forbidden) return NextResponse.json({ error: "Tidak berwenang" }, { status: 403 })
     if (!row) return NextResponse.json({ ok: true })
-    await db
-      .from("notifications")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", id)
+    await db.from("notifications").delete().eq("id", id)
     return NextResponse.json({ ok: true })
   } catch (e) {
     return errorResponse(e)
   }
 }
 
-/** Pulihkan notif dari Riwayat (hapus soft-delete) */
+/** Pulihkan notif soft-delete lama (baris yang masih ada di DB) */
 export async function PATCH(_req: Request, { params }: Params) {
   ensureContextReader()
   try {
