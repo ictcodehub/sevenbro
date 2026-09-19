@@ -116,7 +116,7 @@
 - Distribusi APK **1.1.0** ke siswa (sideload; Play Store closed testing = opsional hilangkan warning Play Protect)
 - Aktivasi FCM end-to-end di device (env Vercel sudah ada)
 
-**Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · APK 1.1.0 build · Vercel `4fdd07f`
+**Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · APK 1.1.0 build · Vercel `aff8856`
 
 ## Deploy
 - https://sevenbro.vercel.app — **deployed 2026-09-19** (`aff8856` Sheet portal + Agenda=Umum; sebelumnya `4fdd07f`, `bc3a379`, `90d6c0c`)
