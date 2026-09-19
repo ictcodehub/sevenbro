@@ -76,6 +76,7 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-19 | Sheet **semua** (fullHeight + bottom) pakai `absolute` positioning; audit overlay lain (buku detail, report, vote modal) | `sheet.tsx` + pages |
 | 2026-09-19 | Session selamat uninstall→install: `allowBackup=true` + JWT cookie 30 hari di WebView CookieManager (bukan bug login bypass) | `AndroidManifest.xml`, `auth.ts` |
 | 2026-09-19 | **`allowBackup` TETAP `true`** — user pilih session selamat reinstall; jangan dimatikan | `AndroidManifest.xml` |
+| 2026-09-19 | **`4fdd07f` sheet absolute push + Vercel deploy** · otak bersama di-update (SESSION_SYNC §5, PROGRESS, project MEMORY) | prod live; session lain baca brain |
 
 ---
 
@@ -98,9 +99,14 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 
 - Checklist piket (+1 / −1)
 - Auto −1 kas mingguan + izin 3×
-- **Push migration 010 + deploy** Info brief (kode lokal siap)
 - Web-push VAPID
 - Persist toggle offline ke SW
+- Agenda lampau
+- QA device: login Google · foto report · dark mode · **gap bottom sheet** (sudah fix `4fdd07f`, perlu cek HP)
+- Distribusi APK 1.1.0 ke siswa
+- Aktivasi FCM end-to-end (env sudah ada; butuh QA push di device)
+
+**Sudah selesai (jangan diulang):** migration 010–014 + **016** push · notif soft-delete · gap Sheet absolute · APK shell 1.1.0 build · Vercel deploy `4fdd07f`
 
 ---
 
@@ -118,5 +124,6 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 
 
 
+
 ### Automation log
-- last session-sync: `2026-09-19T08:35:43.870Z` · branch `master`
+- last session-sync: `2026-09-19T09:23:25.107Z` · branch `master`

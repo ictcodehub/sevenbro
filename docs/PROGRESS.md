@@ -111,8 +111,11 @@
 - Agenda lampau
 - Checklist piket (A4/B3) — belum link dari brief
 - Auto −1 kas mingguan + izin 3× beruntun
-- Android shell: QA login Google + foto report + dark mode di device fisik
-- Distribusi APK ke siswa (sideload; Play Store closed testing = opsional hilangkan warning Play Protect)
+- Android shell: QA login Google + foto report + dark mode + **gap bottom sheet di device** (fix `4fdd07f` sudah deploy)
+- Distribusi APK **1.1.0** ke siswa (sideload; Play Store closed testing = opsional hilangkan warning Play Protect)
+- Aktivasi FCM end-to-end di device (env Vercel sudah ada)
+
+**Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · APK 1.1.0 build · Vercel `4fdd07f`
 
 ## Deploy
 - https://sevenbro.vercel.app — **deployed 2026-09-19** (`4fdd07f` sheet absolute gap fix; sebelumnya `bc3a379`, `90d6c0c`)
