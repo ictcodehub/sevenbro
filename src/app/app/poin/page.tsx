@@ -15,6 +15,8 @@ import {
   Plus,
   QrCode,
   Sparkles,
+  TrendingDown,
+  TrendingUp,
   Trophy,
   User,
   Zap,
@@ -118,25 +120,6 @@ function whenLabel(iso: string) {
   } catch {
     return iso
   }
-}
-
-/** Ikon delta poin gaya game — double chevron + kilau */
-function GameDeltaIcon({ up }: { up: boolean }) {
-  return (
-    <svg viewBox="0 0 16 16" className="h-3 w-3" aria-hidden="true">
-      {up ? (
-        <g fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 10 L8 5 L12 10" />
-          <path d="M5.5 12.5 L8 9.2 L10.5 12.5" opacity="0.45" />
-        </g>
-      ) : (
-        <g fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 6 L8 11 L12 6" />
-          <path d="M5.5 3.5 L8 6.8 L10.5 3.5" opacity="0.45" />
-        </g>
-      )}
-    </svg>
-  )
 }
 
 function DeltaBadge({ delta }: { delta: number }) {
@@ -843,6 +826,7 @@ function PoinInner() {
                       const gap = above ? Math.max(0, above.total_points - p.total_points) : 0
                       const pct = maxPts > 0 ? Math.min(100, (p.total_points / maxPts) * 100) : 0
                       const last = lastLogByStudent.get(p.student_id)
+                      const isDown = Boolean(last && last.delta < 0)
                       const showPos =
                         p.position && p.position !== "ANGGOTA" ? p.position : null
                       return (
@@ -866,8 +850,17 @@ function PoinInner() {
                             >
                               {rank}
                             </span>
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-deep text-lime text-[11px] font-bold shrink-0">
-                              <User className="h-4 w-4 opacity-80" strokeWidth={1.75} />
+                            <div
+                              className={`flex h-9 w-9 items-center justify-center rounded-full text-[11px] font-bold shrink-0 ${
+                                isDown ? "" : "bg-deep text-lime"
+                              }`}
+                              style={
+                                isDown
+                                  ? { backgroundColor: "#ff1500", color: "#ffffff" }
+                                  : undefined
+                              }
+                            >
+                              <User className="h-4 w-4 opacity-90" strokeWidth={1.75} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 min-w-0">
@@ -889,18 +882,32 @@ function PoinInner() {
                                 {last && (
                                   <span
                                     className={`shrink-0 flex h-4 w-4 items-center justify-center ${
-                                      last.delta > 0 ? "text-forest/70" : "text-alert/70"
+                                      last.delta > 0 ? "text-forest/70" : ""
                                     }`}
+                                    style={
+                                      last.delta > 0
+                                        ? undefined
+                                        : { color: "#ff1500" }
+                                    }
                                     aria-label={last.delta > 0 ? "Poin naik" : "Poin turun"}
                                   >
-                                    <GameDeltaIcon up={last.delta > 0} />
+                                    {last.delta > 0 ? (
+                                      <TrendingUp className="h-3.5 w-3.5" />
+                                    ) : (
+                                      <TrendingDown className="h-3.5 w-3.5" />
+                                    )}
                                   </span>
                                 )}
                               </div>
                               <div className="mt-1.5 h-1.5 bg-surface rounded-full overflow-hidden">
                                 <div
-                                  className="h-full rounded-full xp-bar-fill bg-gradient-to-r from-forest to-lime"
-                                  style={{ width: `${pct}%` }}
+                                  className={`h-full rounded-full xp-bar-fill ${
+                                    isDown ? "" : "bg-gradient-to-r from-forest to-lime"
+                                  }`}
+                                  style={{
+                                    width: `${pct}%`,
+                                    ...(isDown ? { backgroundColor: "#ff1500" } : {}),
+                                  }}
                                 />
                               </div>
                               <div className="mt-1 flex items-center justify-between gap-2">
@@ -916,25 +923,35 @@ function PoinInner() {
                                 </span>
                               </div>
                             </div>
-                            {/* Panel skor khusus */}
+                            {/* Skor — square; #ff1500 saat turun */}
                             <div
-                              className={`shrink-0 w-14 rounded-xl px-1.5 py-1.5 flex flex-col items-center justify-center border ${
-                                isMe
-                                  ? "bg-deep border-lime/50 shadow-[0_0_10px_rgba(163,230,53,0.25)]"
-                                  : "bg-deep border-white/10"
+                              className={`shrink-0 flex flex-col items-center justify-center rounded-lg w-11 h-11 ${
+                                isDown
+                                  ? ""
+                                  : isMe
+                                    ? "bg-lime/40 text-forest"
+                                    : "bg-lime/20 text-forest/90"
                               }`}
+                              style={
+                                isDown
+                                  ? {
+                                      backgroundColor: "rgba(255, 21, 0, 0.2)",
+                                      color: "#ff1500",
+                                    }
+                                  : undefined
+                              }
                             >
-                              <span className="text-[7px] font-bold uppercase tracking-[0.18em] text-white/40 leading-none">
-                                PTS
-                              </span>
-                              <span
-                                className={`mt-0.5 text-[15px] font-black tabular-nums leading-none ${
-                                  isMe ? "text-lime" : "text-acid"
-                                }`}
-                              >
+                              <span className="text-[16px] font-semibold leading-none tabular-nums">
                                 {p.total_points}
                               </span>
-                              <span className="mt-0.5 h-px w-8 bg-gradient-to-r from-transparent via-amber/50 to-transparent" />
+                              <span
+                                className={`mt-0.5 text-[7px] font-medium uppercase tracking-wide leading-none ${
+                                  isDown ? "" : isMe ? "text-forest/70" : "text-forest/50"
+                                }`}
+                                style={isDown ? { color: "#ff1500" } : undefined}
+                              >
+                                pts
+                              </span>
                             </div>
                           </div>
                         </button>

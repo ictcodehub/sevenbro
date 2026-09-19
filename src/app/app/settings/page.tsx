@@ -6,6 +6,7 @@ import { useSession, signOut } from "next-auth/react"
 import {
   BellRing,
   History,
+  Languages,
   LogOut,
   Moon,
   Smartphone,
@@ -24,6 +25,7 @@ import {
 import { formatDisplayName } from "@/lib/format"
 import { formatRoleLabel } from "@/lib/roles"
 import { clearSwrCache } from "@/lib/swr-store"
+import { useI18n } from "@/lib/i18n"
 
 function Toggle({
   label,
@@ -70,6 +72,7 @@ function Toggle({
 export default function SettingsPage() {
   const router = useRouter()
   const { data: session } = useSession()
+  const { lang, setLang, t } = useI18n()
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS)
   const [ready, setReady] = useState(false)
 
@@ -85,18 +88,15 @@ export default function SettingsPage() {
     if (!next) return
     setPrefs(next)
     if (patch.push === true) {
-      showBrowserNotification(
-        "Notifikasi Push Aktif",
-        "Info pengumuman dan pengingat iuran akan muncul di perangkat ini."
-      )
+      showBrowserNotification(t("settings.pushOnTitle"), t("settings.pushOnBody"))
     }
   }
 
   return (
     <div className="px-4 py-3 space-y-4">
       <div>
-        <h1 className="text-lg font-bold text-ink">Pengaturan</h1>
-        <p className="text-[11px] text-ink-soft/75">Preferensi aplikasi & akun</p>
+        <h1 className="text-lg font-bold text-ink">{t("settings.title")}</h1>
+        <p className="text-[11px] text-ink-soft/75">{t("settings.subtitle")}</p>
       </div>
 
       {session?.user && (
@@ -113,11 +113,11 @@ export default function SettingsPage() {
 
       {ready && (
         <div>
-          <SectionHeader title="Notifikasi & Tampilan" />
+          <SectionHeader title={t("settings.notifDisplay")} />
           <div className="space-y-1.5">
             <Toggle
-              label="Notifikasi Push"
-              hint="Info pengumuman baru dan pengingat iuran"
+              label={t("settings.push")}
+              hint={t("settings.pushHint")}
               on={prefs.push}
               onChange={(v) => {
                 void update({ push: v })
@@ -125,8 +125,8 @@ export default function SettingsPage() {
               icon={<BellRing className="h-3.5 w-3.5 text-forest" />}
             />
             <Toggle
-              label="Mode Gelap"
-              hint="Tampilan gelap untuk mata yang lelah"
+              label={t("settings.dark")}
+              hint={t("settings.darkHint")}
               on={prefs.dark}
               onChange={(v) => {
                 void update({ dark: v })
@@ -134,8 +134,8 @@ export default function SettingsPage() {
               icon={<Moon className="h-3.5 w-3.5 text-forest" />}
             />
             <Toggle
-              label="Mode Hemat Data"
-              hint="Simpan halaman agar dapat dibuka tanpa internet"
+              label={t("settings.dataSaver")}
+              hint={t("settings.dataSaverHint")}
               on={prefs.offline}
               onChange={(v) => {
                 void update({ offline: v })
@@ -152,10 +152,10 @@ export default function SettingsPage() {
               </div>
               <div className="flex-1 min-w-0 text-left">
                 <p className="text-[11px] font-semibold text-ink truncate">
-                  Riwayat Notifikasi
+                  {t("settings.notifHistory")}
                 </p>
                 <p className="text-[10px] text-ink-soft/75 truncate">
-                  Lihat & pulihkan notifikasi yang dihapus
+                  {t("settings.notifHistoryHint")}
                 </p>
               </div>
             </button>
@@ -163,17 +163,56 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {/* Bahasa — guru & murid */}
       <div>
-        <SectionHeader title="Tentang Aplikasi" />
+        <SectionHeader title={t("settings.language")} />
+        <div className="bg-white border border-line shadow-sm rounded-2xl p-2.5">
+          <div className="flex items-center gap-2.5 mb-2 px-0.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface shrink-0">
+              <Languages className="h-3.5 w-3.5 text-forest" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-semibold text-ink truncate">
+                {t("settings.language")}
+              </p>
+              <p className="text-[10px] text-ink-soft/75 truncate">
+                {t("settings.languageHint")}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-1.5">
+            {(
+              [
+                ["id", t("settings.languageId")],
+                ["en", t("settings.languageEn")],
+              ] as const
+            ).map(([code, label]) => (
+              <button
+                key={code}
+                type="button"
+                onClick={() => setLang(code)}
+                aria-pressed={lang === code}
+                className={`rounded-full py-2 text-[11px] font-semibold border transition active:scale-[0.97] ${
+                  lang === code
+                    ? "bg-forest text-white border-forest"
+                    : "bg-white text-ink border-line"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader title={t("settings.about")} />
         <div className="bg-white border border-line shadow-sm rounded-2xl p-4 text-[11px] text-ink-soft/75 space-y-2">
           <p className="flex items-center gap-2">
             <Smartphone className="h-3.5 w-3.5 text-forest" />
             Seven Bro! — Mutiara Bangsa 2 JHS
           </p>
-          <p>
-            Aplikasi kelas untuk Kas, Pengumuman, Agenda, dan Poin. Data tersambung
-            ke Supabase untuk kelas 7B.
-          </p>
+          <p>{t("settings.aboutBody")}</p>
         </div>
       </div>
 
@@ -186,7 +225,7 @@ export default function SettingsPage() {
         }}
       >
         <LogOut className="h-4 w-4" />
-        Keluar dari akun
+        {t("settings.logout")}
       </Button>
 
       <div className="h-2" />

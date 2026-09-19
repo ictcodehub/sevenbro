@@ -2,6 +2,7 @@ export type Prefs = {
   push: boolean
   dark: boolean
   offline: boolean
+  lang: "id" | "en"
 }
 
 export const PREFS_KEY = "sevenbro:settings-prefs"
@@ -10,6 +11,7 @@ export const DEFAULT_PREFS: Prefs = {
   push: false,
   dark: false,
   offline: true,
+  lang: "id",
 }
 
 export function loadPrefs(): Prefs {

@@ -84,6 +84,7 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-19 | **`aff8856` push + Vercel deploy** Sheet portal + Agenda=Umum · otak bersama di-update | prod `sevenbro.vercel.app` |
 | 2026-09-19 | Batch UI: Beri Poin form+multi siswa · notif 1-baris hard-delete · Agenda timeline+deskripsi · Beranda accent float/shine · brief header · brand anim fix | pages + `StudentSelect` + `globals.css` + APIs |
 | 2026-09-19 | **`0af39a4` push + Vercel deploy** batch UI · otak bersama di-update | prod `sevenbro.vercel.app` |
+| 2026-09-19 | **i18n ID/EN** — `locales.ts` + `I18nProvider` + section Bahasa di Pengaturan · leaderboard icon TrendingUp/Down · score chip redesign | `src/lib/i18n.tsx`, `locales.ts`, settings, poin |
 
 ---
 
@@ -131,5 +132,7 @@ Setelah kerja selesai: update `PROGRESS.md` Open + baris **Keputusan sinkron** d
 
 
 
+
+
 ### Automation log
-- last session-sync: `2026-09-19T13:13:02.554Z` · branch `master`
+- last session-sync: `2026-09-19T13:34:02.415Z` · branch `master`
