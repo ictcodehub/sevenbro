@@ -34,4 +34,6 @@ Scripts: `dev` · `build` · `start` · `lint` · `typecheck` · `session:sync`
 
 Awal session agent: `npm run session:sync` (atau `node scripts/session-sync-workflow.mjs`).
 
+Ship penuh (docs + CodeGraph + commit + push + Vercel): ketik **`/deploy-it`** di MiMo.
+
 Dev utama: **MiMo Desktop**. Hermes tidak dipakai.

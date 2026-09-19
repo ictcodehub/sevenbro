@@ -16,4 +16,4 @@ Definisi workflow: `docs/workflows/session-sync.md`
 - `docs/DESIGN_SYSTEM.md` · `docs/ROLE_UI.md` · `docs/POINT_SYSTEM.md`
 - `docs/INFO_BRIEF_SPEC.md` · `docs/PUSH_NOTIFICATIONS.md` · `android/README.md`
 
-Jangan commit/push/deploy kecuali user minta.
+Jangan commit/push/deploy kecuali user minta — **atau** user ketik **`/deploy-it`** (skill `.mimocode/skills/deploy-it/`).

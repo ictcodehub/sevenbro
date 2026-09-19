@@ -13,8 +13,15 @@
 | Sebelum task besar (>3 langkah) | Semua |
 | Setelah keputusan produk / commit | Semua |
 | User bilang “sync session” / `/session-sync` | Semua |
+| User ketik **`/deploy-it`** | MiMo — pipeline penuh (docs + codegraph + commit + push + Vercel) |
 
 Jangan tunggu user mengingatkan.
+
+### `/deploy-it` (ship penuh)
+
+Skill: `.mimocode/skills/deploy-it/SKILL.md`  
+Urutan: update `SESSION_SYNC` + `PROGRESS` + project MEMORY → `codegraph sync` → `typecheck` + `vitest` → `git commit` → `git push` → `vercel deploy --prod`.  
+`/deploy-it` **sudah** merupakan izin commit/push/deploy (AGENTS § Git).
 
 ---
 

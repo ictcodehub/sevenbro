@@ -78,6 +78,7 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-19 | **`allowBackup` TETAP `true`** — user pilih session selamat reinstall; jangan dimatikan | `AndroidManifest.xml` |
 | 2026-09-19 | **`4fdd07f` sheet absolute push + Vercel deploy** · otak bersama di-update (SESSION_SYNC §5, PROGRESS, project MEMORY) | prod live; session lain baca brain |
 | 2026-09-19 | **Doc cleanup:** hapus `TODO` `TAKEOVER` `PROMPT-HERMES` `UX_PATTERNS` `.hermes/` · dev = **MiMo only** (Hermes off) · global AGENTS = pointer · SSOT = AGENTS + docs/* + android/README | jangan bikin file status/handoff ganda |
+| 2026-09-19 | **`/deploy-it` skill** (`.mimocode/skills/deploy-it/`): sync docs+MEMORY → codegraph → quality gate → commit → push → Vercel · **`= izin eksplisit`** | AGENTS § Git; user tidak perlu ketik perintah terpisah |
 
 ---
 

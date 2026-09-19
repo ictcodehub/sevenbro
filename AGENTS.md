@@ -34,6 +34,7 @@
 | 8 | `docs/PUSH_NOTIFICATIONS.md` | FCM push |
 | 9 | `android/README.md` | Build APK, system bars, update policy |
 | 10 | `docs/workflows/session-sync.md` | Cara run session-sync |
+| 11 | `.mimocode/skills/deploy-it/` | Slash **`/deploy-it`** — sync docs + CodeGraph + commit + push + Vercel |
 
 **Jangan** bikin `TODO.md` / `TAKEOVER.md` / copy AGENTS di global — cukup pointer.
 
@@ -195,6 +196,7 @@ Keduanya harus hijau. Untuk perubahan UI besar: `npm run build`.
 
 ### Git
 - **Hanya commit / push / deploy kalau user suruh eksplisit.** Jangan auto-commit, auto-push, atau `vercel deploy` tanpa perintah.
+- **`/deploy-it` = izin eksplisit** untuk pipeline penuh: update docs (SESSION_SYNC + PROGRESS + MEMORY) → `codegraph sync` → quality gate → commit → push → `vercel deploy --prod` (lihat `.mimocode/skills/deploy-it/SKILL.md`).
 - Commit message: `feat|fix|style|docs(scope): ringkas` + body jika perlu.
 - Push ke `origin master` (setelah user minta).
 - Jangan force-push / amend published commit.
