@@ -70,6 +70,7 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-18 | Seragam brief **auto per hari** + P.E di Jumat; mapel form fallback lokal; **migration 010 sudah di-push** | `info-brief.ts`, `InfoBriefForm.tsx` |
 | 2026-09-19 | Notif hapus = **soft-delete server** (`deleted_at`); install ulang tidak memunculkan lagi; Riwayat bisa pulihkan | migration 016, `/api/notifications*`, layout + history |
 | 2026-09-19 | Hapus Info → notif ikut hilang: FK `ref_id` cascade + fallback judul/body | migration 016, `announcements/[id]` |
+| 2026-09-19 | **Commit `90d6c0c` push + `supabase db push` 016 + `vercel deploy --prod` selesai** | prod `sevenbro.vercel.app` |
 
 ---
 

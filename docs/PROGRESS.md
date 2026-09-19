@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: Notif soft-delete server + Info brief + push FCM infra — commit/push/deploy 2026-09-19.
+> Status terakhir: Notif soft-delete + Info brief + push FCM — **pushed & deployed 2026-09-19** (`90d6c0c`, migration 016 applied, alias `sevenbro.vercel.app`).
 
 ## Selesai
 
@@ -112,10 +112,10 @@
 - Distribusi APK ke siswa (sideload; Play Store closed testing = opsional hilangkan warning Play Protect)
 
 ## Deploy
-- https://sevenbro.vercel.app
-- Supabase `gdmqmoigudtgknkgomeu` — migrations 003–014, 016
+- https://sevenbro.vercel.app — **deployed 2026-09-19** (`90d6c0c`)
+- Supabase `gdmqmoigudtgknkgomeu` — migrations 003–014, **016 applied**
 - Redirect Google: prod `…/api/auth/callback/google` + localhost (opsional)
-- Android shell: `vercel deploy --prod` untuk konten; APK di `android/dist/`
+- Android shell: konten = deploy Vercel; APK rebuild hanya untuk perubahan native
 
 ## Stack
 Next.js 15 · React 19 · Tailwind 4 · next-auth v4 · Supabase · SWR · Vitest · Android Kotlin WebView shell
