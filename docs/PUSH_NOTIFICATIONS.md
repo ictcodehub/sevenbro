@@ -1,6 +1,7 @@
 # Push Notification (FCM) — Seven Bro!
 
-> Status: **infra kode siap**. Aktif setelah: migration 014 + env `FCM_SERVER_KEY` + `google-services.json` + rebuild APK.
+> Status: **infra + env Vercel siap** (migration 014 applied · `FIREBASE_*` di Production).  
+> Sisa: `google-services.json` lokal + rebuild APK + **QA push di device**.
 
 ## Arsitektur
 

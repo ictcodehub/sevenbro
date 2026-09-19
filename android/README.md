@@ -24,12 +24,13 @@ Browser PWA still shows address bar / toolbar. This shell is a full-screen WebVi
 
 MIUI/Xiaomi often ignores `decorFitsSystemWindows(true)`. Do **not** inject Android physical px as WebView CSS px (high-DPI → huge blank gaps).
 
-**Current approach (1.0.7):**
+**Current approach (shell 1.1.0):**
 1. `WindowCompat.setDecorFitsSystemWindows(window, false)`
 2. Pad **root** `FrameLayout` with `systemBars + displayCutout` insets (native View px)
 3. WebView lays out between status bar and gesture nav
-4. Shell sets web `--sevenbro-status-bar-inset` / `--sevenbro-nav-bar-inset` to `0` and forces header/nav padding `0` (no double offset)
+4. Shell sets web `--sevenbro-status-bar-inset` / `--sevenbro-nav-bar-inset` / `--sevenbro-safe-bottom` to `0` and forces header/nav padding `0` (no double offset)
 5. `SevenBroShell.setChrome(dark)` syncs bar colors + light/dark system icons with app theme
+6. WebView background = nav chrome (putih/gelap) — no color strip under bottom nav
 
 | Theme | Bar color | System icons |
 |---|---|---|

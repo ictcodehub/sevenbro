@@ -63,7 +63,7 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-17 | Android shell: konten selalu **prod** `https://sevenbro.vercel.app` | `android/`, AGENTS.md |
 | 2026-09-18 | Session-sync **wajib** di awal session: `npm run session:sync` + baca `SESSION_SYNC.md` | AGENTS.md, CLAUDE.md, scripts |
 | 2026-09-18 | Empty notifikasi = animated **WebP transparan** (bukan GIF/SVG mailbox) | `public/notif-empty.webp`, `AppShell.tsx` |
-| 2026-09-18 | Spec Info brief ala Freissy ditulis — **belum diimplementasi**; butuh jawaban Homeroom (open decisions) | `docs/INFO_BRIEF_SPEC.md` |
+| 2026-09-18 | Spec Info brief ala Freissy ditulis — **status superseded**: fase 1 **sudah live** (lihat baris 2026-09-18 migration 010 + `INFO_BRIEF_SPEC` header) | `docs/INFO_BRIEF_SPEC.md` |
 | 2026-09-18 | Keputusan brief: Sekretaris post · siswa view Info+Agenda · mapel xlsx+Pramuka · seragam Sailor/Batik/Pramuka · 1 brief/hari · salin WA ada | `INFO_BRIEF_SPEC.md` §0 |
 | 2026-09-18 | **Form row pattern FINAL** jadi SSOT desain section form/brief | `DESIGN_SYSTEM.md` § Form row pattern |
 | 2026-09-18 | Guru mapel = tabel `subject_teachers` (migration 011); Homeroom ubah di Pengaturan Kelas | API subject-teachers + settings UI |
@@ -77,6 +77,7 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-19 | Session selamat uninstall→install: `allowBackup=true` + JWT cookie 30 hari di WebView CookieManager (bukan bug login bypass) | `AndroidManifest.xml`, `auth.ts` |
 | 2026-09-19 | **`allowBackup` TETAP `true`** — user pilih session selamat reinstall; jangan dimatikan | `AndroidManifest.xml` |
 | 2026-09-19 | **`4fdd07f` sheet absolute push + Vercel deploy** · otak bersama di-update (SESSION_SYNC §5, PROGRESS, project MEMORY) | prod live; session lain baca brain |
+| 2026-09-19 | **Doc cleanup:** hapus `TODO` `TAKEOVER` `PROMPT-HERMES` `UX_PATTERNS` `.hermes/` · dev = **MiMo only** (Hermes off) · global AGENTS = pointer · SSOT = AGENTS + docs/* + android/README | jangan bikin file status/handoff ganda |
 
 ---
 
@@ -97,16 +98,9 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 
 ## 5. Open yang harus disinkronkan bila dikerjakan
 
-- Checklist piket (+1 / −1)
-- Auto −1 kas mingguan + izin 3×
-- Web-push VAPID
-- Persist toggle offline ke SW
-- Agenda lampau
-- QA device: login Google · foto report · dark mode · **gap bottom sheet** (sudah fix `4fdd07f`, perlu cek HP)
-- Distribusi APK 1.1.0 ke siswa
-- Aktivasi FCM end-to-end (env sudah ada; butuh QA push di device)
+**SSOT open items = `docs/PROGRESS.md` § Open** (jangan daftar ulang di sini).
 
-**Sudah selesai (jangan diulang):** migration 010–014 + **016** push · notif soft-delete · gap Sheet absolute · APK shell 1.1.0 build · Vercel deploy `4fdd07f`
+Setelah kerja selesai: update `PROGRESS.md` Open + baris **Keputusan sinkron** di §3.
 
 ---
 
@@ -125,5 +119,6 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 
 
 
+
 ### Automation log
-- last session-sync: `2026-09-19T09:23:25.107Z` · branch `master`
+- last session-sync: `2026-09-19T09:31:53.116Z` · branch `master`

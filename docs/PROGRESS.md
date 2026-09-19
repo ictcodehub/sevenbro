@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: Gap sheet semua halaman (absolute positioning) — **commit + Vercel deploy 2026-09-19**; APK shell 1.1.0 sudah dibuat sebelumnya; `allowBackup` tetap `true`.
+> Status terakhir: Gap sheet deployed · **doc cleanup 2026-09-19** (hapus TODO/TAKEOVER/HERMES/UX_PATTERNS; SSOT = AGENTS + `docs/*` + `android/README`); APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 
@@ -101,9 +101,10 @@
 
 ### Push Notification (FCM)
 - Spec: `docs/PUSH_NOTIFICATIONS.md`
-- DB `push_tokens` (014) · API `/api/push/register` · `notify.ts` kirim FCM bila `FCM_SERVER_KEY` ada
-- Android stub: `SevenBroFirebaseMessagingService` + `getFcmToken` bridge + permission
-- **Belum aktif end-to-end** sampai: env key + `google-services.json` + rebuild APK
+- DB `push_tokens` (014 **applied**) · API `/api/push/register` · `notify.ts` → `push-fcm.ts`
+- Env utama (Vercel Production **sudah di-set**): `FIREBASE_PROJECT_ID` · `FIREBASE_CLIENT_EMAIL` · `FIREBASE_PRIVATE_KEY` (HTTP v1); legacy `FCM_SERVER_KEY` opsional
+- Android: `SevenBroFirebaseMessagingService` + `getFcmToken` bridge + permission
+- **Open:** QA push end-to-end di device (`google-services.json` lokal + APK 1.1.0)
 
 ## Open
 - Web-push server (VAPID)

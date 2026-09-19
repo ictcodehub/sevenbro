@@ -1,7 +1,6 @@
 # INFO_BRIEF_SPEC — Form Info ala Freissy (Sekretaris)
 
-> Status: **fase 1 diimplementasi (lokal)** — migration `010_info_brief.sql`, API, form Brief Harian, Info/Agenda dibuka.
-> Push DB Supabase + deploy prod **hanya jika user suruh**.
+> Status: **fase 1 live di prod** — migration `010` **sudah push**, API + form Brief Harian + Info/Agenda dibuka, **deployed** (lihat `docs/PROGRESS.md` § Deploy).
 > Sumber: WA harian Freissy + `Mapel Kelas 7.xlsx` + `Seragam Kelas 7 - SMP Mutiara Bangsa 2.txt`.
 
 ---

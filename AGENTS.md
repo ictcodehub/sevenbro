@@ -20,16 +20,22 @@
 
 ---
 
-## 2. Dokumen wajib (urutan baca)
+## 2. Dokumen wajib (urutan baca) — SSOT saja, jangan dobel
 
 | Prioritas | File | Isi |
 |---|---|---|
-| 1 | **AGENTS.md** (ini) | Rules kerja, CodeGraph, bootstrap |
-| 2 | **docs/SESSION_SYNC.md** | Otak bersama lintas session + keputusan sinkron |
-| 3 | `docs/DESIGN_SYSTEM.md` | SSOT visual: warna, tipografi, spacing |
-| 4 | `docs/ROLE_UI.md` | Matriks role → aksi UI |
-| 5 | `docs/POINT_SYSTEM.md` | Faktor tambah/kurang poin + Mass Report |
-| 6 | `docs/PROGRESS.md` | Snapshot selesai / open |
+| 1 | **AGENTS.md** (ini) | Rules kerja, CodeGraph, bootstrap, deploy |
+| 2 | **docs/SESSION_SYNC.md** | Keputusan lintas session |
+| 3 | **docs/PROGRESS.md** | Status selesai / **Open** / deploy (**SSOT open items**) |
+| 4 | `docs/DESIGN_SYSTEM.md` | SSOT visual: warna, tipografi, safe area, buttons |
+| 5 | `docs/ROLE_UI.md` | Matriks role → aksi UI |
+| 6 | `docs/POINT_SYSTEM.md` | Faktor poin + Mass Report |
+| 7 | `docs/INFO_BRIEF_SPEC.md` | Brief harian Sekretaris |
+| 8 | `docs/PUSH_NOTIFICATIONS.md` | FCM push |
+| 9 | `android/README.md` | Build APK, system bars, update policy |
+| 10 | `docs/workflows/session-sync.md` | Cara run session-sync |
+
+**Jangan** bikin `TODO.md` / `TAKEOVER.md` / copy AGENTS di global — cukup pointer.
 
 **Lintas session:** semua session di project ini share workspace. Chat session lain TIDAK otomatis. Wajib baca `SESSION_SYNC.md` di awal, dan update bagian **Keputusan sinkron** setelah keputusan produk. Cepat cek otak bersama:
 
@@ -50,8 +56,6 @@ Workflow lengkap: `docs/workflows/session-sync.md`
 Entry lintas tool: `CLAUDE.md` (pointer ke AGENTS.md).
 
 Setelah keputusan produk / commit: update `docs/SESSION_SYNC.md` + `docs/PROGRESS.md`, lalu `codegraph sync` bila perlu.
-| 5 | `src/lib/policies.ts` | SSOT policy server |
-| 6 | `android/README.md` | Android shell build, system bars, update policy |
 
 Jangan “invent” style atau role baru tanpa update dokumen di atas.
 
@@ -202,19 +206,21 @@ Keduanya harus hijau. Untuk perubahan UI besar: `npm run build`.
 ```text
 src/app/app/           # halaman login-required (layout + nav)
   page.tsx             # Beranda
-  pengumuman/          # Info
+  pengumuman/          # Info (brief + umum)
   agenda/
   kas/ + kas/buku/
   poin/ + scan/
+  report/new/          # Buat Mass Report
   notifications/       # riwayat notif
   settings/
   admin/roster|settings/
 src/app/api/           # route handlers (auth via requireApi)
-src/components/        # AppShell, ui/, ui-primitives
-src/lib/               # auth, db, policies, prefs, format, demo-data
-supabase/migrations/   # SQL — push via `supabase db push`
-docs/                  # DESIGN_SYSTEM, ROLE_UI, PROGRESS
+src/components/        # AppShell, ui/, ui-primitives, InfoBriefForm, MassReport*
+src/lib/               # auth, db, policies, prefs, format, notify, push-fcm, info-brief
+supabase/migrations/   # SQL — push via `supabase db push` (003–014, 016)
+docs/                  # SSOT — lihat §2
 android/               # Kotlin WebView shell (remote PWA URL) — lihat android/README.md
+scripts/               # session-sync-workflow, session-brain, reset-class-data, gen_icons
 .codegraph/            # index lokal (gitignore)
 ```
 
@@ -236,10 +242,10 @@ android/               # Kotlin WebView shell (remote PWA URL) — lihat android
 
 ## 9. Open / jangan asumsi selesai
 
-- Web-push server (VAPID) belum — push = Notification API on-device
-- Persist toggle hemat-data ke service worker belum
-- Agenda lampau (API GET hanya mendatang)
-- Tunggak semester: asumsi Jul/Des = ganjil, Jan/Genap = genap
+**SSOT open items & status:** `docs/PROGRESS.md` § Open · `docs/PROGRESS.md` § Deploy  
+**SSOT keputusan lintas session:** `docs/SESSION_SYNC.md` § 3
+
+Jangan daftar ulang open items di file lain — update `PROGRESS.md` saja.
 
 Update `docs/PROGRESS.md` saat milestone selesai.
 

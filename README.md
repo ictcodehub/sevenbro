@@ -1,37 +1,37 @@
 # Seven Bro!
 
-Kelas 7B class-management PWA — **Kas**, **Pengumuman & Agenda**, **Poin Perilaku** —
-untuk homeroom & siswa Kelas 7B Mutiara Bangsa 2 JHS. Mobile-first, native-feel, offline-capable.
+PWA manajemen kelas **7B** (Mutiara Bangsa 2 JHS): **Kas**, **Info**, **Agenda**, **Poin**.  
+Plus **Android WebView shell** (`android/`) yang wrap PWA remote.
 
-## Stack
-
-- **Next.js 15** (App Router) · **React 19** · **TypeScript**
-- **Tailwind CSS 4** (tokens as CSS variables in `src/app/globals.css` — `@theme inline`)
-- **shadcn/Radix UI** primitives (`src/components/ui/*`)
-- **next-pwa** runtime caching (`next.config.mjs`) — app-shell precache + offline fallback
-- `lucide-react` icons
-- Planned: `next-auth` (Google) · `@supabase/supabase-js` · `web-push` · `vitest`
+| | |
+|---|---|
+| Stack | Next.js 15 · React 19 · Tailwind 4 · next-auth v4 · Supabase · SWR · Vitest · Android Kotlin |
+| Prod | https://sevenbro.vercel.app |
+| Repo | https://github.com/ictcodehub/sevenbro |
 
 ## Getting started
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000 → redirects to /app
+npm run dev        # http://localhost:3000
 ```
 
-Scripts: `dev` · `build` · `start` · `lint` · `typecheck`
+Scripts: `dev` · `build` · `start` · `lint` · `typecheck` · `session:sync`
 
-## Plan & docs
+## Docs (SSOT — jangan dobel)
 
-- Build plan (roles matrix, DB schema, T-1..T-29): `.hermes/plans/2026-09-15_083831-kelas-7b-class-management-pwa.md`
-- Design system: `docs/DESIGN_SYSTEM.md` · UX patterns: `docs/UX_PATTERNS.md`
-- **Role-based UI logic** (pengurus vs siswa, Homeroom = super admin): `docs/ROLE_UI.md`
+| File | Isi |
+|---|---|
+| [`AGENTS.md`](AGENTS.md) | Rules agent, CodeGraph, bootstrap, deploy |
+| [`docs/SESSION_SYNC.md`](docs/SESSION_SYNC.md) | Keputusan lintas session |
+| [`docs/PROGRESS.md`](docs/PROGRESS.md) | Status selesai / open / deploy |
+| [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) | Warna, tipografi, safe area, buttons |
+| [`docs/ROLE_UI.md`](docs/ROLE_UI.md) | Matriks role → aksi |
+| [`docs/POINT_SYSTEM.md`](docs/POINT_SYSTEM.md) | Faktor poin + Mass Report |
+| [`docs/INFO_BRIEF_SPEC.md`](docs/INFO_BRIEF_SPEC.md) | Brief harian Sekretaris |
+| [`docs/PUSH_NOTIFICATIONS.md`](docs/PUSH_NOTIFICATIONS.md) | FCM push |
+| [`android/README.md`](android/README.md) | Build & system bars APK |
 
-## Status (rebranded from nl-starter)
+Awal session agent: `npm run session:sync` (atau `node scripts/session-sync-workflow.mjs`).
 
-- [x] Scaffold + rebrand: manifest, metadata, shell brand, icons (7B monogram)
-- [ ] Auth (next-auth Google, school-domain restrict) — plan T-4..T-7
-- [ ] Supabase schema + seed — plan T-4
-- [ ] Feature screens: Kas / Pengumuman+Agenda / Poin / Admin — plan FASE 4
-- [ ] Push notifications + dues reminder cron — plan T-24..T-26
-
+Dev utama: **MiMo Desktop**. Hermes tidak dipakai.
