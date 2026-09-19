@@ -93,9 +93,12 @@ Sheet fullHeight (modal brief, dll.):
   Content scroll: pb ikut formula yang sama
 
 Sheet bottom (Agenda +Tambah, Kas, Poin, Roster, dll.):
+  Portal ke document.body (createPortal) — jangan render di dalam main/AppShell
   Wrapper: absolute inset-x-0 bottom-0 (BUKAN flex items-end)
   Panel: max-h-[85dvh] rounded-t-2xl · menempel di bawah viewport
   Content pb: calc(1rem + inset + safe-bottom) — sama dengan fullHeight
+  Alasan portal: fixed di dalam ancestor scroll/AppShell bisa bikin sheet
+  berhenti di atas bottom nav (gap + nav terlihat di bawah sheet).
 ```
 
 WebView shell (`android/`) men-set `--sevenbro-*-inset` + `--sevenbro-safe-bottom` ke `0`; browser PWA pakai `env(safe-area-inset-bottom)`.

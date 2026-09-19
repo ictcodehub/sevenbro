@@ -15,7 +15,7 @@ import {
 import { SectionHeader, EmptyState } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
 import { formatDateID, formatTimeID } from "@/lib/format"
-import { Sheet, Field, inputClass } from "@/components/ui/sheet"
+import { Sheet, Field } from "@/components/ui/sheet"
 import { canManageAgenda } from "@/lib/policies"
 import { RoleGate } from "@/components/RoleGate"
 import FeatureGate from "@/components/FeatureGate"
@@ -265,6 +265,7 @@ function AgendaInner() {
         open={open}
         onClose={closeSheet}
         title={editing ? "Ubah Agenda" : "Agenda Baru"}
+        fullHeight
       >
         {err && (
           <p className="text-[11px] text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
@@ -275,7 +276,7 @@ function AgendaInner() {
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className={inputClass}
+            className="min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-[12px] font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
             placeholder="Upacara / ulangan / rapat…"
           />
         </Field>
@@ -283,7 +284,7 @@ function AgendaInner() {
           <input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className={inputClass}
+            className="min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-[12px] font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
             placeholder="Kelas 7B / Lapangan"
           />
         </Field>
@@ -292,16 +293,16 @@ function AgendaInner() {
             type="datetime-local"
             value={when}
             onChange={(e) => setWhen(e.target.value)}
-            className={inputClass}
+            className="min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-[12px] font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
           />
         </Field>
         <button
           type="button"
           disabled={saving}
           onClick={() => void save()}
-          className="w-full bg-forest text-white text-[12px] font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-1 rounded-full bg-forest px-2.5 py-2.5 text-[12px] font-semibold text-white active:scale-[0.97] transition-transform disabled:opacity-50"
         >
-          <Check className="h-4 w-4" />
+          <Check className="h-3.5 w-3.5" />
           {saving ? "Menyimpan…" : editing ? "Simpan Perubahan" : "Simpan Agenda"}
         </button>
       </Sheet>

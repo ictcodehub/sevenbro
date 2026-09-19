@@ -79,6 +79,8 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-19 | **`4fdd07f` sheet absolute push + Vercel deploy** · otak bersama di-update (SESSION_SYNC §5, PROGRESS, project MEMORY) | prod live; session lain baca brain |
 | 2026-09-19 | **Doc cleanup:** hapus `TODO` `TAKEOVER` `PROMPT-HERMES` `UX_PATTERNS` `.hermes/` · dev = **MiMo only** (Hermes off) · global AGENTS = pointer · SSOT = AGENTS + docs/* + android/README | jangan bikin file status/handoff ganda |
 | 2026-09-19 | **`/deploy-it` skill** (`.mimocode/skills/deploy-it/`): sync docs+MEMORY → codegraph → quality gate → commit → push → Vercel · **`= izin eksplisit`** | AGENTS § Git; user tidak perlu ketik perintah terpisah |
+| 2026-09-19 | Sheet **portal `document.body`** — fixed di dalam main/AppShell masih bikin gap Agenda (nav bocor); semua Sheet lewat `createPortal` | `sheet.tsx`, DESIGN_SYSTEM § safe area |
+| 2026-09-19 | Agenda **+Tambah** disamakan dengan Info **+Umum**: `fullHeight` + input forest + tombol `rounded-full` | `agenda/page.tsx` |
 
 ---
 
@@ -121,5 +123,7 @@ Setelah kerja selesai: update `PROGRESS.md` Open + baris **Keputusan sinkron** d
 
 
 
+
+
 ### Automation log
-- last session-sync: `2026-09-19T09:31:53.116Z` · branch `master`
+- last session-sync: `2026-09-19T10:12:07.091Z` · branch `master`

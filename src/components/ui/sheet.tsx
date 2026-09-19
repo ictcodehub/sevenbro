@@ -1,6 +1,7 @@
 "use client"
 
-import { type ReactNode, useEffect } from "react"
+import { type ReactNode, useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -8,6 +9,8 @@ import { cn } from "@/lib/utils"
  * Tinggi/posisi aman untuk shell Android + browser PWA:
  * - Shell: root native sudah pad system bar → --sevenbro-safe-bottom: 0
  * - Browser: env(safe-area-inset-bottom) via --sevenbro-safe-bottom
+ * Portal ke document.body supaya fixed tidak "terjebak" di ancestor
+ * (main scroll / AppShell) dan meninggalkan gap ke bottom nav.
  * fullHeight & bottom-sheet sama-sama absolute (bukan h-full / flex stretch)
  * supaya tidak pernah resolve ke auto / meninggalkan gap ke nav.
  */
@@ -31,6 +34,12 @@ export function Sheet({
   /** Modal full viewport — menutup bottom nav app */
   fullHeight?: boolean
 }) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
@@ -40,9 +49,9 @@ export function Sheet({
     return () => document.removeEventListener("keydown", onKey)
   }, [open, onClose])
 
-  if (!open) return null
+  if (!open || !mounted) return null
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[60]">
       <button
         type="button"
@@ -50,7 +59,7 @@ export function Sheet({
         className="absolute inset-0 bg-deep/40"
         onClick={onClose}
       />
-      {/* Panel: fullHeight = isi viewport · bottom sheet = nempel di bawah */}
+      {/* Panel: fullHeight = isi viewport · bottom sheet = nempel di bawah viewport */}
       <div
         className={cn(
           "absolute inset-x-0 flex justify-center px-0",
@@ -70,10 +79,7 @@ export function Sheet({
           style={
             fullHeight
               ? { height: FULL_HEIGHT, maxHeight: FULL_HEIGHT }
-              : {
-                  // pastikan tepi bawah sheet = bawah viewport (tidak floating)
-                  marginBottom: 0,
-                }
+              : { marginBottom: 0 }
           }
         >
           <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 border-b border-line shrink-0">
@@ -95,7 +101,8 @@ export function Sheet({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

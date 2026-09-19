@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: Gap sheet deployed · **doc cleanup 2026-09-19** (hapus TODO/TAKEOVER/HERMES/UX_PATTERNS; SSOT = AGENTS + `docs/*` + `android/README`); APK 1.1.0; `allowBackup` tetap `true`.
+> Status terakhir: Sheet **portal body** + Agenda form = Info Umum (fullHeight) · siap deploy 2026-09-19 · doc cleanup; APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 
@@ -112,11 +112,11 @@
 - Agenda lampau
 - Checklist piket (A4/B3) — belum link dari brief
 - Auto −1 kas mingguan + izin 3× beruntun
-- Android shell: QA login Google + foto report + dark mode + **gap bottom sheet di device** (fix `4fdd07f` sudah deploy)
+- Android shell: QA login Google + foto report + dark mode + **gap bottom sheet di device** (portal Sheet + fullHeight Agenda sudah di-fix; perlu QA device)
 - Distribusi APK **1.1.0** ke siswa (sideload; Play Store closed testing = opsional hilangkan warning Play Protect)
 - Aktivasi FCM end-to-end di device (env Vercel sudah ada)
 
-**Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · APK 1.1.0 build · Vercel `4fdd07f`
+**Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · APK 1.1.0 build · Vercel `4fdd07f`
 
 ## Deploy
 - https://sevenbro.vercel.app — **deployed 2026-09-19** (`4fdd07f` sheet absolute gap fix; sebelumnya `bc3a379`, `90d6c0c`)
