@@ -105,13 +105,10 @@ export default function HomePage() {
 function HomeInner() {
   const { data: session } = useSession()
   const role = (session?.user as { role?: string } | undefined)?.role
-  const isHomeroom = role === "HOMEROOM"
   const displayName = firstName(formatDisplayName(session?.user?.name) || "Kelas")
-  // Info & Agenda: hanya Homeroom (menu dinonaktifkan untuk murid)
-  const { data: announcements } = useAppSWR<Announcement[]>(
-    isHomeroom ? "/api/announcements" : null,
-  )
-  const { data: events } = useAppSWR<EventRow[]>(isHomeroom ? "/api/events" : null)
+  // Info & Agenda: dibuka untuk semua siswa aktif
+  const { data: announcements } = useAppSWR<Announcement[]>("/api/announcements")
+  const { data: events } = useAppSWR<EventRow[]>("/api/events")
   const { data: kas } = useAppSWR<Summary>("/api/kas/summary")
   const { data: points } = useAppSWR<PointsPayload>("/api/points")
 
@@ -139,8 +136,8 @@ function HomeInner() {
         </span>
       </div>
 
-      {/* ── Disematkan — hanya Homeroom (Info dinonaktifkan untuk murid) ── */}
-      {isHomeroom && pinned ? (
+      {/* ── Disematkan / terbaru — semua siswa ── */}
+      {pinned ? (
         <Link
           href="/app/pengumuman"
           className="block active:scale-[0.99] transition-transform"
@@ -305,14 +302,13 @@ function HomeInner() {
         </div>
       </Link>
 
-      {/* ── Agenda — hanya Homeroom (menu dinonaktifkan untuk murid) ── */}
-      {isHomeroom && (
-        <div>
-          <SectionHeader
-            title="Agenda Terdekat"
-            count={events?.length ?? 0}
-            action={{ href: "/app/agenda", label: "Semua" }}
-          />
+      {/* ── Agenda — semua siswa aktif ── */}
+      <div>
+        <SectionHeader
+          title="Agenda Terdekat"
+          count={events?.length ?? 0}
+          action={{ href: "/app/agenda", label: "Semua" }}
+        />
         <div className="space-y-1.5">
           {upcoming.map((e) => (
             <ListRow
@@ -331,8 +327,7 @@ function HomeInner() {
             </div>
           )}
         </div>
-        </div>
-      )}
+      </div>
 
       <div className="h-2" />
     </div>

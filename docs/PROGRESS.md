@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: empty-state notif = animated WebP transparan + session-sync workflow ter-commit.
+> Status terakhir: Notif soft-delete server + Info brief + push FCM infra — commit/push/deploy 2026-09-19.
 
 ## Selesai
 
@@ -39,11 +39,28 @@
 - Empty state ikon: animated **WebP transparan** `public/notif-empty.webp` (+ `notif-empty.png` fallback)
   - Source user: `notif.gif` — GIF putih di browser, diganti WebP alpha
   - Render: `AppShell.tsx` `MailIcon`, `h-14`, tanpa kartu putih
+- **Soft-delete server** (`deleted_at`, migration 016): hapus dari shade = sembunyi permanen lintas install; Riwayat tetap bisa **Pulihkan**
+- Legacy localStorage `DELETED_KEY` di-migrasi sekali ke server saat load
+- Hapus Info: FK `ref_id` → `announcements` **ON DELETE CASCADE** + fallback cocok judul/body (baris lama tanpa ref)
 
 ### Role UI
-- **Info & Agenda disabled untuk murid** (homeroom only sampai dibuka lagi)
-- Nav item disabled (abu); Beranda hanya tampilkan info/agenda untuk Homeroom
+- **Info & Agenda** default terbuka untuk siswa; **Fitur Kelas** di Pengaturan kontrol on/off (class_settings)
+- Toggle: Kas · Agenda · Poin · Info — Homeroom saja; murid nav disabled + FeatureGate
 - Kas read-only semua siswa; manage Homeroom + Bendahara
+
+### Info Brief (Sekretaris)
+- Spec: `docs/INFO_BRIEF_SPEC.md`
+- Form **Brief Harian**: tanggal, seragam, mapel+JP, piket roster, tugas/membawa, pin, **Salin teks WA**
+- Schema: `subjects` + `daily_briefs` (migration 010 **sudah push** ke Supabase); 1 brief DAILY per tanggal
+- Pelajaran **auto dari jadwal KBM 7B** (tabel JP · Time · Mapel · Guru; Mapel merge sesi beruntun)
+- Form Tugas/Remedial: mapel + siswa multi + deskripsi opsional; `+ Add` di bawah saja
+- **Design system:** form row pattern FINAL di `docs/DESIGN_SYSTEM.md` § Form row pattern
+- **Guru mapel** di DB `subject_teachers` — Homeroom edit di Pengaturan Kelas → Guru Mapel; form brief baca DB
+- Seragam **otomatis per hari** (Sen–Kam Sailor/Batik, Jumat Pramuka + accessories + Bawa Seragam P.E); custom opsional
+- Judul brief fix: `Info Harian - {Hari, tgl bln tahun}`
+- Brief hanya **hari sekolah**; Minggu → default Senin
+- API: `/api/subjects`, `/api/info-briefs`; notif ke Homeroom + siswa
+- Policy create tetap `canPostAnnouncement` (Sekretaris utama)
 
 ### Branding & PWA
 - Header: logo duck + **Seven Bro!** (Brocklyns + “!” font sistem) + caption Chillin on Sunday
@@ -57,7 +74,9 @@
 ### Android WebView Shell (`android/`)
 - Native Kotlin shell **remote URL** — bukan bundel web assets
 - Loads `https://sevenbro.vercel.app` (`BuildConfig.APP_URL`)
-- Package `com.sevenbro.app` · versi shell **1.0.5** (versionCode 6)
+- Package `com.sevenbro.app` · versi shell **1.0.7** (versionCode 8)
+- FCM push + `getFcmToken` bridge · cookie flush untuk persist login
+- Ikon: `pixel-duck.png` HD · bg putih · safe-zone circle · nama **Seven BRO!**
 - **Update konten = deploy Vercel saja**; APK rebuild hanya untuk perubahan native
 - Full-screen tanpa address bar Chrome; pull-to-refresh; back = history WebView
 - Scale match Chrome: `loadWithOverviewMode=false`, `textZoom=100` (anti downscale)
@@ -75,21 +94,26 @@
 - Logout bersihkan cache
 
 ### Migrations
-005 roster_proposals · 006 notifications · 007 mass_reports · 008 custom+photo · 009 vote YES/NO
+005 roster_proposals · 006 notifications · 007 mass_reports · 008 custom+photo · 009 vote YES/NO · 010 info_brief · 011 subject_teachers · 012 subject_name_ict · 013 class_settings · 014 push_tokens · **016 notif soft-delete + ref_id cascade**
+
+### Push Notification (FCM)
+- Spec: `docs/PUSH_NOTIFICATIONS.md`
+- DB `push_tokens` (014) · API `/api/push/register` · `notify.ts` kirim FCM bila `FCM_SERVER_KEY` ada
+- Android stub: `SevenBroFirebaseMessagingService` + `getFcmToken` bridge + permission
+- **Belum aktif end-to-end** sampai: env key + `google-services.json` + rebuild APK
 
 ## Open
 - Web-push server (VAPID)
 - Persist toggle offline ke SW
 - Agenda lampau
-- Checklist piket (A4/B3)
+- Checklist piket (A4/B3) — belum link dari brief
 - Auto −1 kas mingguan + izin 3× beruntun
-- Buka kembali Info/Agenda untuk murid (policy + nav + PAGE_ROLES)
 - Android shell: QA login Google + foto report + dark mode di device fisik
 - Distribusi APK ke siswa (sideload; Play Store closed testing = opsional hilangkan warning Play Protect)
 
 ## Deploy
 - https://sevenbro.vercel.app
-- Supabase `gdmqmoigudtgknkgomeu` — migrations 003–009
+- Supabase `gdmqmoigudtgknkgomeu` — migrations 003–014, 016
 - Redirect Google: prod `…/api/auth/callback/google` + localhost (opsional)
 - Android shell: `vercel deploy --prod` untuk konten; APK di `android/dist/`
 

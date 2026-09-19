@@ -74,6 +74,217 @@ Tap               →  active:scale-[0.98] | active:scale-[0.97]
 Card hover        →  (none — mobile)
 ```
 
+### Mobile / Android safe area (WAJIB)
+
+```
+Bottom nav AppShell:
+  padding-bottom = calc(var(--sevenbro-nav-bar-inset, 0px) + env(safe-area-inset-bottom, 0px))
+
+Sheet fullHeight (modal brief, dll.):
+  tinggi = 100dvh - nav-bar-inset - safe-area-inset-bottom
+  JANGAN 100dvh polos — itu menutup navigasi / gesture bar Android
+  Content scroll: pb ikut formula yang sama
+```
+
+WebView shell (`android/`) men-set `--sevenbro-nav-bar-inset`; browser PWA pakai `env(safe-area-inset-bottom)`.
+
+### Buttons (SSOT FINAL — acuan Brief Harian / Umum)
+
+Contoh hidup: halaman **Info → Brief Harian + Umum** (`src/app/app/pengumuman/page.tsx`).
+
+#### Primary (hijau forest)
+```
+flex items-center gap-1
+rounded-full bg-forest text-white
+text-[10px] font-semibold
+px-2.5 py-1.5
+active:scale-[0.97] transition-transform
+icon: h-3.5 w-3.5
+```
+Contoh: **Brief Harian** · **Terbitkan Brief** · **Salin teks WA** · **Ganti manual** · **+ Tambah** (compact header)
+
+#### Secondary (outline putih)
+```
+flex items-center gap-1
+rounded-full border border-line bg-white text-ink
+text-[10px] font-semibold
+px-2.5 py-1.5
+active:scale-[0.97] transition-transform
+icon: h-3.5 w-3.5
+```
+Contoh: **Umum** · aksi alternatif di header page
+
+#### Pin (toggle di header forest)
+```
+label: "Pin ke Beranda"  text-[10px] font-semibold text-white/85
+switch: h-5 w-9 rounded-full
+  ON:  bg-lime + knob left-[18px] bg-deep
+  OFF: bg-white/30 + knob left-0.5 bg-white
+bentuk: toggle (bukan tombol teks saja)
+```
+
+#### Destructive / hapus
+```
+teks text-alert · atau icon button active:text-alert
+tanpa pill merah kecuali butuh konfirmasi kuat
+```
+
+#### Link aksi (bukan tombol)
+```
+min-h-9 px-1 text-[10px] font-semibold text-forest
+TANPA background / border
+```
+Contoh: Muat ulang jadwal · Jadwal hari ini · Isi otomatis lagi
+
+#### Aturan tombol
+1. Bentuk default **pill** (`rounded-full`), bukan kotak rounded-lg acak
+2. Primary = **bg-forest text-white**
+3. Secondary = **border-line bg-white text-ink**
+4. Label Title Case, Bahasa Indonesia
+5. Icon opsional di kiri, `h-3.5 w-3.5`
+6. Tap: `active:scale-[0.97]`
+7. Min touch: py-1.5 + min-h-9 untuk baris padat
+8. **Jangan** amber/oranye sebagai tombol primary
+9. **Jangan** kasih background ke link aksi sekunder
+
+---
+
+### Form row pattern (SSOT — FINAL)
+
+Acuan **final** dari **Info Brief → Piket & Tugas** (Homeroom approve 2026-09-18).
+Terapkan ke semua section sejenis: Tugas, Remedial, Info lain, Piket, form admin.
+
+#### 1. Sub-section frame (Tugas / Remedial / Info lain)
+
+```
+rounded-xl border border-line bg-page p-2.5 space-y-2
+title: text-[11px] font-bold text-ink
+hint:  text-[10px] text-ink-soft/60 mt-0.5
+```
+
+Tidak ada tombol aksi di header sub-section.
+
+#### 2. Baris item (Tugas & Remedial — pola sama)
+
+```
+┌──────────────────────────────────────────┐
+│ 1   [ Pilih mapel              ]    [×] │  border-b border-line/50
+│     Siswa                                │
+│     👤 Nama terpilih / placeholder    ▼ │  border-b border-line
+│     Deskripsi  opsional                  │
+│     [ Detail tugas / remedial         ]  │  dotted token line
+└──────────────────────────────────────────┘
+wrapper: rounded-xl border border-line bg-white
+nomor:   w-4 text-[12px] font-bold text-forest tabular-nums
+mapel:   FIELD_SELECT (min-h-11 rounded-lg border-line bg-page text-[12px])
+hapus:   h-9 w-9 text-ink-soft active:text-alert
+```
+
+**Mapel options** = jadwal KBM hari brief (`subjectChipsForDate`).
+
+#### 3. Select nama siswa (multi) — SSOT
+
+```
+baris:     min-h-11 flex items-center gap-2 border-b border-line py-2
+kiri:      User h-4 w-4 text-ink-soft/70 (tanpa circle/background)
+nilai:    truncate text-[12px] · kosong = "Pilih Nama Siswa" text-ink-soft/60
+kanan:     ChevronDown h-4 w-4 (rotate-180 saat buka)
+daftar:    telanjang (tanpa frame/kotak) · radio lingkaran forest bila terpilih
+reset:     baris "Semua siswa" text-forest
+```
+
+Placeholder default: **Pilih Nama Siswa**. Nama terpilih tampil **1 baris + truncate** (bukan "n terpilih").
+
+#### 4. Field opsional (deskripsi) — SSOT
+
+```
+label:       text-[10px] font-medium text-ink-soft + "opsional"
+input:       min-h-11 rounded-xl border border-forest/45 bg-white
+             px-3 py-2.5 text-[12px] text-ink
+placeholder: text-ink-soft/45
+focus:       ring-2 ring-forest/25 + border-forest
+```
+
+Border **berwarna (forest)** default pada field teks yang bisa diedit — sinyal tap/edit.
+Select wajib (tanggal, mapel): `border-forest/40 bg-white`. **Tanpa** amber di field isian.
+Tanpa hint basa-basi di bawah field (mis. “Sesuai jam generate…”).
+
+#### 5. Tombol Add — SSOT
+
+```
+posisi:  HANYA di bawah daftar item sub-section (bukan di header)
+label:   "+ Add"
+style:   ROW_ADD = w-full rounded-xl border border-dashed border-line
+         bg-white px-3 py-2 text-[10px] font-semibold text-ink-soft
+```
+
+Satu tombol Add per sub-section (Tugas / Remedial / Info). Tidak ada Add ganda di header + bawah.
+
+#### 6. Info lain-lain
+
+Baris teks opsional saja (tanpa mapel/siswa), tetap:
+```
+nomor + OptionalTextField + hapus
++ Add di bawah
+```
+
+#### 7. Outer frame (Piket & Tugas)
+
+```
+BriefSectionCard: rounded-2xl border border-line bg-white shadow-sm
+header page: title + subtitle · tanpa action Add
+```
+
+#### 8. DILARANG
+
+- Border SVG / gradient kustom di luar token
+- Dotted stroke 2px+ / warna acak di luar `border-line`
+- Kartu/chip berat per nama di select siswa
+- `+ Add` di header sub-section
+- Dropdown native `<select>` untuk daftar siswa
+- `overflow-hidden` yang memotong daftar
+- "n terpilih" sebagai pengganti daftar nama di baris select
+
+#### 9. Field tanggal / sapaan / wajib
+
+```
+FIELD_SELECT: min-h-11 rounded-lg border border-line bg-page
+              px-3 text-[12px] text-ink
+FIELD_OPTIONAL: (teks edit) border-forest/45 bg-white — lihat bagian 4
+```
+
+Tanpa aksen amber/oranye di field isian form/brief.
+
+#### 10. Tombol — lihat **§ Buttons (SSOT FINAL)** di atas
+
+Primary pill forest · Secondary outline · Link tanpa background · Pin pill lime/white.
+
+#### 12. Chip pilihan (preset seragam, jenis, audience)
+
+Ikut **§ Buttons SSOT** — bentuk pill, bukan rounded acak:
+```
+active:   rounded-full bg-forest text-white px-2.5 py-1.5 text-[10px] font-semibold
+inactive: rounded-full border border-line bg-white text-ink (padding sama)
+reset:    PILL_SECONDARY (outline) — mis. "Pakai Jadwal"
+label: Title Case
+```
+
+#### 13. Konstanta kode (acuan implementasi)
+
+`src/components/InfoBriefForm.tsx`:
+```
+FIELD_SELECT   → min-h-11 rounded-lg border-forest/40 bg-white px-3 text-[12px]
+FIELD_OPTIONAL → min-h-11 rounded-xl border-forest/45 bg-white
+ROW_DELETE     → h-9 w-9 rounded-lg
+ROW_ADD        → dashed border-line bg-white "+ Add"
+PILL_PRIMARY   → Brief Harian · Salin teks WA (bg-forest text-white + icon)
+PILL_SECONDARY → Umum · Pakai Jadwal (border-line bg-white)
+TEXT_ACTION    → teks forest tanpa background
+chipClass      → pill primary/secondary (preset seragam, dll.)
+Pin            → label "Pin ke Beranda" + toggle switch
+StudentMultiSelect · OptionalTextField
+```
+
 ---
 
 ## 3. Anatomi halaman

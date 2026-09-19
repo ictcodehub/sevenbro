@@ -13,17 +13,18 @@ Browser PWA still shows address bar / toolbar. This shell is a full-screen WebVi
 | Field | Value |
 |---|---|
 | Application id | `com.sevenbro.app` |
-| App name | Seven Bro! |
+| App name | **Seven BRO!** |
+| Launcher icon | `public/pixel-duck.png` (HD pixel duck) · background **putih** `#FFFFFF` |
 | Min SDK | 26 (Android 8) |
 | Target / compile SDK | 35 |
 | Loads | `BuildConfig.APP_URL` = `https://sevenbro.vercel.app` |
-| Shell version | **1.0.5** (versionCode 6) |
+| Shell version | **1.0.8** (versionCode 9) — CLI build tanpa Android Studio |
 
 ## System bars (important)
 
 MIUI/Xiaomi often ignores `decorFitsSystemWindows(true)`. Do **not** inject Android physical px as WebView CSS px (high-DPI → huge blank gaps).
 
-**Current approach (1.0.5):**
+**Current approach (1.0.7):**
 1. `WindowCompat.setDecorFitsSystemWindows(window, false)`
 2. Pad **root** `FrameLayout` with `systemBars + displayCutout` insets (native View px)
 3. WebView lays out between status bar and gesture nav

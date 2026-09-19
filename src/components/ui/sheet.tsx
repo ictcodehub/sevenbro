@@ -15,7 +15,7 @@ export function Sheet({
   onClose: () => void
   title: string
   children: ReactNode
-  /** Isi modal tinggi full viewport — tanpa lewat layar */
+  /** Modal full viewport — menutup bottom nav app */
   fullHeight?: boolean
 }) {
   useEffect(() => {
@@ -30,7 +30,12 @@ export function Sheet({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+    <div
+      className={cn(
+        "fixed inset-0 z-50 flex justify-center",
+        fullHeight ? "" : "items-end sm:items-center",
+      )}
+    >
       <button
         type="button"
         aria-label="Tutup"
@@ -42,12 +47,10 @@ export function Sheet({
         aria-modal="true"
         aria-label={title}
         className={cn(
-          "relative w-full max-w-lg min-w-0 flex flex-col",
+          "relative w-full max-w-lg min-w-0 flex flex-col bg-white shadow-lg overflow-hidden",
           fullHeight
-            ? "max-h-[100dvh] sm:max-h-[92dvh]"
-            : "max-h-[85dvh]",
-          "bg-white border border-line rounded-t-2xl sm:rounded-2xl shadow-lg",
-          "overflow-hidden",
+            ? "h-full rounded-t-2xl border-t border-line"
+            : "max-h-[85dvh] rounded-t-2xl sm:rounded-2xl border border-line",
         )}
       >
         <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 border-b border-line shrink-0">
@@ -61,7 +64,7 @@ export function Sheet({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="flex-1 min-h-0 scroll-y-only px-4 py-4">
+        <div className="flex-1 min-h-0 scroll-y-only px-4 py-4 pb-6">
           <div className="space-y-3 min-w-0">{children}</div>
         </div>
       </div>

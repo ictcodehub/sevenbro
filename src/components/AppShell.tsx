@@ -62,6 +62,8 @@ export type AppShellProps = {
     items: AppShellNav[]
   }
   notifications?: AppShellNotification[]
+  /** Deep-link: buka shade notifikasi */
+  openNotif?: boolean
   user?: AppShellUser
   onNotificationClick?: (id: string) => void
   onNotificationDelete?: (id: string) => void
@@ -217,6 +219,7 @@ export default function AppShell({
   brand,
   nav,
   notifications = [],
+  openNotif = false,
   user,
   onNotificationClick,
   onNotificationDelete,
@@ -243,14 +246,19 @@ export default function AppShell({
     if (!next) return
     setPrefs(next)
     if (patch.push === true) {
+      // Android shell: token FCM sudah di-register via useFcmTokenRegister
       showBrowserNotification(
         "Notifikasi Push Aktif",
-        "Info pengumuman dan pengingat iuran akan muncul di perangkat ini."
+        "Info kelas akan muncul di perangkat ini.",
       )
     }
   }
 
   const unread = notifications.filter((n) => !n.read).length
+
+  useEffect(() => {
+    if (openNotif) setShowNotif(true)
+  }, [openNotif])
 
   const isActive = (href: string) =>
     href === "/app" ? pathname === "/app" : pathname === href || pathname.startsWith(`${href}/`)

@@ -42,15 +42,38 @@ export async function DELETE(_req: Request, { params }: Params) {
   try {
     const ctx = await requireApi(canPostAnnouncement)
     const { id } = await params
-    const { data, error } = await createAdminClient()
+    const db = createAdminClient()
+    const { data, error } = await db
       .from("announcements")
       .delete()
       .eq("id", id)
       .eq("class_id", ctx.classId ?? "")
-      .select("id")
+      .select("id, title")
       .maybeSingle()
     if (error) throw new Error(error.message)
     if (!data) return NextResponse.json({ error: "Pengumuman tidak ditemukan" }, { status: 404 })
+
+    // FK cascade (migration 016) sudah menghapus notif ber-ref_id.
+    // Fallback untuk baris lama tanpa ref_id: cocokkan judul/body di aplikasi
+    // (.PostgREST .or() rawan pecah kalau judul mengandung koma/karakter khusus).
+    const title = (data.title || "").trim()
+    const { data: candidates } = await db
+      .from("notifications")
+      .select("id, title, body, kind")
+      .eq("class_id", ctx.classId ?? "")
+      .eq("kind", "announcement")
+      .is("ref_id", null)
+    const orphanIds = (candidates ?? [])
+      .filter((n) => {
+        if (!title) return false
+        if (n.title === title) return true
+        return Boolean(n.body && n.body.includes(title))
+      })
+      .map((n) => n.id)
+    if (orphanIds.length) {
+      await db.from("notifications").delete().in("id", orphanIds)
+    }
+
     return NextResponse.json({ ok: true })
   } catch (e) {
     return errorResponse(e)

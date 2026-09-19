@@ -62,6 +62,37 @@ class MainActivity : AppCompatActivity() {
         fun setChrome(dark: Boolean) {
             runOnUiThread { applyChromeColors(dark) }
         }
+
+        /** Token FCM device (diisi SevenBroFirebaseMessagingService) */
+        @JavascriptInterface
+        fun getFcmToken(): String? = FcmTokenStore.token
+
+        /** Izin notifikasi Android 13+ (dipanggil toggle push di web) */
+        @JavascriptInterface
+        fun requestNotificationPermission() {
+            runOnUiThread { requestNotificationPermissionIfNeeded() }
+        }
+
+        @JavascriptInterface
+        fun hasNotificationPermission(): Boolean {
+            if (android.os.Build.VERSION.SDK_INT < 33) return true
+            return ContextCompat.checkSelfPermission(
+                this@MainActivity,
+                android.Manifest.permission.POST_NOTIFICATIONS,
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        }
+
+        /** Scroll web — SwipeRefresh sudah OFF; bridge tetap aman */
+        @JavascriptInterface
+        fun onWebViewScroll(scrollY: Int) {
+            runOnUiThread {
+                swipeRefresh.isEnabled = false
+            }
+        }
+    }
+
+    companion object {
+        const val EXTRA_PUSH_PATH = "push_path"
     }
 
     private val fileChooserLauncher =
@@ -111,10 +142,61 @@ class MainActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
             webView.clearHistory()
-            webView.loadUrl(BuildConfig.APP_URL)
+            val pushPath = intent?.getStringExtra(EXTRA_PUSH_PATH)
+            if (!pushPath.isNullOrBlank() && pushPath.startsWith("/")) {
+                webView.loadUrl(buildUrlWithGoto(pushPath))
+            } else {
+                webView.loadUrl(BuildConfig.APP_URL)
+            }
         } else {
             webView.restoreState(savedInstanceState)
         }
+
+        requestNotificationPermissionIfNeeded()
+        handlePushPath(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handlePushPath(intent)
+    }
+
+    private fun buildUrlWithGoto(path: String): String {
+        val encoded = java.net.URLEncoder.encode(path, "UTF-8")
+        return "${BuildConfig.APP_URL.trimEnd('/')}/?goto=$encoded&openNotif=1"
+    }
+
+    private fun handlePushPath(intent: Intent?) {
+        val path = intent?.getStringExtra(EXTRA_PUSH_PATH) ?: return
+        if (path.isBlank() || !path.startsWith("/")) return
+        // Warm start: SPA sudah load → minta web navigasi (bukan reload Beranda)
+        if (webView.url != null && webView.progress == 100) {
+            navigateInWeb(path)
+        } else {
+            webView.loadUrl(buildUrlWithGoto(path))
+        }
+    }
+
+    private fun navigateInWeb(path: String) {
+        val escaped = path.replace("\\", "\\\\").replace("\"", "\\\"")
+        val js = """
+            (function(){
+              var p = "$escaped";
+              try {
+                window.dispatchEvent(new CustomEvent('sevenbro:navigate', { detail: p }));
+              } catch (e) {}
+            })();
+        """.trimIndent()
+        webView.evaluateJavascript(js, null)
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (android.os.Build.VERSION.SDK_INT < 33) return
+        androidx.core.app.ActivityCompat.requestPermissions(
+            this,
+            arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+            4401,
+        )
     }
 
     private fun applySystemBars() {
@@ -216,6 +298,11 @@ class MainActivity : AppCompatActivity() {
             progressBar.visibility = View.GONE
             swipeRefresh.isRefreshing = false
             injectShellChrome()
+            injectScrollBridge()
+            try {
+                android.webkit.CookieManager.getInstance().flush()
+            } catch (_: Exception) {
+            }
         }
 
         override fun onReceivedError(
@@ -392,7 +479,32 @@ class MainActivity : AppCompatActivity() {
         swipeRefresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(this, R.color.page)
         )
-        swipeRefresh.setOnRefreshListener { webView.reload() }
+        // WebView sering scrollY=0 walau konten digulir (inner scroll SPA).
+        // Pull-to-refresh OFF total — scroll ke atas tidak boleh reload halaman.
+        swipeRefresh.isEnabled = false
+        swipeRefresh.setOnRefreshListener {
+            swipeRefresh.isRefreshing = false
+        }
+    }
+
+    private fun injectScrollBridge() {
+        // Tidak dipakai untuk refresh; biarkan stub aman bila JS memanggil bridge.
+        val js = """
+            (function(){
+              if (window.__sevenbroScrollBridge) return;
+              window.__sevenbroScrollBridge = true;
+              var send = function(){
+                try {
+                  var y = window.scrollY || (document.documentElement && document.documentElement.scrollTop) || (document.body && document.body.scrollTop) || 0;
+                  if (window.SevenBroShell && SevenBroShell.onWebViewScroll) SevenBroShell.onWebViewScroll(Math.round(y));
+                } catch (e) {}
+              };
+              window.addEventListener('scroll', send, { passive: true });
+              document.addEventListener('scroll', send, { passive: true, capture: true });
+              send();
+            })();
+        """.trimIndent()
+        webView.evaluateJavascript(js, null)
     }
 
     override fun onResume() {
@@ -402,10 +514,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         webView.onPause()
+        try {
+            android.webkit.CookieManager.getInstance().flush()
+        } catch (_: Exception) {
+        }
         super.onPause()
     }
 
     override fun onDestroy() {
+        try {
+            android.webkit.CookieManager.getInstance().flush()
+        } catch (_: Exception) {
+        }
         webView.destroy()
         super.onDestroy()
     }

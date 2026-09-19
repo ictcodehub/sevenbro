@@ -34,6 +34,10 @@ type PendingUser = {
   id: string
   email: string
   name: string | null
+  role: string
+  suggested_student_id?: string | null
+  suggested_student_name?: string | null
+  match_reason?: string | null
 }
 
 type Teacher = {
@@ -210,7 +214,27 @@ export default function AdminRosterPage() {
       setStudents(sb as Student[])
       if (pr) {
         const pb = await pr.json().catch(() => null)
-        if (pr.ok) setPending(pb as PendingUser[])
+        if (pr.ok) {
+          const items = Array.isArray(pb)
+            ? (pb as PendingUser[])
+            : ((pb?.items ?? []) as PendingUser[])
+          const autoLinked = Array.isArray(pb?.autoLinked)
+            ? (pb.autoLinked as { email: string; student_name: string }[])
+            : []
+          setPending(items)
+          if (autoLinked.length) {
+            flash(
+              `Auto-match: ${autoLinked
+                .map((a) => `${a.email} → ${a.student_name}`)
+                .join(", ")}`,
+            )
+          }
+          const sug: Record<string, string> = {}
+          for (const p of items) {
+            if (p.suggested_student_id) sug[p.id] = p.suggested_student_id
+          }
+          setLinkStudent((prev) => ({ ...sug, ...prev }))
+        }
       }
       if (tr) {
         const tb = await tr.json().catch(() => null)
@@ -714,6 +738,13 @@ export default function AdminRosterPage() {
                   {formatDisplayName(u.name) || u.email}
                 </p>
                 <p className="text-[10px] text-ink-soft/70 truncate">{u.email}</p>
+                {u.suggested_student_name && (
+                  <p className="text-[10px] text-amber font-medium">
+                    Saran tautan: {u.suggested_student_name}
+                    {u.match_reason === "marga-mirip" && " (nama depan beda)"}
+                    {" — konfirmasi manual"}
+                  </p>
+                )}
                 <div className="flex gap-2">
                   <select
                     value={linkStudent[u.id] ?? ""}

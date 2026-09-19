@@ -23,6 +23,7 @@ import { formatIDR, formatDateID, formatTimeID, formatDisplayName } from "@/lib/
 import { Sheet, Field, inputClass } from "@/components/ui/sheet"
 import { canManageKas, canViewKas } from "@/lib/policies"
 import { RoleGate } from "@/components/RoleGate"
+import FeatureGate from "@/components/FeatureGate"
 
 /** Kas: manage = HOMEROOM & BENDAHARA; siswa lain read-only */
 const PAGE_ROLES = ["HOMEROOM", "BENDAHARA", "KETUA", "SEKRETARIS", "ANGGOTA"]
@@ -132,7 +133,9 @@ function isCollectionDay() {
 export default function KasPage() {
   return (
     <RoleGate allow={PAGE_ROLES}>
-      <KasInner />
+      <FeatureGate feature="kas_enabled" label="Kas">
+        <KasInner />
+      </FeatureGate>
     </RoleGate>
   )
 }

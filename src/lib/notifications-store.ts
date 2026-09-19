@@ -25,3 +25,21 @@ export function notifyNotificationsChanged(): void {
   if (typeof window === "undefined") return
   window.dispatchEvent(new Event(NOTIF_EVENT))
 }
+
+/**
+ * Migrasi sekali: id yang dulu hanya dihapus di localStorage
+ * di-push ke server (soft-delete) supaya install ulang tidak memunculkan lagi.
+ */
+export async function migrateLocalDeletedToServer(): Promise<void> {
+  if (typeof window === "undefined") return
+  const local = loadIdSet(DELETED_KEY)
+  if (!local.size) return
+  await Promise.all(
+    [...local].map((id) =>
+      fetch(`/api/notifications/${encodeURIComponent(id)}`, { method: "DELETE" }).catch(
+        () => {},
+      ),
+    ),
+  )
+  saveIdSet(DELETED_KEY, new Set())
+}

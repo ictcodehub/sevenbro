@@ -79,18 +79,36 @@ export function showBrowserNotification(title: string, body: string): void {
   }
 }
 
+type ShellNotif = {
+  requestNotificationPermission?: () => void
+  hasNotificationPermission?: () => boolean
+  getFcmToken?: () => string | null
+}
+
+function getShellBridge(): ShellNotif | null {
+  if (typeof window === "undefined") return null
+  return ((window as unknown as { SevenBroShell?: ShellNotif }).SevenBroShell ?? null)
+}
+
 /**
  * Terapkan patch preferensi.
  * - dark → langsung toggle class
- * - push ON → minta izin; kalau ditolak, return null (jangan simpan)
+ * - push ON → Android shell: minta izin native + simpan; browser: minta Notification API
  */
 export async function applyPrefsPatch(
   current: Prefs,
-  patch: Partial<Prefs>
+  patch: Partial<Prefs>,
 ): Promise<Prefs | null> {
   const next: Prefs = { ...current, ...patch }
 
   if (patch.push === true) {
+    const shell = getShellBridge()
+    if (shell && typeof shell.requestNotificationPermission === "function") {
+      // Android WebView: izin sistem POST_NOTIFICATIONS (bukan Notification API browser)
+      shell.requestNotificationPermission()
+      savePrefs(next)
+      return next
+    }
     const granted = await requestPushPermission()
     if (!granted) return null
   }

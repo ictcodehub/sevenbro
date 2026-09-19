@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { RotateCcw } from "lucide-react"
 import {
-  DELETED_KEY,
   NOTIF_EVENT,
   READ_KEY,
   loadIdSet,
+  migrateLocalDeletedToServer,
   notifyNotificationsChanged,
   saveIdSet,
 } from "@/lib/notifications-store"
@@ -21,6 +21,7 @@ type ApiNotif = {
   kind: string | null
   actor: string | null
   created_at: string
+  deleted_at?: string | null
 }
 
 function timeAgo(iso: string): string {
@@ -43,11 +44,11 @@ export default function NotificationHistoryPage() {
   const role = (session?.user as { role?: string } | undefined)?.role
   const [items, setItems] = useState<ApiNotif[]>([])
   const [readIds, setReadIds] = useState<Set<string>>(new Set())
-  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
   const [ready, setReady] = useState(false)
 
   const load = async () => {
     try {
+      await migrateLocalDeletedToServer()
       const r = await fetch("/api/notifications", { headers: { Accept: "application/json" } })
       const rows = r.ok ? ((await r.json()) as ApiNotif[]) : []
       setItems(Array.isArray(rows) ? rows : [])
@@ -60,7 +61,6 @@ export default function NotificationHistoryPage() {
 
   useEffect(() => {
     setReadIds(loadIdSet(READ_KEY))
-    setDeletedIds(loadIdSet(DELETED_KEY))
     void load()
   }, [])
 
@@ -72,23 +72,22 @@ export default function NotificationHistoryPage() {
   }
 
   const deleteAll = () => {
-    const next = new Set(items.map((n) => n.id))
-    setDeletedIds(next)
-    saveIdSet(DELETED_KEY, next)
+    const ids = new Set(items.filter((n) => !n.deleted_at).map((n) => n.id))
+    setItems((prev) =>
+      prev.map((n) => (ids.has(n.id) ? { ...n, deleted_at: new Date().toISOString() } : n)),
+    )
+    void fetch("/api/notifications/clear", { method: "DELETE" }).catch(() => {})
     notifyNotificationsChanged()
   }
 
   const restore = (id: string) => {
-    setDeletedIds((prev) => {
-      const next = new Set(prev)
-      next.delete(id)
-      saveIdSet(DELETED_KEY, next)
-      notifyNotificationsChanged()
-      return next
-    })
+    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, deleted_at: null } : n)))
+    void fetch(`/api/notifications/${encodeURIComponent(id)}`, { method: "PATCH" }).catch(() => {})
+    notifyNotificationsChanged()
   }
 
   const openNotif = (n: ApiNotif) => {
+    if (n.deleted_at) return
     const next = new Set(readIds)
     next.add(n.id)
     setReadIds(next)
@@ -101,6 +100,8 @@ export default function NotificationHistoryPage() {
     router.push(pathForNotification(n.kind, n.title, n.body))
   }
 
+  const activeCount = items.filter((n) => !n.deleted_at).length
+
   return (
     <div className="px-4 py-3 space-y-3">
       <div className="flex items-start justify-between gap-2">
@@ -110,7 +111,7 @@ export default function NotificationHistoryPage() {
             Termasuk notifikasi yang dihapus dari shade
           </p>
         </div>
-        {ready && items.length > 0 && (
+        {ready && activeCount > 0 && (
           <div className="flex flex-col items-end gap-1.5 shrink-0 mt-1">
             <button
               type="button"
@@ -137,7 +138,7 @@ export default function NotificationHistoryPage() {
       ) : (
         <ul className="space-y-1.5">
           {items.map((n) => {
-            const deleted = deletedIds.has(n.id)
+            const deleted = Boolean(n.deleted_at)
             const read = readIds.has(n.id)
             return (
               <li
@@ -157,14 +158,17 @@ export default function NotificationHistoryPage() {
                   </p>
                   <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
                     <span className="text-[10px] text-ink-soft/50">{timeAgo(n.created_at)}</span>
-                    {!read && <span className="h-1.5 w-1.5 rounded-full bg-forest" />}
+                    {!read && !deleted && <span className="h-1.5 w-1.5 rounded-full bg-forest" />}
                   </div>
                 </div>
                 <p className="text-[10px] text-ink-soft/70 mt-1 leading-snug">{n.body}</p>
                 {deleted && (
                   <button
                     type="button"
-                    onClick={() => restore(n.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      restore(n.id)
+                    }}
                     className="mt-2 inline-flex items-center gap-1 text-[10px] font-medium text-forest active:opacity-70"
                   >
                     <RotateCcw className="h-3 w-3" />

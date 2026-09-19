@@ -22,6 +22,7 @@ import { useAppSWR } from "@/lib/fetcher"
 import { Sheet, Field, inputClass } from "@/components/ui/sheet"
 import { canGivePoints, canAdmin } from "@/lib/policies"
 import { RoleGate } from "@/components/RoleGate"
+import FeatureGate from "@/components/FeatureGate"
 import QRCode from "qrcode"
 import { formatDateID, formatTimeID, formatDisplayName } from "@/lib/format"
 import MassReportPanel from "@/components/MassReportPanel"
@@ -312,7 +313,9 @@ function getQrBaseUrl(): string {
 export default function PoinPage() {
   return (
     <RoleGate allow={PAGE_ROLES}>
-      <PoinInner />
+      <FeatureGate feature="poin_enabled" label="Poin">
+        <PoinInner />
+      </FeatureGate>
     </RoleGate>
   )
 }

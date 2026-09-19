@@ -63,6 +63,13 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-17 | Android shell: konten selalu **prod** `https://sevenbro.vercel.app` | `android/`, AGENTS.md |
 | 2026-09-18 | Session-sync **wajib** di awal session: `npm run session:sync` + baca `SESSION_SYNC.md` | AGENTS.md, CLAUDE.md, scripts |
 | 2026-09-18 | Empty notifikasi = animated **WebP transparan** (bukan GIF/SVG mailbox) | `public/notif-empty.webp`, `AppShell.tsx` |
+| 2026-09-18 | Spec Info brief ala Freissy ditulis — **belum diimplementasi**; butuh jawaban Homeroom (open decisions) | `docs/INFO_BRIEF_SPEC.md` |
+| 2026-09-18 | Keputusan brief: Sekretaris post · siswa view Info+Agenda · mapel xlsx+Pramuka · seragam Sailor/Batik/Pramuka · 1 brief/hari · salin WA ada | `INFO_BRIEF_SPEC.md` §0 |
+| 2026-09-18 | **Form row pattern FINAL** jadi SSOT desain section form/brief | `DESIGN_SYSTEM.md` § Form row pattern |
+| 2026-09-18 | Guru mapel = tabel `subject_teachers` (migration 011); Homeroom ubah di Pengaturan Kelas | API subject-teachers + settings UI |
+| 2026-09-18 | Seragam brief **auto per hari** + P.E di Jumat; mapel form fallback lokal; **migration 010 sudah di-push** | `info-brief.ts`, `InfoBriefForm.tsx` |
+| 2026-09-19 | Notif hapus = **soft-delete server** (`deleted_at`); install ulang tidak memunculkan lagi; Riwayat bisa pulihkan | migration 016, `/api/notifications*`, layout + history |
+| 2026-09-19 | Hapus Info → notif ikut hilang: FK `ref_id` cascade + fallback judul/body | migration 016, `announcements/[id]` |
 
 ---
 
@@ -75,6 +82,7 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | Kas | `src/app/app/kas/**`, `src/app/api/kas/**` |
 | Poin / Mass Report | `src/app/app/poin/page.tsx`, `src/components/MassReport*.tsx`, `src/app/api/mass-reports/**` |
 | Notif | `src/lib/notify.ts`, `src/lib/notif-nav.ts`, `src/app/api/notifications`, empty icon `AppShell.tsx` + `public/notif-empty.webp` |
+| Info brief | `docs/INFO_BRIEF_SPEC.md` · `src/lib/info-brief.ts` · `InfoBriefForm.tsx` · `/api/info-briefs` · `/api/subjects` · migration `010` |
 | Roster + usulan | `src/app/app/admin/roster`, `src/app/api/admin/roster-proposals` |
 | Android | `android/` + `android/README.md` |
 
@@ -84,7 +92,7 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 
 - Checklist piket (+1 / −1)
 - Auto −1 kas mingguan + izin 3×
-- Buka kembali Info/Agenda untuk murid
+- **Push migration 010 + deploy** Info brief (kode lokal siap)
 - Web-push VAPID
 - Persist toggle offline ke SW
 
@@ -98,5 +106,11 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 
 
 
+
+
+
+
+
+
 ### Automation log
-- last session-sync: `2026-09-18` · branch `master` · notif empty WebP + session-sync docs recorded
+- last session-sync: `2026-09-19T08:35:43.870Z` · branch `master`

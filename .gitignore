@@ -64,6 +64,8 @@ android/app/build/
 android/local.properties
 android/*.keystore
 android/keystore.properties
+android/app/google-services.json
+*firebase-adminsdk*.json
 android/.idea/
 android/*.iml
 android/captures/

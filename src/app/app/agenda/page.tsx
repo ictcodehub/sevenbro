@@ -18,6 +18,7 @@ import { formatDateID, formatTimeID } from "@/lib/format"
 import { Sheet, Field, inputClass } from "@/components/ui/sheet"
 import { canManageAgenda } from "@/lib/policies"
 import { RoleGate } from "@/components/RoleGate"
+import FeatureGate from "@/components/FeatureGate"
 
 type EventRow = {
   id: string
@@ -26,8 +27,8 @@ type EventRow = {
   starts_at: string
 }
 
-// Sementara: hanya Homeroom — menu Agenda dinonaktifkan untuk murid
-const PAGE_ROLES = ["HOMEROOM"]
+// Agenda dibuka untuk siswa aktif; manage tetap via canManageAgenda
+const PAGE_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
 
 function dayKey(d: Date) {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
@@ -53,7 +54,9 @@ function toLocalInputValue(iso: string) {
 export default function AgendaPage() {
   return (
     <RoleGate allow={PAGE_ROLES}>
-      <AgendaInner />
+      <FeatureGate feature="agenda_enabled" label="Agenda">
+        <AgendaInner />
+      </FeatureGate>
     </RoleGate>
   )
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Seven Bro!</string>
+    <string name="app_name">Seven BRO!</string>
     <string name="retry">Coba Lagi</string>
     <string name="error_offline">Tidak bisa memuat Seven Bro.\nPeriksa koneksi internet, lalu coba lagi.\n%1$s</string>
 </resources>

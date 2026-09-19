@@ -26,9 +26,9 @@ Label UI: `formatRoleLabel()` → Wali Kelas · Ketua · Bendahara · Sekretaris
 | Aksi | HOMEROOM | BENDAHARA | KETUA | SEKRETARIS | ANGGOTA | TEACHER |
 |------|:--------:|:---------:|:-----:|:----------:|:-------:|:-------:|
 | Beranda | ✅ | ✅ | ✅ | ✅ | ✅ | — |
-| Info / Agenda (halaman) | ✅ | ❌ disabled | ❌ disabled | ❌ disabled | ❌ disabled | — |
-| Manage Info | ✅ | ❌ | ⏳* | ❌ | ❌ | — |
-| Manage Agenda | ✅ | ❌ | ⏳* | ⏳* | ❌ | — |
+| Info / Agenda (halaman) | ✅ | ✅ view | ✅ | ✅ | ✅ view | — |
+| Manage Info | ✅ | ❌ | ✅ | ✅ **utama** | ❌ | — |
+| Manage Agenda | ✅ | ❌ | ✅ | ✅ | ❌ | — |
 | Kas read-only | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | Kas manage | ✅ | ✅ | ❌ | ❌ | ❌ | — |
 | Buku Kas | ✅ | ✅ | ✅ | ✅ | ✅ | — |
@@ -41,18 +41,17 @@ Label UI: `formatRoleLabel()` → Wali Kelas · Ketua · Bendahara · Sekretaris
 | Review Mass Report | ✅ | ❌ | ❌ | ❌ | ❌ | — |
 | Admin roster/setelan penuh | ✅ | ❌ | ❌ | ❌ | ❌ | — |
 
-\* Saat Info/Agenda dibuka kembali untuk murid: KETUA + SEKRETARIS manage.  
+\* Info harian: aktor utama **SEKRETARIS** (Brief Harian); Homeroom + Ketua tetap boleh post.
 \** Pelapor (biasanya Ketua) **tidak** boleh vote laporannya sendiri.
 
 ### Bottom nav
 
 | Role | Menu |
 |------|------|
-| HOMEROOM | Beranda · Info · Agenda · Kas · Poin |
-| KETUA / BENDAHARA / SEKRETARIS / ANGGOTA | Beranda · Info(disabled) · Agenda(disabled) · Kas · Poin |
+| Semua siswa aktif | Beranda · Info · Agenda · Kas · Poin |
 | TEACHER | Beri Poin (`/app/scan`) |
 
-Item disabled: tampil abu, tidak bisa ditap. Info/Agenda `PAGE_ROLES = ["HOMEROOM"]` sampai dibuka lagi.
+Info & Agenda **dibuka** untuk semua siswa (view). Manage Info/Agenda: HOMEROOM + KETUA + SEKRETARIS.
 
 ---
 
@@ -61,7 +60,13 @@ Item disabled: tampil abu, tidak bisa ditap. Info/Agenda `PAGE_ROLES = ["HOMEROO
 ### Beranda
 - Sapaan **Halo nama depan**
 - Kartu Saldo Kas (semua siswa yang boleh Kas)
-- Kartu Info/Agenda: **hanya Homeroom** (menu murid disabled)
+- Kartu Info/Agenda: **semua siswa aktif** (dibuka 2026-09-18)
+
+### Info (Pengumuman)
+- View: semua siswa aktif
+- **Brief Harian** (Sekretaris): tanggal, seragam, mapel+JP, piket, tugas/membawa, salin teks WA
+- Pengumuman **Umum**: Judul + Isi (Homeroom/Ketua/Sekretaris)
+- Spec: `docs/INFO_BRIEF_SPEC.md`
 
 ### Kas
 - **Manage:** HOMEROOM + BENDAHARA
