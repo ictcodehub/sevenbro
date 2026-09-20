@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: **tipografi M3 f1–f3** siap deploy 2026-09-20 · sebelumnya i18n `f83273e` · APK 1.1.0; `allowBackup` tetap `true`.
+> Status terakhir: **tipografi M3 f1–f3 deployed `a7cf598` 2026-09-20** · sebelumnya i18n `f83273e` · APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 
@@ -120,8 +120,8 @@
 **Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · **notif hard-delete + 1-baris** · **Agenda timeline + deskripsi** · **Beri Poin multi-siswa + section card** · **StudentSelect SSOT** · **i18n ID/EN + Settings Bahasa** · APK 1.1.0 build · Vercel `f83273e` · **Tipografi SSOT M3 + rollout f1–f3 seluruh app**
 
 ## Deploy
-- https://sevenbro.vercel.app — **deployed 2026-09-19** (`f83273e` i18n + icons; sebelumnya `0af39a4`, `aff8856`, `4fdd07f`, `bc3a379`, `90d6c0c`)
-- Supabase `gdmqmoigudtgknkgomeu` — migrations 003–014, **016 applied**
+- https://sevenbro.vercel.app — **deployed 2026-09-20** (`a7cf598` tipografi M3 f1–f3; sebelumnya `f83273e`, `0af39a4`, `aff8856`, `4fdd07f`, `bc3a379`, `90d6c0c`)
+- Supabase `gdmqmoigudtgknkgomeu` — migrations 003–014, **016 applied** (tidak ada migration baru run ini)
 - Redirect Google: prod `…/api/auth/callback/google` + localhost (opsional)
 - Android shell **1.1.0** (versionCode 11) — `android/dist/SevenBro-1.1.0-release.apk` (tidak di-commit)
 - **`allowBackup=true` tetap ON** (keputusan user: session selamat reinstall)
