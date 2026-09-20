@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: i18n ID/EN + leaderboard icons **deployed `f83273e` 2026-09-19** · APK 1.1.0; `allowBackup` tetap `true`.
+> Status terakhir: **tipografi M3 f1–f3** siap deploy 2026-09-20 · sebelumnya i18n `f83273e` · APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 
@@ -115,8 +115,9 @@
 - Android shell: QA login Google + foto report + dark mode + **gap bottom sheet di device** (portal Sheet + fullHeight Agenda sudah di-fix; perlu QA device)
 - Distribusi APK **1.1.0** ke siswa (sideload; Play Store closed testing = opsional hilangkan warning Play Protect)
 - Aktivasi FCM end-to-end di device (env Vercel sudah ada)
+- ~~Tipografi rollout~~ **selesai f1–f3** — SSOT M3 (body 14 / meta 12 / micro 11) di seluruh `src/`; audit: **0** `text-[7–10px]` tersisa
 
-**Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · **notif hard-delete + 1-baris** · **Agenda timeline + deskripsi** · **Beri Poin multi-siswa + section card** · **StudentSelect SSOT** · **i18n ID/EN + Settings Bahasa** · APK 1.1.0 build · Vercel `f83273e`
+**Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · **notif hard-delete + 1-baris** · **Agenda timeline + deskripsi** · **Beri Poin multi-siswa + section card** · **StudentSelect SSOT** · **i18n ID/EN + Settings Bahasa** · APK 1.1.0 build · Vercel `f83273e` · **Tipografi SSOT M3 + rollout f1–f3 seluruh app**
 
 ## Deploy
 - https://sevenbro.vercel.app — **deployed 2026-09-19** (`f83273e` i18n + icons; sebelumnya `0af39a4`, `aff8856`, `4fdd07f`, `bc3a379`, `90d6c0c`)

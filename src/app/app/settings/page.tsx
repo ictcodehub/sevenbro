@@ -51,8 +51,8 @@ function Toggle({
         {icon}
       </div>
       <div className="flex-1 min-w-0 text-left">
-        <p className="text-[11px] font-semibold text-ink truncate">{label}</p>
-        {hint && <p className="text-[10px] text-ink-soft/75 truncate">{hint}</p>}
+        <p className="text-sm font-semibold text-ink truncate">{label}</p>
+        {hint && <p className="text-xs text-ink-soft/75 truncate">{hint}</p>}
       </div>
       <span
         className={`h-5 w-9 rounded-full transition-colors relative shrink-0 ${
@@ -96,16 +96,16 @@ export default function SettingsPage() {
     <div className="px-4 py-3 space-y-4">
       <div>
         <h1 className="text-lg font-bold text-ink">{t("settings.title")}</h1>
-        <p className="text-[11px] text-ink-soft/75">{t("settings.subtitle")}</p>
+        <p className="text-xs text-ink-soft/75">{t("settings.subtitle")}</p>
       </div>
 
       {session?.user && (
         <div className="bg-white border border-line shadow-sm rounded-2xl p-3.5">
-          <p className="text-[11px] font-semibold text-ink truncate">
+          <p className="text-sm font-semibold text-ink truncate">
             {formatDisplayName(session.user.name)}
           </p>
-          <p className="text-[10px] text-ink-soft/75 truncate">{session.user.email}</p>
-          <p className="mt-1 inline-flex items-center bg-forest/10 text-forest text-[9px] font-bold px-2 py-0.5 rounded-full">
+          <p className="text-xs text-ink-soft/75 truncate">{session.user.email}</p>
+          <p className="mt-1 inline-flex items-center bg-forest/10 text-forest text-[11px] font-bold px-2 py-0.5 rounded-full">
             {formatRoleLabel((session.user as { role?: string }).role)}
           </p>
         </div>
@@ -151,10 +151,10 @@ export default function SettingsPage() {
                 <History className="h-3.5 w-3.5 text-forest" />
               </div>
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-[11px] font-semibold text-ink truncate">
+                <p className="text-sm font-semibold text-ink truncate">
                   {t("settings.notifHistory")}
                 </p>
-                <p className="text-[10px] text-ink-soft/75 truncate">
+                <p className="text-xs text-ink-soft/75 truncate">
                   {t("settings.notifHistoryHint")}
                 </p>
               </div>
@@ -172,10 +172,10 @@ export default function SettingsPage() {
               <Languages className="h-3.5 w-3.5 text-forest" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-semibold text-ink truncate">
+              <p className="text-sm font-semibold text-ink truncate">
                 {t("settings.language")}
               </p>
-              <p className="text-[10px] text-ink-soft/75 truncate">
+              <p className="text-xs text-ink-soft/75 truncate">
                 {t("settings.languageHint")}
               </p>
             </div>
@@ -192,7 +192,7 @@ export default function SettingsPage() {
                 type="button"
                 onClick={() => setLang(code)}
                 aria-pressed={lang === code}
-                className={`rounded-full py-2 text-[11px] font-semibold border transition active:scale-[0.97] ${
+                className={`rounded-full py-2 text-xs font-semibold border transition active:scale-[0.97] ${
                   lang === code
                     ? "bg-forest text-white border-forest"
                     : "bg-white text-ink border-line"
@@ -207,7 +207,7 @@ export default function SettingsPage() {
 
       <div>
         <SectionHeader title={t("settings.about")} />
-        <div className="bg-white border border-line shadow-sm rounded-2xl p-4 text-[11px] text-ink-soft/75 space-y-2">
+        <div className="bg-white border border-line shadow-sm rounded-2xl p-4 text-xs text-ink-soft/75 space-y-2">
           <p className="flex items-center gap-2">
             <Smartphone className="h-3.5 w-3.5 text-forest" />
             Seven Bro! — Mutiara Bangsa 2 JHS

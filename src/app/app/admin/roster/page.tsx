@@ -77,7 +77,7 @@ const POSITION_BADGE: Record<string, "default" | "secondary" | "warning" | "succ
 function positionBadge(position: string) {
   const variant = POSITION_BADGE[position] ?? "secondary"
   return (
-    <Badge variant={variant} className="text-[9px] px-1.5 py-0">
+    <Badge variant={variant} className="text-[11px] px-1.5 py-0">
       {position}
     </Badge>
   )
@@ -133,7 +133,7 @@ function StatusChip({ status }: { status: RosterProposal["status"] }) {
         : "bg-alert-bg text-alert border-alert/25"
   return (
     <span
-      className={`inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full border shrink-0 ${cls}`}
+      className={`inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded-full border shrink-0 ${cls}`}
     >
       {status === "PENDING" && <Clock className="h-3 w-3" />}
       {label}
@@ -566,7 +566,7 @@ export default function AdminRosterPage() {
         <button
           type="button"
           onClick={() => setShowBulk((v) => !v)}
-          className="flex items-center gap-1 bg-forest text-white text-[10px] font-semibold px-2.5 py-1.5 rounded-xl active:scale-[0.97] transition-transform"
+          className="flex items-center gap-1 bg-forest text-white text-sm font-semibold px-3 py-1.5 rounded-xl active:scale-[0.97] transition-transform"
         >
           <UserPlus className="h-3.5 w-3.5" />
           {isKetua ? "Usul Tambah" : "Tambah"}
@@ -620,8 +620,8 @@ export default function AdminRosterPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-[11px] font-semibold text-ink truncate">{title}</p>
-                      <p className="text-[10px] text-ink-soft/70 mt-0.5 truncate">{detail}</p>
-                      <p className="text-[9px] text-ink-soft/55 mt-1">
+                      <p className="text-xs text-ink-soft/70 mt-0.5 truncate">{detail}</p>
+                      <p className="text-[11px] text-ink-soft/55 mt-1">
                         Diusulkan {formatDisplayName(p.proposed_by_name) || p.proposed_by}
                         {" · "}
                         {new Date(p.created_at).toLocaleDateString("id-ID")}
@@ -700,7 +700,7 @@ export default function AdminRosterPage() {
                     <p className="text-[11px] font-semibold text-ink truncate">
                       {formatDisplayName(t.name) || t.email}
                     </p>
-                    <p className="text-[10px] text-ink-soft/70 truncate">{t.email}</p>
+                    <p className="text-xs text-ink-soft/70 truncate">{t.email}</p>
                   </div>
                   <button
                     type="button"
@@ -737,9 +737,9 @@ export default function AdminRosterPage() {
                 <p className="text-[11px] font-semibold text-ink truncate">
                   {formatDisplayName(u.name) || u.email}
                 </p>
-                <p className="text-[10px] text-ink-soft/70 truncate">{u.email}</p>
+                <p className="text-xs text-ink-soft/70 truncate">{u.email}</p>
                 {u.suggested_student_name && (
-                  <p className="text-[10px] text-amber font-medium">
+                  <p className="text-xs text-amber font-medium">
                     Saran tautan: {u.suggested_student_name}
                     {u.match_reason === "marga-mirip" && " (nama depan beda)"}
                     {" — konfirmasi manual"}
@@ -763,7 +763,7 @@ export default function AdminRosterPage() {
                   <button
                     type="button"
                     onClick={() => void linkAccount(u.id)}
-                    className="flex items-center gap-1 bg-forest text-white text-[10px] font-semibold px-2.5 rounded-xl shrink-0"
+                    className="flex items-center gap-1 bg-forest text-white text-sm font-semibold px-3 rounded-xl shrink-0"
                   >
                     <Link2 className="h-3.5 w-3.5" />
                     Tautkan
@@ -795,14 +795,14 @@ export default function AdminRosterPage() {
                   <p className="text-[11px] font-semibold text-ink truncate">
                     {formatDisplayName(s.full_name)}
                   </p>
-                  <p className="text-[10px] text-ink-soft/75 truncate">
+                  <p className="text-xs text-ink-soft/75 truncate">
                     {s.email || "belum terhubung"}
                   </p>
                   <div className="flex items-center gap-1.5">
                     <select
                       value={s.position}
                       onChange={(e) => void updatePosition(s, e.target.value)}
-                      className="text-[10px] border border-line rounded-lg bg-page px-1.5 py-0.5 text-ink"
+                      className="text-xs border border-line rounded-lg bg-page px-1.5 py-0.5 text-ink"
                     >
                       {POSITIONS.map((p) => (
                         <option key={p} value={p}>
@@ -813,7 +813,7 @@ export default function AdminRosterPage() {
                     <button
                       type="button"
                       onClick={() => void toggleActive(s)}
-                      className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full border ${
+                      className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full border ${
                         s.active
                           ? "bg-ok-bg text-forest border-forest/20"
                           : "bg-alert-bg text-alert border-alert/20"
@@ -867,8 +867,8 @@ export default function AdminRosterPage() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="text-[11px] font-semibold text-ink truncate">{title}</p>
-                        <p className="text-[10px] text-ink-soft/70 mt-0.5 truncate">{detail}</p>
-                        <p className="text-[9px] text-ink-soft/50 mt-1">
+                        <p className="text-xs text-ink-soft/70 mt-0.5 truncate">{detail}</p>
+                        <p className="text-[11px] text-ink-soft/50 mt-1">
                           {new Date(p.created_at).toLocaleDateString("id-ID", {
                             day: "numeric",
                             month: "short",
@@ -931,7 +931,7 @@ export default function AdminRosterPage() {
             </div>
           )}
           {isKetua && editStudent && (
-            <p className="text-[10px] text-ink-soft/70 bg-amber/10 border border-amber/20 rounded-xl px-2.5 py-2">
+            <p className="text-xs text-ink-soft/70 bg-amber/10 border border-amber/20 rounded-xl px-2.5 py-2">
               Perubahan dikirim sebagai usulan. Wali kelas harus menyetujui sebelum diterapkan.
             </p>
           )}
@@ -939,7 +939,7 @@ export default function AdminRosterPage() {
             type="button"
             disabled={saving || !editName.trim()}
             onClick={() => void saveEdit()}
-            className="w-full bg-forest text-white text-[12px] font-semibold py-2.5 rounded-xl disabled:opacity-50 active:scale-[0.98] transition-transform"
+            className="w-full bg-forest text-white text-sm font-semibold py-2.5 rounded-xl disabled:opacity-50 active:scale-[0.98] transition-transform"
           >
             {saving ? "Menyimpan…" : isKetua ? "Kirim Usulan" : "Simpan Perubahan"}
           </button>

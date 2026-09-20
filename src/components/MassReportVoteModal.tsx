@@ -166,7 +166,7 @@ export default function MassReportVoteModal() {
   if (!current) return null
 
   const pointBadge = (
-    <span className="shrink-0 rounded-md bg-[#EEA34C]/15 border border-[#EEA34C]/45 px-2 py-0.5 text-[10px] font-bold text-[#EEA34C] tabular-nums">
+    <span className="shrink-0 rounded-md bg-[#EEA34C]/15 border border-[#EEA34C]/45 px-2 py-0.5 text-xs font-bold text-[#EEA34C] tabular-nums">
       −{current.delta} poin
     </span>
   )
@@ -175,12 +175,12 @@ export default function MassReportVoteModal() {
     <div className="bg-deep text-white px-4 pt-4 pb-3.5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-medium text-white/55">
+          <p className="text-xs font-medium text-white/55">
             {isReviewRole ? "Mass Report · Review" : "Mass Report · Vote Kelas"}
           </p>
           <h2
             id="mass-report-title"
-            className="mt-1 text-[15px] font-bold leading-snug text-white"
+            className="mt-1 text-base font-bold leading-snug text-white"
           >
             {current.reason}
           </h2>
@@ -197,10 +197,10 @@ export default function MassReportVoteModal() {
 
       <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-white/8 border border-white/10 px-3 py-2.5">
         <div className="min-w-0">
-          <p className="text-[9px] font-medium text-white/50 uppercase tracking-wide">
+          <p className="text-[11px] font-medium text-white/50 uppercase tracking-wide">
             Target
           </p>
-          <p className="mt-0.5 text-[12px] font-semibold text-white truncate">
+          <p className="mt-0.5 text-sm font-semibold text-white truncate">
             {current.target_names.join(", ")}
           </p>
         </div>
@@ -235,21 +235,21 @@ export default function MassReportVoteModal() {
           )}
 
           {current.created_by_name && (
-            <p className="text-[10px] text-ink-soft/60">
+            <p className="text-xs text-ink-soft/60">
               Dilaporkan oleh {formatDisplayName(current.created_by_name)}
             </p>
           )}
 
           {isReviewRole && (
             <div className="rounded-xl bg-page border border-line px-3 py-2.5">
-              <p className="text-[10px] font-medium text-ink-soft/60">Vote masuk</p>
-              <p className="mt-0.5 text-[12px] font-semibold text-ink">
+              <p className="text-xs font-medium text-ink-soft/60">Vote masuk</p>
+              <p className="mt-0.5 text-sm font-semibold text-ink">
                 {current.voteCount ?? 0} total ·{" "}
                 <span className="text-forest">{current.yesCount ?? 0} setuju</span>
                 {" · "}
                 <span className="text-alert">{current.noCount ?? 0} tidak</span>
               </p>
-              <p className="mt-0.5 text-[9px] text-ink-soft/50">
+              <p className="mt-0.5 text-[11px] text-ink-soft/50">
                 Cukup {current.threshold ?? 10} vote untuk siap ditinjau
               </p>
             </div>
@@ -259,7 +259,7 @@ export default function MassReportVoteModal() {
             <button
               type="button"
               onClick={() => void openPhoto(current.id)}
-              className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-line bg-page px-3 py-2.5 text-[11px] font-semibold text-forest active:scale-[0.98] transition-transform"
+              className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-line bg-page px-3 py-2.5 text-sm font-semibold text-forest active:scale-[0.98] transition-transform"
             >
               <Camera className="h-4 w-4" />
               Lihat Foto Bukti
@@ -267,13 +267,13 @@ export default function MassReportVoteModal() {
           )}
 
           {photoErr && (
-            <p className="text-[11px] text-alert bg-alert-bg border border-alert/15 rounded-xl px-3 py-2">
+            <p className="text-xs text-alert bg-alert-bg border border-alert/15 rounded-xl px-3 py-2">
               {photoErr}
             </p>
           )}
 
           {voteErr && (
-            <p className="text-[11px] text-alert bg-alert-bg border border-alert/15 rounded-xl px-3 py-2">
+            <p className="text-xs text-alert bg-alert-bg border border-alert/15 rounded-xl px-3 py-2">
               {voteErr}
             </p>
           )}
@@ -287,14 +287,14 @@ export default function MassReportVoteModal() {
                 dismissId(current.id)
                 router.push("/app/poin")
               }}
-              className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-forest text-white text-[12px] font-bold py-3 active:scale-[0.98] transition-transform"
+              className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-forest text-white text-sm font-bold py-3 active:scale-[0.98] transition-transform"
             >
               <Flag className="h-4 w-4" />
               Buka Panel Review
             </button>
           ) : voted ? (
             <div className="rounded-xl bg-ok-bg border border-forest/15 px-3 py-3 text-center">
-              <p className="text-[12px] font-semibold text-forest">
+              <p className="text-sm font-semibold text-forest">
                 {voted === "YES"
                   ? "Anda menyetujui vote ini"
                   : "Anda tidak menyetujui vote ini"}
@@ -306,7 +306,7 @@ export default function MassReportVoteModal() {
                 type="button"
                 disabled={saving}
                 onClick={() => void submitVote("YES")}
-                className="flex items-center justify-center gap-1.5 rounded-xl bg-forest text-white text-[12px] font-bold py-3 active:scale-[0.98] disabled:opacity-45 transition-transform"
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-forest text-white text-sm font-bold py-3 active:scale-[0.98] disabled:opacity-45 transition-transform"
               >
                 <Check className="h-4 w-4" />
                 Setuju
@@ -315,7 +315,7 @@ export default function MassReportVoteModal() {
                 type="button"
                 disabled={saving}
                 onClick={() => void submitVote("NO")}
-                className="flex items-center justify-center gap-1.5 rounded-xl bg-page border border-line text-ink text-[12px] font-bold py-3 active:scale-[0.98] disabled:opacity-45 transition-transform"
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-page border border-line text-ink text-sm font-bold py-3 active:scale-[0.98] disabled:opacity-45 transition-transform"
               >
                 Tidak Setuju
               </button>
@@ -348,7 +348,7 @@ export default function MassReportVoteModal() {
             <button
               type="button"
               onClick={() => setPhotoOpen(false)}
-              className="rounded-xl bg-white/95 px-4 py-2 text-[12px] font-semibold text-ink"
+              className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-ink"
             >
               Tutup
             </button>

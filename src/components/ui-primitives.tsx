@@ -19,17 +19,17 @@ export function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between mb-3">
-      <h2 className="text-xs font-semibold text-ink">{title}</h2>
+      <h2 className="text-sm font-semibold text-ink">{title}</h2>
       {action ? (
         <Link
           href={action.href}
-          className="text-[10px] text-ink-soft/75 hover:text-ink-soft flex items-center gap-0.5"
+          className="text-xs text-ink-soft/75 hover:text-ink-soft flex items-center gap-0.5"
         >
-          {action.label} <ArrowRight className="h-2.5 w-2.5" />
+          {action.label} <ArrowRight className="h-3 w-3" />
         </Link>
       ) : count !== undefined ? (
         <span
-          className="inline-flex items-center gap-1 rounded-full bg-forest text-white text-[10px] font-bold px-2 py-0.5 tabular-nums"
+          className="inline-flex items-center gap-1 rounded-full bg-forest text-white text-[11px] font-bold px-2 py-0.5 tabular-nums"
           title={`${count}`}
         >
           <span className="h-1.5 w-1.5 rounded-full bg-lime" />
@@ -66,8 +66,8 @@ export function StatCard({
       <div className="bg-white border border-line shadow-sm rounded-2xl p-3 h-full flex flex-col justify-between">
         <span className={toneClass}>{icon}</span>
         <div>
-          <p className="text-[11px] font-medium text-ink">{label}</p>
-          <p className="text-[10px] text-ink-soft/75">{value}</p>
+          <p className="text-sm font-medium text-ink">{label}</p>
+          <p className="text-xs text-ink-soft/75">{value}</p>
         </div>
       </div>
     </Link>
@@ -105,23 +105,23 @@ export function ListRow({
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-[11px] font-semibold truncate ${accent ? "text-forest" : "text-ink"}`}>
+        <p className={`text-sm font-semibold truncate ${accent ? "text-forest" : "text-ink"}`}>
           {title}
         </p>
-        <div className={`flex items-center gap-1 text-[10px] ${accent ? "text-forest/75" : "text-ink-soft/75"}`}>
-          <MapPin className="h-2.5 w-2.5 shrink-0" />
+        <div className={`flex items-center gap-1 text-xs ${accent ? "text-forest/75" : "text-ink-soft/75"}`}>
+          <MapPin className="h-3 w-3 shrink-0" />
           <span className="truncate">{subtitle}</span>
         </div>
       </div>
       {(rightTop || rightBottom) && (
         <div className="text-right shrink-0">
           {rightTop && (
-            <p className={`text-[11px] font-bold ${accent ? "text-forest" : "text-ink"}`}>
+            <p className={`text-sm font-bold ${accent ? "text-forest" : "text-ink"}`}>
               {rightTop}
             </p>
           )}
           {rightBottom && (
-            <p className={`text-[9px] ${accent ? "text-forest/70" : "text-ink-soft/75"}`}>
+            <p className={`text-[11px] ${accent ? "text-forest/70" : "text-ink-soft/75"}`}>
               {rightBottom}
             </p>
           )}
@@ -185,7 +185,7 @@ export function TimelineItem({
           )}
         </span>
         <p
-          className={`min-w-0 flex-1 text-[11px] font-medium leading-snug truncate ${
+          className={`min-w-0 flex-1 text-xs font-medium leading-snug truncate ${
             isActive ? "text-forest" : "text-ink-soft/65"
           }`}
         >
@@ -202,7 +202,7 @@ export function TimelineItem({
       {/* Judul — jarak seperti sebelumnya */}
       <div className="mt-1 pl-6">
         <h3
-          className={`text-[13px] font-semibold leading-snug truncate ${
+          className={`text-sm font-semibold leading-snug truncate ${
             isActive ? "text-forest" : "text-ink"
           }`}
         >
@@ -210,7 +210,7 @@ export function TimelineItem({
         </h3>
         {plainDesc && (
           <p
-            className={`mt-1 text-[11px] leading-relaxed line-clamp-2 ${
+            className={`mt-1 text-xs leading-relaxed line-clamp-2 ${
               isActive ? "text-forest/80" : "text-ink-soft/70"
             }`}
           >
@@ -218,7 +218,7 @@ export function TimelineItem({
           </p>
         )}
         <p
-          className={`mt-2 flex items-center gap-1 text-[11px] leading-snug min-w-0 ${
+          className={`mt-2 flex items-center gap-1 text-xs leading-snug min-w-0 ${
             isActive ? "text-forest/85" : "text-ink-soft/75"
           }`}
         >
@@ -248,7 +248,7 @@ export function EmptyState({ icon, message }: { icon: ReactNode; message: string
   return (
     <div className="bg-white border border-line shadow-sm rounded-2xl py-6 text-center">
       <div className="flex justify-center mb-1 text-ink-soft/40">{icon}</div>
-      <p className="text-[11px] text-ink-soft/75">{message}</p>
+      <p className="text-xs text-ink-soft/75">{message}</p>
     </div>
   )
 }
@@ -273,19 +273,19 @@ export function HeroCard({
   return (
     <div className="bg-deep rounded-2xl p-4 text-white">
       <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-1.5 text-[10px] font-medium text-white/70">
-          <Clock className="h-3 w-3" />
+        <div className="flex items-center gap-1.5 text-xs font-medium text-white/70">
+          <Clock className="h-3.5 w-3.5" />
           {eyebrow}
         </div>
-        {meta && <span className="text-[10px] font-medium text-acid">{meta}</span>}
+        {meta && <span className="text-xs font-medium text-acid">{meta}</span>}
       </div>
       <h3 className="text-sm font-bold leading-tight mb-1.5">{title}</h3>
-      <div className="flex items-center gap-1 text-[11px] text-acid">
-        <MapPin className="h-3 w-3 shrink-0" />
+      <div className="flex items-center gap-1 text-xs text-acid">
+        <MapPin className="h-3.5 w-3.5 shrink-0" />
         <span className="truncate">{location}</span>
       </div>
       {description && (
-        <p className="text-[10px] text-white/65 leading-relaxed mt-2 pt-2 border-t border-white/10">
+        <p className="text-xs text-white/65 leading-relaxed mt-2 pt-2 border-t border-white/10">
           {description}
         </p>
       )}
@@ -310,10 +310,10 @@ export function ProgressCard({
   return (
     <div className="bg-deep rounded-2xl p-4 text-white">
       <div className="flex items-center justify-between mb-2.5">
-        <div className="flex items-center gap-1.5 text-[10px] font-medium text-white/55">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-white/55">
           {eyebrow}
         </div>
-        <span className="text-[10px] text-white/55">{doneLabel}</span>
+        <span className="text-xs text-white/55">{doneLabel}</span>
       </div>
       <p className="text-2xl font-bold leading-none mb-2.5 text-acid">
         {value}

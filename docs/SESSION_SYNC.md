@@ -86,6 +86,10 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-19 | **`0af39a4` push + Vercel deploy** batch UI · otak bersama di-update | prod `sevenbro.vercel.app` |
 | 2026-09-19 | **i18n ID/EN** — `locales.ts` + `I18nProvider` + section Bahasa di Pengaturan · leaderboard icon TrendingUp/Down · score chip redesign | `src/lib/i18n.tsx`, `locales.ts`, settings, poin |
 | 2026-09-19 | **`f83273e` push + Vercel deploy** i18n + icons · otak bersama di-update | prod `sevenbro.vercel.app` |
+| 2026-09-20 | **Tipografi SSOT Android/Material 3** — body ≥14px · meta ≥12px · micro floor 11px · larangan `text-[7–9px]`; token `--text-micro/meta/body/title` di `@theme` | `DESIGN_SYSTEM.md` § Tipografi · `globals.css` |
+| 2026-09-20 | Rollout tipografi fase 1: **Beranda + Kas (+ Buku Kas) + ui-primitives + sheet input** sudah naik skala; area lain menyusul | `page.tsx`, `kas/*`, `ui-primitives.tsx`, `sheet.tsx` |
+| 2026-09-20 | Rollout tipografi **fase 2**: Brief form + Mass Report + Buat Report + Pengumuman — body/tombol `text-sm`, meta `text-xs`, micro floor 11px | `InfoBriefForm`, `MassReport*`, `report/new`, `pengumuman` |
+| 2026-09-20 | Rollout tipografi **fase 3 (selesai seluruh app)**: Poin/Arena, Agenda, Settings, roster, scan, AppShell, login, admin — **0** sisa `text-[7–10px]` di `src/` | pages + `AppShell` + admin components |
 
 ---
 
@@ -135,5 +139,9 @@ Setelah kerja selesai: update `PROGRESS.md` Open + baris **Keputusan sinkron** d
 
 
 
+
+
+
+
 ### Automation log
-- last session-sync: `2026-09-19T13:34:02.415Z` · branch `master`
+- last session-sync: `2026-09-20T13:10:54.209Z` · branch `master`

@@ -180,13 +180,13 @@ function AgendaInner() {
       <div className="flex items-start justify-between gap-2">
         <div>
           <h1 className="text-lg font-bold text-ink">Agenda</h1>
-          <p className="text-[11px] text-ink-soft/75">Kegiatan kelas & sekolah mendatang</p>
+          <p className="text-xs text-ink-soft/75">Kegiatan kelas & sekolah mendatang</p>
         </div>
         {canEdit && (
           <button
             type="button"
             onClick={openCreate}
-            className="flex items-center gap-1 bg-forest text-white text-[10px] font-semibold px-2.5 py-1.5 rounded-xl active:scale-[0.97] transition-transform shrink-0"
+            className="flex items-center gap-1 bg-forest text-white text-sm font-semibold px-3 py-1.5 rounded-xl active:scale-[0.97] transition-transform shrink-0"
           >
             <Plus className="h-3.5 w-3.5" />
             Tambah
@@ -241,18 +241,18 @@ function AgendaInner() {
             type="button"
             disabled={safePage <= 0}
             onClick={() => setPage((p) => Math.max(0, p - 1))}
-            className="min-h-9 rounded-full border border-line bg-white px-3 text-[10px] font-semibold text-ink disabled:opacity-40"
+            className="min-h-9 rounded-full border border-line bg-white px-3 text-sm font-semibold text-ink disabled:opacity-40"
           >
             Sebelumnya
           </button>
-          <span className="text-[10px] text-ink-soft/70">
+          <span className="text-xs text-ink-soft/70">
             {safePage + 1} / {pageCount} · max {PAGE_LIMIT} per halaman
           </span>
           <button
             type="button"
             disabled={safePage >= pageCount - 1}
             onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
-            className="min-h-9 rounded-full border border-line bg-white px-3 text-[10px] font-semibold text-ink disabled:opacity-40"
+            className="min-h-9 rounded-full border border-line bg-white px-3 text-sm font-semibold text-ink disabled:opacity-40"
           >
             Berikutnya
           </button>
@@ -260,7 +260,7 @@ function AgendaInner() {
       )}
 
       {toast && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-forest text-white text-[11px] font-semibold px-3 py-2 rounded-xl shadow-lg">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-forest text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-lg">
           {toast}
         </div>
       )}
@@ -272,7 +272,7 @@ function AgendaInner() {
         fullHeight
       >
         {err && (
-          <p className="text-[11px] text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
+          <p className="text-xs text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
             {err}
           </p>
         )}
@@ -280,7 +280,7 @@ function AgendaInner() {
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-[12px] font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
+            className="min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-sm font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
             placeholder="Upacara / ulangan / rapat…"
           />
         </Field>
@@ -288,7 +288,7 @@ function AgendaInner() {
           <input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-[12px] font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
+            className="min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-sm font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
             placeholder="Kelas 7B / Lapangan"
           />
         </Field>
@@ -297,12 +297,12 @@ function AgendaInner() {
             type="datetime-local"
             value={when}
             onChange={(e) => setWhen(e.target.value)}
-            className="min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-[12px] font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
+            className="min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-sm font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
           />
         </Field>
         {/* Field opsional — SSOT DESIGN_SYSTEM § Field opsional */}
         <label className="block space-y-1 min-w-0">
-          <span className="block text-[10px] font-medium text-ink-soft">
+          <span className="block text-xs font-medium text-ink-soft">
             Deskripsi
             <span className="ml-1 font-normal text-ink-soft/55">opsional</span>
           </span>
@@ -311,14 +311,14 @@ function AgendaInner() {
             onChange={(e) => setDescription(e.target.value)}
             rows={12}
             placeholder="Detail tambahan agenda…"
-            className="min-h-[14rem] w-full resize-none scroll-y-only rounded-xl border border-forest/45 bg-white px-3 py-2.5 text-[12px] text-ink placeholder:text-ink-soft/45 focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
+            className="min-h-[14rem] w-full resize-none scroll-y-only rounded-xl border border-forest/45 bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink-soft/45 focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
           />
         </label>
         <button
           type="button"
           disabled={saving}
           onClick={() => void save()}
-          className="flex w-full items-center justify-center gap-1 rounded-full bg-forest px-2.5 py-2.5 text-[12px] font-semibold text-white active:scale-[0.97] transition-transform disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-1 rounded-full bg-forest px-2.5 py-2.5 text-sm font-semibold text-white active:scale-[0.97] transition-transform disabled:opacity-50"
         >
           <Check className="h-3.5 w-3.5" />
           {saving ? "Menyimpan…" : editing ? "Simpan Perubahan" : "Simpan Agenda"}
@@ -328,7 +328,7 @@ function AgendaInner() {
           <button
             type="button"
             onClick={() => void remove(editing)}
-            className="flex w-full items-center justify-center gap-1.5 rounded-full border border-alert/40 bg-white px-2.5 py-2.5 text-[12px] font-semibold text-alert active:scale-[0.97] transition-transform"
+            className="flex w-full items-center justify-center gap-1.5 rounded-full border border-alert/40 bg-white px-2.5 py-2.5 text-sm font-semibold text-alert active:scale-[0.97] transition-transform"
           >
             <Trash2 className="h-3.5 w-3.5" />
             Hapus Agenda

@@ -10,7 +10,7 @@
 | Prinsip | Aturan |
 |---|---|
 | **Mobile-first** | Layout 360–480px; konten max `max-w-lg` |
-| **Compact density** | Scale kecil — umum `text-[11px]` / `text-[10px]` / `text-[9px]` |
+| **Readable density** | Body ≥14px · meta ≥12px · micro ≥11px (selaras Material 3 / Android) |
 | **Satu baris** | Judul & meta di card → selalu `truncate` |
 | **Kontras** | Page mint, card putih, dark card deep emerald |
 | **Aksen terbatas** | Lime = progress/positif · acid = jam & lokasi di dark card · forest = active UI |
@@ -48,15 +48,43 @@ Progress bar      →  bg-lime on bg-white/10 track
 Border divider    →  border-white/10
 ```
 
-### Tipografi
+### Tipografi (SSOT — Android / Material 3 aligned, 2026-09)
+
+**Acuan:** Material 3 type scale (sp ≈ CSS px @ font-scale 1.0).  
+**Larangan keras:** `text-[7px]` … `text-[9px]` untuk teks yang harus dibaca; body di bawah 14px.
+
 ```
-Page title        →  text-lg font-bold text-ink
-Section heading   →  text-xs font-semibold text-ink
-Card title        →  text-[11px] font-semibold text-ink  + truncate
-Body / value      →  text-[10px] – text-[11px]
-Meta              →  text-[10px] text-ink-soft/75
-Micro             →  text-[9px]  text-ink-soft/75
+Role                Class (WAJIB)              ≈ Material        Notes
+─────────────────────────────────────────────────────────────────────────
+Display / hero num  text-2xl – text-3xl        Display / Headline  angka besar saja
+Page title          text-lg font-bold          Title Large (18→22) text-xl opsional
+Section heading     text-sm font-semibold      Title Small 14sp
+Card title          text-sm font-semibold      Title Small 14sp    + truncate
+Body / value        text-sm                    Body Medium 14sp    default body
+Body long-form      text-[15px] / text-base    Body Large 16sp     brief / deskripsi panjang
+Meta / subtitle     text-xs                    Label Medium 12sp
+Micro / badge       text-[11px]                Label Small 11sp    floor — jangan <11px
+Button label        text-sm font-semibold      Label Large 14sp    pill & primary
+Input / select      text-sm                    Body Medium 14sp
+Nav label           text-[11px]                Label Small
+Table cell          text-xs – text-sm          Label / Body
 ```
+
+**Token CSS** (lihat `src/app/globals.css` `@theme`):  
+`--text-micro` · `--text-meta` · `--text-body` · `--text-title` — prefer utility Tailwind named (`text-xs` / `text-sm` / `text-lg`); arbitrary `text-[Npx]` hanya untuk 11px / 13px / 15px / 17px.
+
+**Migrasi dari skala lama (compact 9–11px):**
+
+| Lama | Baru |
+|---|---|
+| `text-[7px]` / `text-[8px]` / `text-[9px]` | `text-[11px]` |
+| `text-[10px]` | `text-xs` (12px) meta · `text-sm` (14px) body/tombol |
+| `text-[11px]` | `text-sm` (14px) title/body · `text-xs` bila meta |
+| `text-[12px]` | `text-sm` (14px) |
+| `text-xs` section | `text-sm` |
+
+**Rollout area:** Beranda + Kas → form Brief/Mass Report → Poin/Arena → sisanya.  
+Jangan campur skala lama di halaman yang sudah di-migrasi.
 
 ### Geometry & spacing
 ```
@@ -111,10 +139,10 @@ Contoh hidup: halaman **Info → Brief Harian + Umum** (`src/app/app/pengumuman/
 ```
 flex items-center gap-1
 rounded-full bg-forest text-white
-text-[10px] font-semibold
-px-2.5 py-1.5
+text-sm font-semibold
+px-3 py-1.5
 active:scale-[0.97] transition-transform
-icon: h-3.5 w-3.5
+icon: h-4 w-4
 ```
 Contoh: **Brief Harian** · **Terbitkan Brief** · **Salin teks WA** · **Ganti manual** · **+ Tambah** (compact header)
 
@@ -122,16 +150,16 @@ Contoh: **Brief Harian** · **Terbitkan Brief** · **Salin teks WA** · **Ganti 
 ```
 flex items-center gap-1
 rounded-full border border-line bg-white text-ink
-text-[10px] font-semibold
-px-2.5 py-1.5
+text-sm font-semibold
+px-3 py-1.5
 active:scale-[0.97] transition-transform
-icon: h-3.5 w-3.5
+icon: h-4 w-4
 ```
 Contoh: **Umum** · aksi alternatif di header page
 
 #### Pin (toggle di header forest)
 ```
-label: "Pin ke Beranda"  text-[10px] font-semibold text-white/85
+label: "Pin ke Beranda"  text-xs font-semibold text-white/85
 switch: h-5 w-9 rounded-full
   ON:  bg-lime + knob left-[18px] bg-deep
   OFF: bg-white/30 + knob left-0.5 bg-white
@@ -146,7 +174,7 @@ tanpa pill merah kecuali butuh konfirmasi kuat
 
 #### Link aksi (bukan tombol)
 ```
-min-h-9 px-1 text-[10px] font-semibold text-forest
+min-h-9 px-1 text-xs font-semibold text-forest
 TANPA background / border
 ```
 Contoh: Muat ulang jadwal · Jadwal hari ini · Isi otomatis lagi
@@ -156,11 +184,12 @@ Contoh: Muat ulang jadwal · Jadwal hari ini · Isi otomatis lagi
 2. Primary = **bg-forest text-white**
 3. Secondary = **border-line bg-white text-ink**
 4. Label Title Case, Bahasa Indonesia
-5. Icon opsional di kiri, `h-3.5 w-3.5`
+5. Icon opsional di kiri, `h-4 w-4`
 6. Tap: `active:scale-[0.97]`
-7. Min touch: py-1.5 + min-h-9 untuk baris padat
+7. Min touch: py-1.5 + min-h-9 untuk baris padat; label tombol **minimal `text-xs`**, default `text-sm`
 8. **Jangan** amber/oranye sebagai tombol primary
 9. **Jangan** kasih background ke link aksi sekunder
+10. **Jangan** `text-[10px]` / `text-[9px]` di label tombol (skala lama)
 
 ---
 
@@ -173,8 +202,8 @@ Terapkan ke semua section sejenis: Tugas, Remedial, Info lain, Piket, form admin
 
 ```
 rounded-xl border border-line bg-page p-2.5 space-y-2
-title: text-[11px] font-bold text-ink
-hint:  text-[10px] text-ink-soft/60 mt-0.5
+title: text-sm font-bold text-ink
+hint:  text-xs text-ink-soft/60 mt-0.5
 ```
 
 Tidak ada tombol aksi di header sub-section.
@@ -190,8 +219,8 @@ Tidak ada tombol aksi di header sub-section.
 │     [ Detail tugas / remedial         ]  │  dotted token line
 └──────────────────────────────────────────┘
 wrapper: rounded-xl border border-line bg-white
-nomor:   w-4 text-[12px] font-bold text-forest tabular-nums
-mapel:   FIELD_SELECT (min-h-11 rounded-lg border-line bg-page text-[12px])
+nomor:   w-4 text-xs font-bold text-forest tabular-nums
+mapel:   FIELD_SELECT (min-h-11 rounded-lg border-line bg-page text-sm)
 hapus:   h-9 w-9 text-ink-soft active:text-alert
 ```
 
@@ -202,7 +231,7 @@ hapus:   h-9 w-9 text-ink-soft active:text-alert
 ```
 baris:     min-h-11 flex items-center gap-2 border-b border-line py-2
 kiri:      User h-4 w-4 text-ink-soft/70 (tanpa circle/background)
-nilai:    truncate text-[12px] · kosong = "Pilih Nama Siswa" text-ink-soft/60
+nilai:    truncate text-sm · kosong = "Pilih Nama Siswa" text-ink-soft/60
 kanan:     ChevronDown h-4 w-4 (rotate-180 saat buka)
 daftar:    telanjang (tanpa frame/kotak) · radio lingkaran forest bila terpilih
 reset:     baris "Semua siswa" text-forest
@@ -213,9 +242,9 @@ Placeholder default: **Pilih Nama Siswa**. Nama terpilih tampil **1 baris + trun
 #### 4. Field opsional (deskripsi) — SSOT
 
 ```
-label:       text-[10px] font-medium text-ink-soft + "opsional"
+label:       text-xs font-medium text-ink-soft + "opsional"
 input:       min-h-11 rounded-xl border border-forest/45 bg-white
-             px-3 py-2.5 text-[12px] text-ink
+             px-3 py-2.5 text-sm text-ink
 placeholder: text-ink-soft/45
 focus:       ring-2 ring-forest/25 + border-forest
 ```
@@ -230,7 +259,7 @@ Tanpa hint basa-basi di bawah field (mis. “Sesuai jam generate…”).
 posisi:  HANYA di bawah daftar item sub-section (bukan di header)
 label:   "+ Add"
 style:   ROW_ADD = w-full rounded-xl border border-dashed border-line
-         bg-white px-3 py-2 text-[10px] font-semibold text-ink-soft
+         bg-white px-3 py-2 text-xs font-semibold text-ink-soft
 ```
 
 Satu tombol Add per sub-section (Tugas / Remedial / Info). Tidak ada Add ganda di header + bawah.
@@ -264,7 +293,7 @@ header page: title + subtitle · tanpa action Add
 
 ```
 FIELD_SELECT: min-h-11 rounded-lg border border-line bg-page
-              px-3 text-[12px] text-ink
+              px-3 text-sm text-ink
 FIELD_OPTIONAL: (teks edit) border-forest/45 bg-white — lihat bagian 4
 ```
 
@@ -278,7 +307,7 @@ Primary pill forest · Secondary outline · Link tanpa background · Pin pill li
 
 Ikut **§ Buttons SSOT** — bentuk pill, bukan rounded acak:
 ```
-active:   rounded-full bg-forest text-white px-2.5 py-1.5 text-[10px] font-semibold
+active:   rounded-full bg-forest text-white px-3 py-1.5 text-sm font-semibold
 inactive: rounded-full border border-line bg-white text-ink (padding sama)
 reset:    PILL_SECONDARY (outline) — mis. "Pakai Jadwal"
 label: Title Case
@@ -288,7 +317,7 @@ label: Title Case
 
 `src/components/InfoBriefForm.tsx`:
 ```
-FIELD_SELECT   → min-h-11 rounded-lg border-forest/40 bg-white px-3 text-[12px]
+FIELD_SELECT   → min-h-11 rounded-lg border-forest/40 bg-white px-3 text-sm
 FIELD_OPTIONAL → min-h-11 rounded-xl border-forest/45 bg-white
 ROW_DELETE     → h-9 w-9 rounded-lg
 ROW_ADD        → dashed border-line bg-white "+ Add"
@@ -345,14 +374,14 @@ Idle:
 ```tsx
 <div>
   <h1 className="text-lg font-bold text-ink">{title}</h1>
-  <p className="text-[11px] text-ink-soft/75">{subtitle}</p>
+  <p className="text-xs text-ink-soft/75">{subtitle}</p>
 </div>
 ```
 
 ### 5.2 Section header
 ```tsx
 <SectionHeader title="Clothing" count="2/4" />
-// count badge: bg-surface text-ink-soft text-[9px]
+// count badge: bg-surface text-ink-soft text-[11px]
 ```
 
 ### 5.3 List row (semua list page)
@@ -362,8 +391,8 @@ Idle:
     <Icon className="h-3.5 w-3.5 text-forest" />
   </div>
   <div className="flex-1 min-w-0">
-    <p className="text-[11px] font-semibold text-ink truncate">Title</p>
-    <p className="text-[10px] text-ink-soft/75 truncate">Subtitle</p>
+    <p className="text-sm font-semibold text-ink truncate">Title</p>
+    <p className="text-xs text-ink-soft/75 truncate">Subtitle</p>
   </div>
 </div>
 ```
@@ -399,6 +428,7 @@ Highlight  → amber chip
 | Judul multi-baris | `truncate` |
 | Shadow tebal / gradient | `shadow-sm`, flat |
 | Hover desktop-only | `active:scale-*` |
+| Body / tombol `text-[9px]`–`text-[11px]` lama | `text-sm` body · `text-xs` meta · floor micro `text-[11px]` |
 
 ---
 

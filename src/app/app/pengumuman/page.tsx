@@ -82,7 +82,7 @@ const PAGE_LIMIT = 15
 
 function WaBody({ text }: { text: string }) {
   return (
-    <div className="mt-1.5 whitespace-pre-wrap text-[10px] leading-[1.4] text-ink">
+    <div className="mt-1.5 whitespace-pre-wrap text-sm leading-[1.45] text-ink">
       {text.split("\n").map((line, i) => {
         if (!line.trim()) return <div key={i} className="h-1" />
         const parts = line.split(/(\*[^*]+\*)/g)
@@ -351,7 +351,7 @@ function PengumumanInner() {
       <div className="flex items-start justify-between gap-2">
         <div>
           <h1 className="text-lg font-bold text-ink">Pengumuman</h1>
-          <p className="text-[11px] text-ink-soft/75">
+          <p className="text-xs text-ink-soft/75">
             Info penting dari guru & pengurus kelas
           </p>
         </div>
@@ -363,7 +363,7 @@ function PengumumanInner() {
                 setEditBrief(null)
                 setBriefOpen(true)
               }}
-              className="inline-flex items-center gap-1 rounded-full bg-forest text-white text-[10px] font-semibold px-2.5 py-1.5 active:scale-[0.97] transition-transform"
+              className="inline-flex items-center gap-1 rounded-full bg-forest text-white text-sm font-semibold px-3 py-1.5 active:scale-[0.97] transition-transform"
             >
               <PenLine className="h-3 w-3" />
               Info
@@ -371,7 +371,7 @@ function PengumumanInner() {
             <button
               type="button"
               onClick={openCreate}
-              className="inline-flex items-center gap-1 rounded-full border border-line bg-white text-ink text-[10px] font-semibold px-2.5 py-1.5 active:scale-[0.97] transition-transform"
+              className="inline-flex items-center gap-1 rounded-full border border-line bg-white text-ink text-sm font-semibold px-3 py-1.5 active:scale-[0.97] transition-transform"
             >
               <Plus className="h-3 w-3" />
               Umum
@@ -383,9 +383,9 @@ function PengumumanInner() {
       <div>
         {/* Header section — ringkas, count tetap noticeable */}
         <div className="flex items-center justify-between gap-2 mb-2">
-          <h2 className="text-xs font-semibold text-ink">Semua Pengumuman</h2>
+          <h2 className="text-sm font-semibold text-ink">Semua Pengumuman</h2>
           <span
-            className="inline-flex items-center gap-1 rounded-full bg-forest text-white text-[10px] font-bold px-2 py-0.5 tabular-nums"
+            className="inline-flex items-center gap-1 rounded-full bg-forest text-white text-xs font-bold px-2 py-0.5 tabular-nums"
             title={`${sorted.length} pengumuman`}
           >
             <span className="h-1.5 w-1.5 rounded-full bg-lime" />
@@ -420,13 +420,13 @@ function PengumumanInner() {
                     className="w-full text-left bg-white border border-line shadow-sm rounded-xl px-3 py-2.5 active:scale-[0.99] transition-transform"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="shrink-0 text-[10px] font-semibold text-forest bg-forest/10 rounded-full px-1.5 py-0.5">
+                      <span className="shrink-0 text-xs font-semibold text-forest bg-forest/10 rounded-full px-1.5 py-0.5">
                         Brief
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-ink">
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">
                         {briefDisplayTitle(a.title)}
                       </span>
-                      <span className="shrink-0 text-[10px] text-ink-soft/65">
+                      <span className="shrink-0 text-xs text-ink-soft/65">
                         {timeLabel(a.created_at)}
                       </span>
                     </div>
@@ -443,10 +443,10 @@ function PengumumanInner() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <h2 className="text-[12px] font-bold text-ink leading-snug">
+                        <h2 className="text-sm font-bold text-ink leading-snug">
                           {briefDisplayTitle(a.title)}
                         </h2>
-                        <p className="mt-0.5 text-[9px] text-ink-soft/70">
+                        <p className="mt-0.5 text-xs text-ink-soft/70">
                           {relativeDayLabel(brief.date)}
                           {relativeDayLabel(brief.date) ? " · " : ""}
                           {formatBriefDateLong(brief.date)}
@@ -461,7 +461,7 @@ function PengumumanInner() {
                     </div>
                     <WaBody text={a.body} />
                     <div className="mt-2 pt-1.5 border-t border-line/60 flex items-center justify-between gap-2">
-                      <p className="text-[9px] text-ink-soft/50 flex items-center gap-1 min-w-0">
+                      <p className="text-xs text-ink-soft/50 flex items-center gap-1 min-w-0">
                         <Megaphone className="h-2.5 w-2.5 shrink-0" />
                         <span className="truncate">
                           {authorLabel(a.created_by)}
@@ -498,7 +498,7 @@ function PengumumanInner() {
                   className="bg-white border border-line shadow-sm rounded-2xl p-3.5"
                 >
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <span className="text-[10px] text-ink-soft/75 pt-1">
+                    <span className="text-xs text-ink-soft/75 pt-1">
                       {timeLabel(a.created_at)}
                     </span>
                     {canEdit && (
@@ -508,12 +508,12 @@ function PengumumanInner() {
                       />
                     )}
                   </div>
-                  <h2 className="text-[13px] font-bold text-ink leading-snug">
+                  <h2 className="text-sm font-bold text-ink leading-snug">
                     {a.title}
                   </h2>
                   <WaBody text={a.body} />
                   <div className="mt-2.5 pt-2 border-t border-line/60 flex items-center justify-between">
-                    <p className="text-[10px] text-ink-soft/50 flex items-center gap-1 min-w-0">
+                    <p className="text-xs text-ink-soft/50 flex items-center gap-1 min-w-0">
                       <Megaphone className="h-2.5 w-2.5 shrink-0" />
                       <span className="truncate">
                         {authorLabel(a.created_by)}
@@ -550,11 +550,11 @@ function PengumumanInner() {
                   type="button"
                   disabled={safePage <= 0}
                   onClick={() => setPage((p) => Math.max(0, p - 1))}
-                  className="min-h-9 rounded-full border border-line bg-white px-3 text-[10px] font-semibold text-ink disabled:opacity-40"
+                  className="min-h-9 rounded-full border border-line bg-white px-3 text-sm font-semibold text-ink disabled:opacity-40"
                 >
                   Sebelumnya
                 </button>
-                <span className="text-[10px] text-ink-soft/70">
+                <span className="text-xs text-ink-soft/70">
                   {safePage + 1} / {pageCount} · max {PAGE_LIMIT} per halaman
                 </span>
                 <button
@@ -563,7 +563,7 @@ function PengumumanInner() {
                   onClick={() =>
                     setPage((p) => Math.min(pageCount - 1, p + 1))
                   }
-                  className="min-h-9 rounded-full border border-line bg-white px-3 text-[10px] font-semibold text-ink disabled:opacity-40"
+                  className="min-h-9 rounded-full border border-line bg-white px-3 text-sm font-semibold text-ink disabled:opacity-40"
                 >
                   Berikutnya
                 </button>
@@ -592,7 +592,7 @@ function PengumumanInner() {
         fullHeight
       >
         {err && (
-          <p className="text-[11px] text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
+          <p className="text-xs text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
             {err}
           </p>
         )}
@@ -600,7 +600,7 @@ function PengumumanInner() {
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-[12px] font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
+            className="min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-sm font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
             placeholder="Jadwal piket…"
           />
         </Field>
@@ -609,7 +609,7 @@ function PengumumanInner() {
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={16}
-            className="min-h-11 w-full resize-none scroll-y-only rounded-xl border border-forest/45 bg-white px-3 py-2.5 text-[12px] text-ink placeholder:text-ink-soft/45 focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
+            className="min-h-11 w-full resize-none scroll-y-only rounded-xl border border-forest/45 bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink-soft/45 focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
             placeholder="Tulis info untuk kelas…"
           />
         </Field>
@@ -619,7 +619,7 @@ function PengumumanInner() {
           aria-pressed={pinned}
           className="w-full flex items-center justify-between rounded-xl border border-line bg-page px-3 py-2.5"
         >
-          <span className="text-[11px] font-semibold text-ink">
+          <span className="text-sm font-semibold text-ink">
             Sematkan di Beranda
           </span>
           <span
@@ -638,7 +638,7 @@ function PengumumanInner() {
           type="button"
           disabled={saving}
           onClick={() => void save()}
-          className="flex w-full items-center justify-center gap-1 rounded-full bg-forest px-2.5 py-2.5 text-[12px] font-semibold text-white active:scale-[0.97] transition-transform disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-1 rounded-full bg-forest px-3 py-2.5 text-sm font-semibold text-white active:scale-[0.97] transition-transform disabled:opacity-50"
         >
           <Check className="h-3.5 w-3.5" />
           {saving
@@ -650,7 +650,7 @@ function PengumumanInner() {
       </Sheet>
 
       {toast && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-forest text-white text-[11px] font-semibold px-3 py-2 rounded-xl shadow-lg">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-forest text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-lg">
           {toast}
         </div>
       )}

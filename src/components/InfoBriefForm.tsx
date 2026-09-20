@@ -76,22 +76,22 @@ function toFormSubjects(
 
 /** SSOT field form section — docs/DESIGN_SYSTEM.md § Form row pattern */
 const FIELD_SELECT =
-  "min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-[12px] font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
+  "min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-sm font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
 const FIELD_OPTIONAL =
-  "min-h-11 w-full rounded-xl border border-forest/45 bg-white px-3 py-2.5 text-[12px] text-ink placeholder:text-ink-soft/45 focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
+  "min-h-11 w-full rounded-xl border border-forest/45 bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink-soft/45 focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
 const ROW_DELETE =
   "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-soft/80 active:bg-alert/10 active:text-alert"
 const ROW_ADD =
-  "w-full rounded-xl border border-dashed border-line bg-white px-3 py-2 text-[10px] font-semibold text-ink-soft"
+  "w-full rounded-xl border border-dashed border-line bg-white px-3 py-2 text-xs font-semibold text-ink-soft"
 /** Primary pill — SSOT: Brief Harian / Salin teks WA */
 const PILL_PRIMARY =
-  "flex items-center gap-1 rounded-full bg-forest text-white text-[10px] font-semibold px-2.5 py-1.5 active:scale-[0.97] transition-transform"
+  "flex items-center gap-1 rounded-full bg-forest text-white text-sm font-semibold px-3 py-1.5 active:scale-[0.97] transition-transform"
 /** Secondary pill — SSOT: Umum / Ganti manual */
 const PILL_SECONDARY =
-  "flex items-center gap-1 rounded-full border border-line bg-white text-ink text-[10px] font-semibold px-2.5 py-1.5 active:scale-[0.97] transition-transform"
+  "flex items-center gap-1 rounded-full border border-line bg-white text-ink text-sm font-semibold px-3 py-1.5 active:scale-[0.97] transition-transform"
 /** Link aksi sekunder — tanpa background */
 const TEXT_ACTION =
-  "min-h-9 shrink-0 px-1 text-[10px] font-semibold text-forest active:opacity-70"
+  "min-h-9 shrink-0 px-1 text-xs font-semibold text-forest active:opacity-70"
 
 function SectionLabel({
   children,
@@ -102,7 +102,7 @@ function SectionLabel({
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
-      <span className="text-[11px] font-semibold text-ink">{children}</span>
+      <span className="text-sm font-semibold text-ink">{children}</span>
       {action}
     </div>
   )
@@ -123,9 +123,9 @@ function BriefSectionCard({
     <div className="rounded-2xl border border-line bg-white shadow-sm">
       <div className="flex items-start justify-between gap-2 border-b border-line bg-page px-3 py-2.5 rounded-t-2xl">
         <div className="min-w-0">
-          <p className="text-[12px] font-bold text-ink">{title}</p>
+          <p className="text-sm font-bold text-ink">{title}</p>
           {subtitle && (
-            <p className="text-[10px] text-ink-soft/70 leading-snug mt-0.5">{subtitle}</p>
+            <p className="text-xs text-ink-soft/70 leading-snug mt-0.5">{subtitle}</p>
           )}
         </div>
         {action}
@@ -152,7 +152,7 @@ function OptionalTextField({
 }) {
   return (
     <label className="block space-y-1 min-w-0">
-      <span className="block text-[10px] font-medium text-ink-soft">
+      <span className="block text-xs font-medium text-ink-soft">
         {label}
         <span className="ml-1 font-normal text-ink-soft/55">opsional</span>
       </span>
@@ -550,11 +550,11 @@ export default function InfoBriefForm({
   ) => (
     <div className="space-y-2">
       {rows.length === 0 && (
-        <p className="text-[10px] text-ink-soft/55 px-0.5">Belum ada isian.</p>
+        <p className="text-xs text-ink-soft/55 px-0.5">Belum ada isian.</p>
       )}
       {rows.map(({ it, index }, n) => (
         <div key={index} className="flex items-start gap-2">
-          <span className="mt-8 w-4 shrink-0 text-center text-[12px] font-bold text-forest tabular-nums">
+          <span className="mt-8 w-4 shrink-0 text-center text-sm font-bold text-forest tabular-nums">
             {n + 1}
           </span>
           <div className="min-w-0 flex-1">
@@ -678,13 +678,13 @@ export default function InfoBriefForm({
     >
       <div className="rounded-2xl bg-forest px-3 py-3.5 flex items-center justify-between gap-3 min-h-[4.5rem]">
         <div className="min-w-0 flex-1 space-y-1">
-          <p className="text-[13px] font-bold text-white leading-tight">
+          <p className="text-sm font-bold text-white leading-tight">
             {fixedTitle}
           </p>
-          <p className="text-[11px] font-semibold text-lime leading-tight">
+          <p className="text-xs font-semibold text-lime leading-tight">
             {formatBriefDateLong(dateKey)}
           </p>
-          <p className="text-[9px] text-white/55 leading-tight">
+          <p className="text-[11px] text-white/55 leading-tight">
             Otomatis dari tanggal brief
           </p>
         </div>
@@ -695,7 +695,7 @@ export default function InfoBriefForm({
           aria-label="Pin ke Beranda"
           className="flex shrink-0 items-center gap-2"
         >
-          <span className="text-[10px] font-semibold text-white/85">Pin</span>
+          <span className="text-xs font-semibold text-white/85">Pin</span>
           <span
             className={`h-5 w-9 rounded-full relative transition-colors ${
               pinned ? "bg-lime" : "bg-white/30"
@@ -727,7 +727,7 @@ export default function InfoBriefForm({
             onChange={(e) => setDateKey(e.target.value.slice(0, 10))}
             className={FIELD_SELECT}
           />
-          <span className="block text-[10px] text-ink-soft/70 pt-0.5">
+          <span className="block text-xs text-ink-soft/70 pt-0.5">
             {rel ? `${rel} · ` : ""}
             {dateLong}
             {!schoolDay && (
@@ -738,16 +738,16 @@ export default function InfoBriefForm({
 
         {!schoolDay && (
           <div className="rounded-xl border border-alert/30 bg-alert-bg px-3 py-2.5">
-            <p className="text-[12px] font-bold text-alert">
+            <p className="text-sm font-bold text-alert">
               {autoUniform.dayLabel} libur sekolah
             </p>
-            <p className="text-[10px] text-ink-soft/80 mt-0.5 leading-relaxed">
+            <p className="text-xs text-ink-soft/80 mt-0.5 leading-relaxed">
               Brief hanya untuk Senin-Jumat. Pilih hari sekolah berikutnya.
             </p>
             <button
               type="button"
               onClick={() => setDateKey(defaultBriefDateKey())}
-              className="mt-2 rounded-xl bg-forest px-3 py-1.5 text-[10px] font-semibold text-white"
+              className="mt-2 rounded-xl bg-forest px-3 py-1.5 text-sm font-semibold text-white"
             >
               Ke hari sekolah berikutnya
             </button>
@@ -772,16 +772,16 @@ export default function InfoBriefForm({
 
           {!showUniformCustom && !customUniform ? (
             <div className="rounded-xl border border-forest/25 bg-forest/10 px-3 py-2.5">
-              <p className="text-[13px] font-bold text-ink leading-snug">
+              <p className="text-sm font-bold text-ink leading-snug">
                 {autoUniform.title}
               </p>
               {autoUniform.detail && (
-                <p className="text-[11px] text-ink-soft/85 mt-0.5 leading-relaxed">
+                <p className="text-xs text-ink-soft/85 mt-0.5 leading-relaxed">
                   {autoUniform.detail}
                   {autoUniform.extra ? ` + ${autoUniform.extra}` : ""}
                 </p>
               )}
-              <p className="text-[9px] text-ink-soft/55 mt-1.5">
+              <p className="text-[11px] text-ink-soft/55 mt-1.5">
                 Jadwal otomatis · {dateLong}
               </p>
             </div>
@@ -803,7 +803,7 @@ export default function InfoBriefForm({
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="min-w-0 flex-1 overflow-x-auto">
                     <div className="flex w-max items-center gap-x-1 whitespace-nowrap">
-                      <span className="text-[10px] font-semibold text-ink-soft shrink-0">
+                      <span className="text-xs font-semibold text-ink-soft shrink-0">
                         Preset Cepat:
                       </span>
                       {(
@@ -836,7 +836,7 @@ export default function InfoBriefForm({
                                 setCustomUniform(value)
                                 setCustomUniformNote(u.note)
                               }}
-                              className={`min-h-8 px-0.5 text-[11px] active:opacity-70 ${
+                              className={`min-h-8 px-0.5 text-xs active:opacity-70 ${
                                 active
                                   ? "text-forest font-semibold underline underline-offset-2"
                                   : "text-forest font-medium"
@@ -845,7 +845,7 @@ export default function InfoBriefForm({
                               {u.label}
                             </button>
                             {i < arr.length - 1 && (
-                              <span className="text-ink-soft/45 text-[10px]">, </span>
+                              <span className="text-ink-soft/45 text-xs">, </span>
                             )}
                           </span>
                         )
@@ -866,7 +866,7 @@ export default function InfoBriefForm({
                   </button>
                 </div>
                 {customUniform && (
-                  <div className="text-[10px] text-ink-soft/80 leading-relaxed space-y-0.5">
+                  <div className="text-xs text-ink-soft/80 leading-relaxed space-y-0.5">
                     <p>
                       <span className="font-semibold text-ink">Aktif: </span>
                       {customUniform}
@@ -896,20 +896,20 @@ export default function InfoBriefForm({
         }
       >
         {!schoolDay ? (
-          <p className="text-[10px] text-ink-soft/65">Tidak ada jadwal KBM (libur).</p>
+          <p className="text-xs text-ink-soft/65">Tidak ada jadwal KBM (libur).</p>
         ) : rows.length === 0 ? (
-          <p className="text-[10px] text-ink-soft/60">Jadwal hari ini kosong.</p>
+          <p className="text-xs text-ink-soft/60">Jadwal hari ini kosong.</p>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-line bg-white">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-page border-b border-line">
-                  <th className="px-2 py-1.5 text-[10px] font-semibold text-ink w-10">JP</th>
-                  <th className="px-2 py-1.5 text-[10px] font-semibold text-ink whitespace-nowrap">
+                  <th className="px-2 py-1.5 text-xs font-semibold text-ink w-10">JP</th>
+                  <th className="px-2 py-1.5 text-xs font-semibold text-ink whitespace-nowrap">
                     Time
                   </th>
-                  <th className="px-2 py-1.5 text-[10px] font-semibold text-ink">Mapel</th>
-                  <th className="px-2 py-1.5 text-[10px] font-semibold text-ink whitespace-nowrap">
+                  <th className="px-2 py-1.5 text-xs font-semibold text-ink">Mapel</th>
+                  <th className="px-2 py-1.5 text-xs font-semibold text-ink whitespace-nowrap">
                     Nama Guru
                   </th>
                   <th className="px-1 py-1.5 w-8" />
@@ -933,21 +933,21 @@ export default function InfoBriefForm({
                         key={r.subject_id ?? `s${sessionNo}-${r.name}`}
                         className="border-b border-line/60 last:border-0"
                       >
-                        <td className="px-2 py-1.5 text-[11px] font-bold text-ink tabular-nums whitespace-nowrap">
+                        <td className="px-2 py-1.5 text-xs font-bold text-ink tabular-nums whitespace-nowrap">
                           {sessionNo}
                         </td>
-                        <td className="px-2 py-1.5 text-[10px] text-ink tabular-nums whitespace-nowrap">
+                        <td className="px-2 py-1.5 text-xs text-ink tabular-nums whitespace-nowrap">
                           {r.time || "-"}
                         </td>
                         {span > 0 ? (
                           <td
                             rowSpan={span}
-                            className="px-2 py-1.5 text-[11px] font-semibold text-ink whitespace-nowrap align-middle bg-forest/[0.04] border-x border-line/40"
+                            className="px-2 py-1.5 text-xs font-semibold text-ink whitespace-nowrap align-middle bg-forest/[0.04] border-x border-line/40"
                           >
                             {r.short_name || r.name}
                           </td>
                         ) : null}
-                        <td className="px-2 py-1.5 text-[10px] text-ink-soft/85 whitespace-nowrap">
+                        <td className="px-2 py-1.5 text-xs text-ink-soft/85 whitespace-nowrap">
                           {teacher}
                         </td>
                         <td className="px-1 py-1.5">
@@ -998,7 +998,7 @@ export default function InfoBriefForm({
           >
             Piket
           </SectionLabel>
-          <p className="text-[10px] text-ink-soft/65">
+          <p className="text-xs text-ink-soft/65">
             Otomatis dari jadwal kelas · bisa tambah / hapus manual
           </p>
           <StudentMultiSelect
@@ -1033,20 +1033,20 @@ export default function InfoBriefForm({
           >
             Tugas / Membawa
           </SectionLabel>
-          <p className="text-[10px] text-ink-soft/65">
+          <p className="text-xs text-ink-soft/65">
             3 bagian: Tugas · Remedial · Info lain. Auto dari jadwal, boleh edit.
           </p>
 
           <div className="rounded-xl border border-line bg-page p-2.5 space-y-2">
             <div>
-              <p className="text-[11px] font-bold text-ink">Tugas</p>
-              <p className="text-[10px] text-ink-soft/60 mt-0.5">
+              <p className="text-sm font-bold text-ink">Tugas</p>
+              <p className="text-xs text-ink-soft/60 mt-0.5">
                 1 baris dulu — tambah hanya bila ada tugas. Mapel dari jadwal hari ini.
               </p>
             </div>
 
             {tugasRows.length === 0 && (
-              <p className="text-[10px] text-ink-soft/55 px-0.5">Belum ada baris tugas.</p>
+              <p className="text-xs text-ink-soft/55 px-0.5">Belum ada baris tugas.</p>
             )}
 
             {tugasRows.map(({ it, index }, n) => (
@@ -1055,7 +1055,7 @@ export default function InfoBriefForm({
                 className="rounded-xl border border-line bg-white"
               >
                 <div className="flex items-center gap-2 px-2.5 py-2 border-b border-line/50">
-                  <span className="w-4 shrink-0 text-center text-[12px] font-bold text-forest tabular-nums">
+                  <span className="w-4 shrink-0 text-center text-sm font-bold text-forest tabular-nums">
                     {n + 1}
                   </span>
                   <select
@@ -1085,7 +1085,7 @@ export default function InfoBriefForm({
                 </div>
                 <div className="px-2.5 py-2 space-y-2">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-medium text-ink-soft/75">Siswa</p>
+                    <p className="text-xs font-medium text-ink-soft/75">Siswa</p>
                     <StudentMultiSelect
                       students={activeStudents}
                       selectedIds={it.student_ids}
@@ -1113,20 +1113,20 @@ export default function InfoBriefForm({
 
           <div className="rounded-xl border border-line bg-page p-2.5 space-y-2">
             <div>
-              <p className="text-[11px] font-bold text-ink">Remedial</p>
-              <p className="text-[10px] text-ink-soft/60 mt-0.5">
+              <p className="text-sm font-bold text-ink">Remedial</p>
+              <p className="text-xs text-ink-soft/60 mt-0.5">
                 Sama seperti Tugas: mapel + nama siswa yang remedial + deskripsi opsional
               </p>
             </div>
 
             {remedialRows.length === 0 && (
-              <p className="text-[10px] text-ink-soft/55 px-0.5">Belum ada baris remedial.</p>
+              <p className="text-xs text-ink-soft/55 px-0.5">Belum ada baris remedial.</p>
             )}
 
             {remedialRows.map(({ it, index }, n) => (
               <div key={index} className="rounded-xl border border-line bg-white">
                 <div className="flex items-center gap-2 px-2.5 py-2 border-b border-line/50">
-                  <span className="w-4 shrink-0 text-center text-[12px] font-bold text-forest tabular-nums">
+                  <span className="w-4 shrink-0 text-center text-sm font-bold text-forest tabular-nums">
                     {n + 1}
                   </span>
                   <select
@@ -1156,7 +1156,7 @@ export default function InfoBriefForm({
                 </div>
                 <div className="px-2.5 py-2 space-y-2">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-medium text-ink-soft/75">Siswa</p>
+                    <p className="text-xs font-medium text-ink-soft/75">Siswa</p>
                     <StudentMultiSelect
                       students={activeStudents}
                       selectedIds={it.student_ids}
@@ -1191,8 +1191,8 @@ export default function InfoBriefForm({
           </div>
 
           <div className="rounded-xl border border-line bg-page p-2.5 space-y-1.5">
-            <p className="text-[11px] font-bold text-ink">Info lain-lain</p>
-            <p className="text-[10px] text-ink-soft/60">
+            <p className="text-sm font-bold text-ink">Info lain-lain</p>
+            <p className="text-xs text-ink-soft/60">
               Bawa atribut, kegiatan, pengumuman tambahan
             </p>
             {renderTextGroupRows(infoRows, "info", "Info", "Contoh: Bawa baju P.E / Siap LDKS")}
@@ -1216,7 +1216,7 @@ export default function InfoBriefForm({
           </button>
         }
       >
-        <pre className="whitespace-pre-wrap text-[10px] text-ink-soft/85 leading-relaxed font-sans max-h-40 overflow-y-auto scroll-y-only rounded-xl bg-page border border-line px-3 py-2">
+        <pre className="whitespace-pre-wrap text-xs text-ink-soft/85 leading-relaxed font-sans max-h-40 overflow-y-auto scroll-y-only rounded-xl bg-page border border-line px-3 py-2">
           {preview}
         </pre>
       </BriefSectionCard>
@@ -1233,8 +1233,8 @@ export default function InfoBriefForm({
         }}
         className={
           isEditMode && !isDirty
-            ? "flex w-full items-center justify-center gap-1 rounded-full border border-line bg-white px-2.5 py-2.5 text-[12px] font-semibold text-ink active:scale-[0.97] transition-transform"
-            : "flex w-full items-center justify-center gap-1 rounded-full bg-forest px-2.5 py-2.5 text-[12px] font-semibold text-white active:scale-[0.97] transition-transform disabled:opacity-50"
+            ? "flex w-full items-center justify-center gap-1 rounded-full border border-line bg-white px-3 py-2.5 text-sm font-semibold text-ink active:scale-[0.97] transition-transform"
+            : "flex w-full items-center justify-center gap-1 rounded-full bg-forest px-3 py-2.5 text-sm font-semibold text-white active:scale-[0.97] transition-transform disabled:opacity-50"
         }
       >
         {isEditMode && !isDirty ? (
@@ -1254,7 +1254,7 @@ export default function InfoBriefForm({
       </button>
 
       {toast && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[60] bg-forest text-white text-[11px] font-semibold px-3 py-2 rounded-xl shadow-lg">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[60] bg-forest text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-lg">
           {toast}
         </div>
       )}

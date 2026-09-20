@@ -167,11 +167,11 @@ function HomeInner() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-bold text-ink">Halo {displayName}</h1>
-          <p className="text-[11px] text-ink-soft/75">
+          <p className="text-xs text-ink-soft/75">
             Ringkasan informasi & aktivitas kelas
           </p>
         </div>
-        <span className="text-[10px] font-semibold text-forest bg-forest/10 px-2 py-1 rounded-full">
+        <span className="text-[11px] font-semibold text-forest bg-forest/10 px-2 py-1 rounded-full">
           {totalSiswa > 0 ? `${totalSiswa} siswa` : "7B"}
         </span>
       </div>
@@ -187,24 +187,24 @@ function HomeInner() {
               <h3 className="text-sm font-bold leading-tight min-w-0 flex-1">
                 {homeTitle(pinned.title)}
               </h3>
-              <span className="inline-flex shrink-0 items-center gap-1 bg-amber/20 text-amber rounded-full px-2 py-0.5 text-[9px] font-bold mt-0.5">
-                <Pin className="h-2.5 w-2.5" />
+              <span className="inline-flex shrink-0 items-center gap-1 bg-amber/20 text-amber rounded-full px-2 py-0.5 text-[11px] font-bold mt-0.5">
+                <Pin className="h-3 w-3" />
                 {pinned.pinned ? "Disematkan" : "Terbaru"}
               </span>
             </div>
             <p
               ref={bodyClip.ref}
-              className="text-[11px] text-white/65 leading-relaxed whitespace-pre-wrap overflow-hidden"
+              className="text-sm text-white/65 leading-relaxed whitespace-pre-wrap overflow-hidden"
               style={{ maxHeight: "calc(2 * 1.45em)" }}
             >
               {homeBody(pinned.body)}
             </p>
             {bodyClip.overflow && (
-              <p className="text-[11px] text-white/65 leading-relaxed">....</p>
+              <p className="text-sm text-white/65 leading-relaxed">....</p>
             )}
             <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between">
-              <span className="text-[10px] text-acid font-semibold flex items-center gap-0.5">
-                Baca selengkapnya <ArrowRight className="h-3 w-3" />
+              <span className="text-xs text-acid font-semibold flex items-center gap-0.5">
+                Baca selengkapnya <ArrowRight className="h-3.5 w-3.5" />
               </span>
               <Megaphone className="h-4 w-4 text-white/30" />
             </div>
@@ -213,7 +213,7 @@ function HomeInner() {
       ) : (
         <div className="bg-deep rounded-2xl p-4 text-white flex items-center justify-between">
           <div>
-            <p className="text-[10px] text-white/55">Tidak ada pengumuman</p>
+            <p className="text-xs text-white/55">Tidak ada pengumuman</p>
             <p className="text-sm font-bold text-acid mt-0.5">Cek Info untuk update</p>
           </div>
           <Megaphone className="h-7 w-7 text-white/30" />
@@ -224,12 +224,12 @@ function HomeInner() {
       <Link href="/app/kas" className="block active:scale-[0.99] transition-transform">
         <div className="bg-deep rounded-2xl p-4 text-white">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="flex items-center gap-1.5 text-[10px] font-medium text-white/70">
-              <Wallet className="h-3 w-3" />
+            <span className="flex items-center gap-1.5 text-xs font-medium text-white/70">
+              <Wallet className="h-3.5 w-3.5" />
               Saldo Kas Kelas
             </span>
-            <span className="inline-flex items-center gap-0.5 text-[10px] text-acid">
-              <ArrowUpRight className="h-3 w-3" />
+            <span className="inline-flex items-center gap-0.5 text-xs text-acid">
+              <ArrowUpRight className="h-3.5 w-3.5" />
               Lihat Kas
             </span>
           </div>
@@ -237,10 +237,10 @@ function HomeInner() {
             {formatIDR(kas?.balance ?? 0)}
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            <span className="inline-flex items-center gap-1 rounded-full bg-lime/15 border border-lime/30 px-2 py-0.5 text-[9px] font-semibold text-lime">
+            <span className="inline-flex items-center gap-1 rounded-full bg-lime/15 border border-lime/30 px-2 py-0.5 text-[11px] font-semibold text-lime">
               + {formatIDR(kas?.monthIn ?? 0)} Masuk
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber/15 border border-amber/30 px-2 py-0.5 text-[9px] font-semibold text-amber">
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber/15 border border-amber/30 px-2 py-0.5 text-[11px] font-semibold text-amber">
               − {formatIDR(kas?.monthOut ?? 0)} Keluar
             </span>
           </div>
@@ -256,8 +256,8 @@ function HomeInner() {
                 <Trophy className={`h-3.5 w-3.5 ${podiumMuted ? "text-ink-soft/50" : "text-amber"}`} />
               </div>
               <div>
-                <h2 className="text-xs font-semibold text-ink">Peringkat Poin</h2>
-                <p className="text-[9px] text-ink-soft/60">
+                <h2 className="text-sm font-semibold text-ink">Peringkat Poin</h2>
+                <p className="text-[11px] text-ink-soft/60">
                   {podiumMuted ? "Belum ada selisih poin" : "Top 3 kelas 7B"}
                 </p>
               </div>
@@ -270,13 +270,13 @@ function HomeInner() {
           </div>
 
           {top3.length === 0 ? (
-            <p className="text-[10px] text-ink-soft/60 py-2 text-center">
+            <p className="text-xs text-ink-soft/60 py-2 text-center">
               Belum ada poin
             </p>
           ) : podiumMuted ? (
             <div className="rounded-xl border border-dashed border-line bg-surface/40 px-3 py-4 text-center">
-              <p className="text-[12px] font-bold text-ink-soft/60">—  ·  —  ·  —</p>
-              <p className="text-[9px] text-ink-soft/55 mt-1.5">
+              <p className="text-sm font-bold text-ink-soft/60">—  ·  —  ·  —</p>
+              <p className="text-[11px] text-ink-soft/55 mt-1.5">
                 Belum ada selisih poin
               </p>
             </div>
@@ -295,17 +295,17 @@ function HomeInner() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1">
                         <Crown className="h-3 w-3 text-amber shrink-0" />
-                        <p className="text-[12px] font-bold text-ink truncate">
+                        <p className="text-sm font-bold text-ink truncate">
                           {personName(p.full_name)}
                         </p>
                       </div>
-                      <p className="text-[9px] text-ink-soft/70">{m.label} · {m.note}</p>
+                      <p className="text-[11px] text-ink-soft/70">{m.label} · {m.note}</p>
                     </div>
                     <div className="text-right shrink-0">
                       <p className="text-sm font-bold text-forest leading-none">
                         {p.total_points}
                       </p>
-                      <p className="text-[9px] text-ink-soft/60">poin</p>
+                      <p className="text-[11px] text-ink-soft/60">poin</p>
                     </div>
                   </div>
                 )
@@ -328,12 +328,12 @@ function HomeInner() {
                         <Star className="h-3 w-3 text-amber/70 fill-amber/40" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[11px] font-semibold text-ink truncate">
+                        <p className="text-sm font-semibold text-ink truncate">
                           {personName(p.full_name)}
                         </p>
-                        <p className="text-[9px] text-ink-soft/60">{m.label}</p>
+                        <p className="text-[11px] text-ink-soft/60">{m.label}</p>
                       </div>
-                      <p className="text-[11px] font-bold text-forest">
+                      <p className="text-sm font-bold text-forest">
                         {p.total_points} <span className="font-medium text-ink-soft/60">poin</span>
                       </p>
                     </div>
@@ -344,8 +344,8 @@ function HomeInner() {
           )}
 
           <div className="mt-3 pt-2 border-t border-line/40">
-            <span className="text-[10px] text-forest font-semibold flex items-center gap-0.5">
-              Lihat semua <ArrowRight className="h-3 w-3" />
+            <span className="text-xs text-forest font-semibold flex items-center gap-0.5">
+              Lihat semua <ArrowRight className="h-3.5 w-3.5" />
             </span>
           </div>
         </div>
@@ -372,7 +372,7 @@ function HomeInner() {
             />
           ))}
           {upcoming.length === 0 && (
-            <div className="bg-white border border-line shadow-sm rounded-xl p-3 text-center text-[10px] text-ink-soft/60">
+            <div className="bg-white border border-line shadow-sm rounded-xl p-3 text-center text-xs text-ink-soft/60">
               Belum ada agenda
             </div>
           )}

@@ -141,7 +141,7 @@ function NewReportInner() {
   if (!canSubmit) {
     return (
       <div className="px-4 py-3">
-        <p className="text-[11px] text-ink-soft/70">Hanya Ketua / Wali Kelas.</p>
+        <p className="text-xs text-ink-soft/70">Hanya Ketua / Wali Kelas.</p>
       </div>
     )
   }
@@ -158,8 +158,8 @@ function NewReportInner() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div className="min-w-0">
-            <h1 className="text-[15px] font-bold text-ink leading-tight">Buat Mass Report</h1>
-            <p className="text-[9px] text-alert font-semibold">Ketua · menunggu vote & review</p>
+            <h1 className="text-base font-bold text-ink leading-tight">Buat Mass Report</h1>
+            <p className="text-xs text-alert font-semibold">Ketua · menunggu vote & review</p>
           </div>
         </div>
       </header>
@@ -167,7 +167,7 @@ function NewReportInner() {
       <div className="flex-1 px-4 py-4 space-y-5">
         {/* Alasan */}
         <div className="space-y-1.5">
-          <label className="text-[11px] font-semibold text-ink">Alasan (Preset)</label>
+          <label className="text-sm font-semibold text-ink">Alasan (Preset)</label>
           <select
             value={reason}
             onChange={(e) => setReason(e.target.value)}
@@ -184,7 +184,7 @@ function NewReportInner() {
 
           {customOpen && (
             <div className="mt-2 space-y-1.5 rounded-xl bg-alert/5 border border-alert/20 p-3">
-              <p className="text-[10px] text-ink-soft/70 leading-snug">
+              <p className="text-xs text-ink-soft/70 leading-snug">
                 Tulis pelanggaran sendiri. Vote langsung jalan; wali kelas bisa perbaiki
                 kalimat sebelum dijadikan preset permanen.
               </p>
@@ -202,8 +202,8 @@ function NewReportInner() {
         {/* Target */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-[11px] font-semibold text-ink">Target siswa</label>
-            <span className="text-[10px] text-ink-soft/60">{targets.size} dipilih</span>
+            <label className="text-sm font-semibold text-ink">Target siswa</label>
+            <span className="text-xs text-ink-soft/60">{targets.size} dipilih</span>
           </div>
           <div className="bg-white border border-line shadow-sm rounded-2xl divide-y divide-line/50 max-h-72 overflow-y-auto">
             {(students ?? []).map((s) => {
@@ -216,11 +216,11 @@ function NewReportInner() {
                   className="w-full flex items-center gap-2 px-3 py-2.5 text-left"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-semibold text-ink truncate">
+                    <p className="text-sm font-semibold text-ink truncate">
                       {formatDisplayName(s.full_name)}
                     </p>
                     {s.position !== "ANGGOTA" && (
-                      <p className="text-[9px] text-ink-soft/55">{s.position}</p>
+                      <p className="text-xs text-ink-soft/55">{s.position}</p>
                     )}
                   </div>
                   <span
@@ -234,14 +234,14 @@ function NewReportInner() {
               )
             })}
             {(students ?? []).length === 0 && (
-              <p className="p-4 text-center text-[11px] text-ink-soft/50">Memuat siswa…</p>
+              <p className="p-4 text-center text-xs text-ink-soft/50">Memuat siswa…</p>
             )}
           </div>
         </div>
 
         {/* Foto bukti */}
         <div className="space-y-1.5">
-          <label className="text-[11px] font-semibold text-ink">Foto bukti (opsional)</label>
+          <label className="text-sm font-semibold text-ink">Foto bukti (opsional)</label>
           <div className="rounded-xl border border-dashed border-line bg-white p-3">
             {photo?.preview ? (
               <div className="space-y-2">
@@ -254,7 +254,7 @@ function NewReportInner() {
                 <button
                   type="button"
                   onClick={() => setPhoto(null)}
-                  className="inline-flex items-center gap-1 text-[10px] font-semibold text-alert"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-alert"
                 >
                   <X className="h-3 w-3" />
                   Hapus foto
@@ -262,7 +262,7 @@ function NewReportInner() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <label className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-surface text-[11px] font-semibold text-forest cursor-pointer">
+                <label className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-surface text-sm font-semibold text-forest cursor-pointer">
                   <ImagePlus className="h-4 w-4" />
                   Pilih foto
                   <input
@@ -287,14 +287,14 @@ function NewReportInner() {
             )}
           </div>
           {photo && (
-            <p className="text-[9px] text-ink-soft/55">
+            <p className="text-xs text-ink-soft/55">
               Foto dikompres otomatis · hanya wali kelas yang bisa melihat yang utuh
             </p>
           )}
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[11px] font-semibold text-ink">Catatan (opsional)</label>
+          <label className="text-sm font-semibold text-ink">Catatan (opsional)</label>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
@@ -305,7 +305,7 @@ function NewReportInner() {
         </div>
 
         {err && (
-          <p className="text-[11px] text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
+          <p className="text-xs text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
             {err}
           </p>
         )}
@@ -316,12 +316,12 @@ function NewReportInner() {
           type="button"
           disabled={saving || !finalReason || targets.size === 0}
           onClick={() => void submit()}
-          className="w-full flex items-center justify-center gap-2 bg-alert text-white text-[13px] font-bold py-3 rounded-xl disabled:opacity-50 active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 bg-alert text-white text-sm font-bold py-3 rounded-xl disabled:opacity-50 active:scale-[0.98]"
         >
           <Flag className="h-4 w-4" />
           {saving ? "Mengirim…" : `Buka Report · −${delta} poin`}
         </button>
-        <p className="mt-1.5 text-center text-[9px] text-ink-soft/50">
+        <p className="mt-1.5 text-center text-xs text-ink-soft/50">
           {targets.size} target · vote kelas → review wali kelas
         </p>
       </div>

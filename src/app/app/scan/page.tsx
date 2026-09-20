@@ -68,7 +68,7 @@ function ScanInner() {
   if (status === "loading") {
     return (
       <div className="px-4 py-3">
-        <p className="text-[11px] text-ink-soft/75">Memuat…</p>
+        <p className="text-xs text-ink-soft/75">Memuat…</p>
       </div>
     )
   }
@@ -123,11 +123,11 @@ function ScanInner() {
     <div className="px-4 py-3 space-y-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-forest/70">
+          <p className="text-xs font-bold uppercase tracking-widest text-forest/70">
             Scan Mode
           </p>
           <h1 className="text-lg font-bold text-ink">Beri Poin</h1>
-          <p className="text-[11px] text-ink-soft/75">
+          <p className="text-xs text-ink-soft/75">
             {formatDisplayName(session?.user?.name)} · {formatRoleLabel(role)}
           </p>
         </div>
@@ -137,13 +137,13 @@ function ScanInner() {
       </div>
 
       {lastSaved && (
-        <div className="rounded-xl border border-lime/40 bg-lime-soft/40 px-3 py-2 text-[11px] font-semibold text-forest">
+        <div className="rounded-xl border border-lime/40 bg-lime-soft/40 px-3 py-2 text-xs font-semibold text-forest">
           Terakhir: {lastSaved}
         </div>
       )}
 
       {err && (
-        <p className="text-[11px] text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
+        <p className="text-xs text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
           {err}
         </p>
       )}
@@ -167,21 +167,21 @@ function ScanInner() {
       {studentId && (
         <div className="flex items-center gap-2 rounded-xl bg-surface px-3 py-2">
           <User className="h-4 w-4 text-forest shrink-0" />
-          <p className="text-[11px] font-semibold text-ink truncate">
+          <p className="text-sm font-semibold text-ink truncate">
             {students?.find((s) => s.id === studentId)?.full_name}
           </p>
         </div>
       )}
 
       <div className="space-y-1">
-        <span className="text-[11px] font-semibold text-ink">Jenis</span>
+        <span className="text-sm font-semibold text-ink">Jenis</span>
         <div className="grid grid-cols-2 gap-2">
           {(["PRESTASI", "PELANGGARAN"] as const).map((k) => (
             <button
               key={k}
               type="button"
               onClick={() => setKind(k)}
-              className={`rounded-xl py-3 text-[12px] font-bold border transition ${
+              className={`rounded-xl py-3 text-sm font-bold border transition ${
                 kind === k
                   ? k === "PRESTASI"
                     ? "bg-forest text-white border-forest"
@@ -204,14 +204,14 @@ function ScanInner() {
       </div>
 
       <div className="space-y-1">
-        <span className="text-[11px] font-semibold text-ink">Poin</span>
+        <span className="text-sm font-semibold text-ink">Poin</span>
         <div className="grid grid-cols-3 gap-2">
           {AMOUNTS.map((n) => (
             <button
               key={n}
               type="button"
               onClick={() => setAmount(n)}
-              className={`rounded-xl py-3 text-[14px] font-black border transition ${
+              className={`rounded-xl py-3 text-sm font-black border transition ${
                 amount === n
                   ? "bg-amber text-deep border-amber shadow"
                   : "bg-white text-ink border-line"
@@ -242,14 +242,14 @@ function ScanInner() {
         type="button"
         disabled={saving || !studentId || !reason.trim()}
         onClick={() => void submit()}
-        className="w-full bg-forest text-white text-[13px] font-black py-3.5 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.98]"
+        className="w-full bg-forest text-white text-sm font-black py-3.5 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.98]"
       >
         <Check className="h-5 w-5" />
         {saving ? "Menyimpan…" : "Simpan Poin"}
       </button>
 
       {(data?.leaderboard?.length ?? 0) > 0 && (
-        <p className="text-[9px] text-ink-soft/50 text-center">
+        <p className="text-xs text-ink-soft/50 text-center">
           {data!.leaderboard.length} siswa terdaftar · kelas aktif
         </p>
       )}
@@ -260,13 +260,13 @@ function ScanInner() {
           clearSwrCache()
           void signOut({ callbackUrl: "/login" })
         }}
-        className="w-full text-[11px] font-semibold text-ink-soft py-2"
+        className="w-full text-xs font-semibold text-ink-soft py-2"
       >
         Keluar
       </button>
 
       {toast && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-lime text-deep text-[12px] font-black px-4 py-2 rounded-xl shadow-lg">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-lime text-deep text-sm font-black px-4 py-2 rounded-xl shadow-lg">
           {toast}
         </div>
       )}

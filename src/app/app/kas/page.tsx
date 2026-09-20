@@ -412,7 +412,7 @@ function KasInner() {
       <div className="flex items-start justify-between gap-2">
         <div>
           <h1 className="text-lg font-bold text-ink">Kas Kelas</h1>
-          <p className="text-[11px] text-ink-soft/75">
+          <p className="text-xs text-ink-soft/75">
             {canManage
               ? "Centang siswa yang sudah membayar"
               : "Hanya dapat dilihat — pengelolaan oleh Bendahara & Wali Kelas"}
@@ -420,7 +420,7 @@ function KasInner() {
         </div>
         <Link
           href="/app/kas/buku"
-          className="flex items-center gap-1.5 bg-white border border-line shadow-sm text-forest text-[11px] font-bold px-2.5 py-2 rounded-xl active:scale-[0.95] transition-transform shrink-0"
+          className="flex items-center gap-1.5 bg-white border border-line shadow-sm text-forest text-xs font-bold px-2.5 py-2 rounded-xl active:scale-[0.95] transition-transform shrink-0"
         >
           <BookOpen className="h-4 w-4" />
           Buku Kas
@@ -435,24 +435,24 @@ function KasInner() {
           <div className="flex items-stretch gap-2">
             <div className={`bg-deep rounded-2xl p-3.5 text-white flex flex-col justify-between ${canManage ? "w-[60%]" : "w-full"}`}>
               <div>
-                <span className="flex items-center gap-1.5 text-[10px] font-medium text-white/70">
-                  <Wallet className="h-3 w-3" />
+                <span className="flex items-center gap-1.5 text-xs font-medium text-white/70">
+                  <Wallet className="h-3.5 w-3.5" />
                   Saldo Kas
                 </span>
                 <p className="mt-1.5 text-2xl font-bold leading-none text-acid">
                   {formatIDR(data?.balance ?? 0)}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-lime/15 border border-lime/30 px-2 py-0.5 text-[9px] font-semibold text-lime">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-lime/15 border border-lime/30 px-2 py-0.5 text-[11px] font-semibold text-lime">
                     + {formatIDR(data?.monthIn ?? 0)} Masuk
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber/15 border border-amber/30 px-2 py-0.5 text-[9px] font-semibold text-amber">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber/15 border border-amber/30 px-2 py-0.5 text-[11px] font-semibold text-amber">
                     − {formatIDR(data?.monthOut ?? 0)} Keluar
                   </span>
                 </div>
               </div>
               {data?.lastActivity && (
-                <p className="mt-2 text-[9px] text-white/45 truncate border-t border-white/10 pt-2">
+                <p className="mt-2 text-[11px] text-white/45 truncate border-t border-white/10 pt-2">
                   {data.lastActivity.by} · {whenShort(data.lastActivity.at)}
                 </p>
               )}
@@ -469,10 +469,10 @@ function KasInner() {
                     <Coins className="h-4 w-4" />
                   </span>
                   <span className="flex-1 min-w-0 text-left">
-                    <span className="block text-[10px] font-semibold text-ink leading-tight whitespace-nowrap">
+                    <span className="block text-xs font-semibold text-ink leading-tight whitespace-nowrap">
                       Bayar Khusus
                     </span>
-                    <span className="block text-[8px] text-ink-soft/55 leading-tight mt-0.5 whitespace-nowrap">
+                    <span className="block text-[11px] text-ink-soft/55 leading-tight mt-0.5 whitespace-nowrap">
                       Nominal Bebas
                     </span>
                   </span>
@@ -486,10 +486,10 @@ function KasInner() {
                     <ReceiptText className="h-4 w-4" />
                   </span>
                   <span className="flex-1 min-w-0 text-left">
-                    <span className="block text-[10px] font-semibold text-ink leading-tight whitespace-nowrap">
+                    <span className="block text-xs font-semibold text-ink leading-tight whitespace-nowrap">
                       Pengeluaran
                     </span>
-                    <span className="block text-[8px] text-ink-soft/55 leading-tight mt-0.5 whitespace-nowrap">
+                    <span className="block text-[11px] text-ink-soft/55 leading-tight mt-0.5 whitespace-nowrap">
                       ATK, cetak, dll
                     </span>
                   </span>
@@ -502,15 +502,15 @@ function KasInner() {
           {!canManage && canView && (
             <div className="bg-white border border-line shadow-sm rounded-xl p-3 flex items-center justify-between gap-2">
               <div>
-                <p className="text-[10px] text-ink-soft/70">Iuran saya bulan ini</p>
-                <p className="mt-0.5 text-[13px] font-bold text-forest tabular-nums">
+                <p className="text-xs text-ink-soft/70">Iuran saya bulan ini</p>
+                <p className="mt-0.5 text-sm font-bold text-forest tabular-nums">
                   {data?.myPaid != null && data.myPaid > 0
                     ? formatIDR(data.myPaid)
                     : "Belum tercatat"}
                 </p>
               </div>
               {data?.month && (
-                <p className="text-[9px] text-ink-soft/55 text-right shrink-0">
+                <p className="text-[11px] text-ink-soft/55 text-right shrink-0">
                   {data.month.title}
                   <br />
                   {formatIDR(data.month.amount)}/orang
@@ -524,13 +524,13 @@ function KasInner() {
               <div className="px-3.5 pt-3.5 pb-2 bg-page/60 border-b border-line">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[13px] font-bold text-ink">Setoran Hari Ini</p>
-                    <p className="text-[10px] text-ink-soft/70 mt-0.5">
+                    <p className="text-sm font-bold text-ink">Setoran Hari Ini</p>
+                    <p className="text-xs text-ink-soft/70 mt-0.5">
                       {todayLabel()} · {formatIDR(NOMINAL)}/orang
                     </p>
                   </div>
                   {collectionDay && (
-                    <span className="text-[9px] font-bold uppercase tracking-wide bg-forest text-white px-2 py-1 rounded-full">
+                    <span className="text-[11px] font-bold uppercase tracking-wide bg-forest text-white px-2 py-1 rounded-full">
                       Hari setoran
                     </span>
                   )}
@@ -540,7 +540,7 @@ function KasInner() {
                     <button
                       type="button"
                       onClick={() => setMarkMode("bayar")}
-                      className={`px-2 py-1 rounded-md text-[10px] font-semibold ${
+                      className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
                         markMode === "bayar" ? "bg-forest text-white" : "text-ink-soft"
                       }`}
                     >
@@ -549,7 +549,7 @@ function KasInner() {
                     <button
                       type="button"
                       onClick={() => setMarkMode("izin")}
-                      className={`px-2 py-1 rounded-md text-[10px] font-semibold ${
+                      className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
                         markMode === "izin" ? "bg-amber text-white" : "text-ink-soft"
                       }`}
                     >
@@ -557,13 +557,13 @@ function KasInner() {
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <p className="text-[11px] font-semibold text-forest">
+                    <p className="text-xs font-semibold text-forest">
                       {totalPick} · {markMode === "izin" ? "izin" : formatIDR(totalRupiah)}
                     </p>
                     <button
                       type="button"
                       onClick={selectAll}
-                      className="text-[10px] font-semibold px-2 py-1 rounded-lg bg-white border border-line text-ink"
+                      className="text-xs font-semibold px-2 py-1 rounded-lg bg-white border border-line text-ink"
                     >
                       Semua
                     </button>
@@ -571,7 +571,7 @@ function KasInner() {
                       type="button"
                       onClick={() => void clearAll()}
                       disabled={saving}
-                      className="text-[10px] font-semibold px-2 py-1 rounded-lg bg-white border border-line text-ink-soft disabled:opacity-50"
+                      className="text-xs font-semibold px-2 py-1 rounded-lg bg-white border border-line text-ink-soft disabled:opacity-50"
                     >
                       {markMode === "izin" ? "Hapus Izin" : "Kosongkan"}
                     </button>
@@ -580,19 +580,19 @@ function KasInner() {
               </div>
 
               {err && (
-                <p className="px-3.5 py-2 text-[11px] text-alert bg-alert-bg">{err}</p>
+                <p className="px-3.5 py-2 text-xs text-alert bg-alert-bg">{err}</p>
               )}
 
               {/* Tabel: No | Nama | Bayar | Izin */}
               <div>
-                <div className="flex items-center gap-2 px-2.5 py-1.5 bg-page/80 border-b border-line text-[9px] font-medium uppercase tracking-wide text-ink-soft/60">
+                <div className="flex items-center gap-2 px-2.5 py-1.5 bg-page/80 border-b border-line text-[11px] font-medium uppercase tracking-wide text-ink-soft/60">
                   <span className="w-6 text-center shrink-0">No</span>
                   <span className="flex-1 min-w-0">Nama</span>
                   <span className="w-12 text-center shrink-0">Bayar</span>
                   <span className="w-12 text-center shrink-0">Izin</span>
                 </div>
                 {list.length === 0 ? (
-                  <p className="p-5 text-center text-[11px] text-ink-soft/60">
+                  <p className="p-5 text-center text-xs text-ink-soft/60">
                     Memuat daftar siswa…
                   </p>
                 ) : (
@@ -622,12 +622,12 @@ function KasInner() {
                                   : "bg-white"
                           }`}
                         >
-                          <span className="w-6 text-center text-[10px] font-medium text-ink-soft/50 tabular-nums shrink-0">
+                          <span className="w-6 text-center text-[11px] font-medium text-ink-soft/50 tabular-nums shrink-0">
                             {i + 1}
                           </span>
                           <div className="flex-1 min-w-0">
                             <p
-                              className={`text-[11px] font-semibold truncate ${
+                              className={`text-sm font-semibold truncate ${
                                 bayarMode && on
                                   ? "text-forest"
                                   : izin
@@ -642,7 +642,7 @@ function KasInner() {
                               const t = tunggakByName.get(s.full_name.toLowerCase())
                               if (t && t.tunggak > 0) {
                                 return (
-                                  <p className="mt-0.5 text-[9px] text-ink-soft/70">
+                                  <p className="mt-0.5 text-[11px] text-ink-soft/70">
                                     Hutang:{" "}
                                     <span className="font-semibold text-alert">
                                       {formatIDR(t.tunggak)}
@@ -652,8 +652,8 @@ function KasInner() {
                                 )
                               }
                               return (
-                                <p className="mt-0.5 text-[9px] text-forest/70 flex items-center gap-1">
-                                  <Check className="h-2.5 w-2.5" />
+                                <p className="mt-0.5 text-[11px] text-forest/70 flex items-center gap-1">
+                                  <Check className="h-3 w-3" />
                                   Lunas
                                 </p>
                               )
@@ -674,7 +674,7 @@ function KasInner() {
                           </div>
                           <div className="w-12 shrink-0 flex justify-center">
                             <span
-                              className={`flex h-5 w-5 items-center justify-center rounded border text-[9px] font-bold ${
+                              className={`flex h-5 w-5 items-center justify-center rounded border text-[11px] font-bold ${
                                 bayarMode
                                   ? "bg-surface border-line/60 text-transparent opacity-40"
                                   : izin
@@ -697,7 +697,7 @@ function KasInner() {
                   type="button"
                   disabled={saving || totalPick === 0}
                   onClick={() => void saveCollect()}
-                  className="w-full bg-forest text-white text-[13px] font-bold py-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.98]"
+                  className="w-full bg-forest text-white text-sm font-bold py-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.98]"
                 >
                   <Check className="h-4 w-4" />
                   {saving
@@ -718,10 +718,10 @@ function KasInner() {
           {canManage && tunggak && (tunggak.rows?.length ?? 0) > 0 && (
             <div className="flex items-center gap-2 rounded-xl bg-alert/8 border border-alert/15 px-3 py-2">
               <AlertTriangle className="h-3.5 w-3.5 text-alert shrink-0" />
-              <p className="text-[10px] text-ink-soft/70 flex-1 min-w-0">
+              <p className="text-xs text-ink-soft/70 flex-1 min-w-0">
                 {tunggak.rows.length} siswa masih memiliki tunggak · kumulatif semester
               </p>
-              <span className="text-[10px] font-semibold text-alert shrink-0">
+              <span className="text-xs font-semibold text-alert shrink-0">
                 {formatIDR(tunggak.totalTunggak)}
               </span>
             </div>
@@ -730,7 +730,7 @@ function KasInner() {
       )}
 
       {toast && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-forest text-white text-[12px] font-bold px-4 py-2 rounded-xl shadow-lg">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-forest text-white text-xs font-bold px-4 py-2 rounded-xl shadow-lg">
           {toast}
         </div>
       )}
@@ -749,10 +749,10 @@ function KasInner() {
               }`}
             >
               <div>
-                <p className="text-[10px] font-semibold text-ink-soft/70 uppercase">
+                <p className="text-xs font-semibold text-ink-soft/70 uppercase">
                   {detailTx.kind === "IN" ? "Masuk" : "Keluar"}
                 </p>
-                <p className="text-[10px] text-ink-soft">{detailTx.category}</p>
+                <p className="text-xs text-ink-soft">{detailTx.category}</p>
               </div>
               <p
                 className={`text-lg font-black ${
@@ -763,7 +763,7 @@ function KasInner() {
                 {formatIDR(detailTx.amount)}
               </p>
             </div>
-            <div className="space-y-2 text-[11px]">
+            <div className="space-y-2 text-xs">
               <div className="flex justify-between gap-3">
                 <span className="text-ink-soft">Keterangan</span>
                 <span className="font-semibold text-ink text-right flex-1">
@@ -794,7 +794,7 @@ function KasInner() {
               </div>
               <div className="flex justify-between gap-3">
                 <span className="text-ink-soft">ID</span>
-                <span className="text-[9px] text-ink-soft/50 text-right flex-1 font-mono truncate">
+                <span className="text-[11px] text-ink-soft/50 text-right flex-1 font-mono truncate">
                   {detailTx.id}
                 </span>
               </div>
@@ -810,7 +810,7 @@ function KasInner() {
         title="Bayar Khusus"
       >
         {err && (
-          <p className="text-[11px] text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
+          <p className="text-xs text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
             {err}
           </p>
         )}
@@ -864,26 +864,26 @@ function KasInner() {
                   : "bg-ok-bg/50 border-forest/20"
               }`}
             >
-              <p className="text-[11px] font-semibold text-ink mb-1.5">
+              <p className="text-sm font-semibold text-ink mb-1.5">
                 {formatDisplayName(t.name)}
               </p>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div>
-                  <p className="text-[9px] text-ink-soft/55">Wajib</p>
-                  <p className="text-[10px] font-semibold text-ink tabular-nums">
+                  <p className="text-[11px] text-ink-soft/55">Wajib</p>
+                  <p className="text-xs font-semibold text-ink tabular-nums">
                     {formatIDR(t.expected)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[9px] text-ink-soft/55">Sudah Membayar</p>
-                  <p className="text-[10px] font-semibold text-forest tabular-nums">
+                  <p className="text-[11px] text-ink-soft/55">Sudah Membayar</p>
+                  <p className="text-xs font-semibold text-forest tabular-nums">
                     {formatIDR(t.paid)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[9px] text-ink-soft/55">Sisa Tunggak</p>
+                  <p className="text-[11px] text-ink-soft/55">Sisa Tunggak</p>
                   <p
-                    className={`text-[10px] font-semibold tabular-nums ${
+                    className={`text-xs font-semibold tabular-nums ${
                       t.tunggak > 0 ? "text-alert" : "text-forest"
                     }`}
                   >
@@ -895,7 +895,7 @@ function KasInner() {
                 <button
                   type="button"
                   onClick={() => setSpAmount(String(t.tunggak))}
-                  className="mt-2 w-full text-[10px] font-semibold text-forest py-1 rounded-lg border border-forest/30"
+                  className="mt-2 w-full text-xs font-semibold text-forest py-1 rounded-lg border border-forest/30"
                 >
                   Gunakan sisa tunggak ({formatIDR(t.tunggak)})
                 </button>
@@ -904,14 +904,14 @@ function KasInner() {
           )
         })()}
         <div className="space-y-1">
-          <span className="text-[11px] font-semibold text-ink">Nominal</span>
+          <span className="text-sm font-semibold text-ink">Nominal</span>
           <div className="grid grid-cols-4 gap-1.5">
             {[2000, 10000, 20000, 50000].map((n) => (
               <button
                 key={n}
                 type="button"
                 onClick={() => setSpAmount(String(n))}
-                className={`rounded-lg py-2 text-[10px] font-bold border ${
+                className={`rounded-lg py-2 text-xs font-bold border ${
                   Number(spAmount) === n
                     ? "bg-forest text-white border-forest"
                     : "bg-white text-ink border-line"
@@ -942,7 +942,7 @@ function KasInner() {
           />
         </Field>
         {Number(spAmount) > 0 && spStudent && (
-          <p className="text-[11px] font-semibold text-forest">
+          <p className="text-xs font-semibold text-forest">
             ≈ {Math.round(Number(spAmount) / NOMINAL)}× setoran harian
           </p>
         )}
@@ -950,7 +950,7 @@ function KasInner() {
           type="button"
           disabled={savingSp || !spStudent || !spAmount}
           onClick={() => void saveSpecial()}
-          className="w-full bg-forest text-white text-[12px] font-semibold py-2.5 rounded-xl disabled:opacity-50"
+          className="w-full bg-forest text-white text-sm font-semibold py-2.5 rounded-xl disabled:opacity-50"
         >
           {savingSp ? "Menyimpan…" : "Simpan Bayar Khusus"}
         </button>
@@ -959,7 +959,7 @@ function KasInner() {
       {/* Pengeluaran minimal */}
       <Sheet open={openOut} onClose={() => setOpenOut(false)} title="Pengeluaran">
         {err && (
-          <p className="text-[11px] text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
+          <p className="text-xs text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
             {err}
           </p>
         )}
@@ -986,7 +986,7 @@ function KasInner() {
           type="button"
           disabled={savingOut}
           onClick={() => void saveOut()}
-          className="w-full bg-forest text-white text-[12px] font-semibold py-2.5 rounded-xl disabled:opacity-50"
+          className="w-full bg-forest text-white text-sm font-semibold py-2.5 rounded-xl disabled:opacity-50"
         >
           {savingOut ? "Menyimpan…" : "Simpan"}
         </button>

@@ -57,8 +57,8 @@ export default function SubjectTeachersAdmin() {
     <div className="rounded-2xl border border-line bg-white shadow-sm overflow-hidden">
       <div className="flex items-start justify-between gap-2 border-b border-line bg-page px-3 py-2.5">
         <div className="min-w-0">
-          <p className="text-[12px] font-bold text-ink">Guru Mapel</p>
-          <p className="text-[10px] text-ink-soft/70 leading-snug">
+          <p className="text-sm font-bold text-ink">Guru Mapel</p>
+          <p className="text-xs text-ink-soft/70 leading-snug">
             Tabel Brief Info · ganti guru di sini, tanpa deploy
           </p>
         </div>
@@ -66,23 +66,23 @@ export default function SubjectTeachersAdmin() {
 
       <div className="p-3 space-y-2">
         {err && (
-          <p className="text-[11px] text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
+          <p className="text-xs text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
             {err}
           </p>
         )}
 
         {!data ? (
           <div className="rounded-xl border border-dashed border-line bg-page px-3 py-4 text-center">
-            <p className="text-[11px] font-semibold text-ink-soft">Memuat daftar mapel…</p>
+            <p className="text-xs font-semibold text-ink-soft">Memuat daftar mapel…</p>
           </div>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-line">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-page border-b border-line">
-                  <th className="px-2 py-1.5 text-[10px] font-semibold text-ink w-8">No.</th>
-                  <th className="px-2 py-1.5 text-[10px] font-semibold text-ink">Mapel</th>
-                  <th className="px-2 py-1.5 text-[10px] font-semibold text-ink whitespace-nowrap">
+                  <th className="px-2 py-1.5 text-xs font-semibold text-ink w-8">No.</th>
+                  <th className="px-2 py-1.5 text-xs font-semibold text-ink">Mapel</th>
+                  <th className="px-2 py-1.5 text-xs font-semibold text-ink whitespace-nowrap">
                     Nama Guru
                   </th>
                   <th className="px-1 py-1.5 w-10" />
@@ -97,10 +97,10 @@ export default function SubjectTeachersAdmin() {
                       key={row.id}
                       className="border-b border-line/60 last:border-0 bg-white"
                     >
-                      <td className="px-2 py-1.5 text-[10px] text-ink-soft tabular-nums align-middle">
+                      <td className="px-2 py-1.5 text-xs text-ink-soft tabular-nums align-middle">
                         {i + 1}
                       </td>
-                      <td className="px-2 py-1.5 text-[11px] font-semibold text-ink align-middle whitespace-nowrap">
+                      <td className="px-2 py-1.5 text-sm font-semibold text-ink align-middle whitespace-nowrap">
                         {row.subject_name}
                       </td>
                       <td className="px-2 py-1.5 align-middle">
@@ -109,7 +109,7 @@ export default function SubjectTeachersAdmin() {
                           onChange={(e) =>
                             setDrafts((p) => ({ ...p, [row.subject_name]: e.target.value }))
                           }
-                          className={inputClass + " !py-1 !text-[11px] min-w-[140px]"}
+                          className={inputClass + " !py-1 !text-xs min-w-[140px]"}
                           placeholder="Nama guru"
                         />
                       </td>
@@ -122,7 +122,7 @@ export default function SubjectTeachersAdmin() {
                           aria-label={`Simpan ${row.subject_name}`}
                         >
                           {savingKey === row.subject_name ? (
-                            <span className="text-[9px]">…</span>
+                            <span className="text-[11px]">…</span>
                           ) : (
                             <Check className="h-3.5 w-3.5" />
                           )}
@@ -136,13 +136,13 @@ export default function SubjectTeachersAdmin() {
           </div>
         )}
 
-        <p className="text-[9px] text-ink-soft/55 px-0.5">
+        <p className="text-[11px] text-ink-soft/55 px-0.5">
           Ubah nama lalu tekan centang di baris yang sama.
         </p>
       </div>
 
       {toast && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-forest text-white text-[11px] font-semibold px-3 py-2 rounded-xl shadow-lg">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-forest text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-lg">
           {toast}
         </div>
       )}

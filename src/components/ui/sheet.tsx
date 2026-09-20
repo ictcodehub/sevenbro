@@ -83,7 +83,7 @@ export function Sheet({
           }
         >
           <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 border-b border-line shrink-0">
-            <h2 className="text-sm font-medium text-ink min-w-0 truncate">{title}</h2>
+            <h2 className="text-sm font-semibold text-ink min-w-0 truncate">{title}</h2>
             <button
               type="button"
               onClick={onClose}
@@ -126,4 +126,4 @@ export function Field({
 }
 
 export const inputClass =
-  "w-full rounded-xl border border-line bg-page px-3 py-2 text-[12px] text-ink placeholder:text-ink-soft/50 focus:outline-none focus:ring-2 focus:ring-forest/30"
+  "w-full rounded-xl border border-line bg-page px-3 py-2 text-sm text-ink placeholder:text-ink-soft/50 focus:outline-none focus:ring-2 focus:ring-forest/30"

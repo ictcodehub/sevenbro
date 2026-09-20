@@ -126,7 +126,7 @@ function DeltaBadge({ delta }: { delta: number }) {
   const plus = delta > 0
   return (
     <span
-      className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+      className={`inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
         plus ? "bg-lime text-deep" : "bg-alert text-white"
       }`}
     >
@@ -164,7 +164,7 @@ function HistoryList({ items, showStudent }: { items: PointLog[]; showStudent?: 
               <p className="text-[11px] font-semibold text-ink leading-snug">{log.reason}</p>
               <DeltaBadge delta={log.delta} />
             </div>
-            <p className="mt-0.5 text-[9px] text-ink-soft/60 truncate">
+            <p className="mt-0.5 text-[11px] text-ink-soft/60 truncate">
               {showStudent && log.student?.full_name ? `${formatDisplayName(log.student.full_name)} · ` : ""}
               {log.kind === "PELANGGARAN" ? "Pelanggaran" : "Prestasi"}
               {" · "}
@@ -250,7 +250,7 @@ function PodiumCard({
         )}
       </div>
       <div
-        className={`relative h-12 w-12 rounded-full flex items-center justify-center text-[13px] font-bold border-2 ${
+        className={`relative h-12 w-12 rounded-full flex items-center justify-center text-sm font-bold border-2 ${
           muted
             ? "bg-ink-soft/25 text-white/70 border-ink-soft/40"
             : rank === 1
@@ -263,7 +263,7 @@ function PodiumCard({
         <User className={`h-5 w-5 ${muted ? "opacity-40" : "opacity-80"}`} strokeWidth={1.75} />
         {!muted && (
           <span
-            className={`absolute -bottom-1 -right-1 h-5 w-5 rounded-full text-[9px] font-bold flex items-center justify-center text-white ${podiumClass}`}
+            className={`absolute -bottom-1 -right-1 h-5 w-5 rounded-full text-[11px] font-bold flex items-center justify-center text-white ${podiumClass}`}
           >
             {rank}
           </span>
@@ -272,22 +272,22 @@ function PodiumCard({
       <p
         className={`mt-2 max-w-full truncate px-1 font-bold ${
           muted
-            ? "text-[13px] text-white/45"
+            ? "text-sm text-white/45"
             : rank === 1
-              ? "text-[12px] text-acid"
+              ? "text-sm text-acid"
               : "text-[11px] text-white/90"
         }`}
       >
         {muted ? "—" : personName(student.full_name)}
       </p>
-      <p className="text-[9px] font-semibold text-white/55 mt-0.5">
+      <p className="text-[11px] font-semibold text-white/55 mt-0.5">
         {muted ? "Menunggu poin" : RANK_LABEL[rank]}
       </p>
       <div className={`mt-1.5 w-full rounded-t-lg px-2 pt-1.5 pb-2 ${muted ? "bg-ink-soft/40" : podiumClass}`}>
-        <p className="text-[13px] font-black text-white leading-none drop-shadow">
+        <p className="text-sm font-black text-white leading-none drop-shadow">
           {muted ? "—" : student.total_points}
         </p>
-        <p className="text-[8px] text-white/80 font-medium">poin</p>
+        <p className="text-[11px] text-white/80 font-medium">poin</p>
         {!muted && (
           <div className="mt-1 h-1 w-full bg-white/25 rounded-full overflow-hidden">
             <div
@@ -635,7 +635,7 @@ function PoinInner() {
               <button
                 type="button"
                 onClick={() => setOpen(true)}
-                className="flex items-center gap-1 bg-lime text-deep text-[10px] font-bold px-3 py-2 rounded-xl active:scale-[0.95] transition-transform shadow"
+                className="flex items-center gap-1 bg-lime text-deep text-sm font-bold px-3 py-2 rounded-xl active:scale-[0.95] transition-transform shadow"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Beri Poin
@@ -651,7 +651,7 @@ function PoinInner() {
             onClick={() => setDetailId(me.student_id)}
             className="mt-3 w-full flex items-center gap-3 rounded-2xl bg-white/10 border border-white/15 p-3 text-left active:scale-[0.98] transition-transform"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest text-lime text-[12px] font-black ring-2 ring-lime/50">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest text-lime text-sm font-black ring-2 ring-lime/50">
               <User className="h-5 w-5 opacity-80" strokeWidth={1.75} />
             </div>
             <div className="flex-1 min-w-0">
@@ -664,7 +664,7 @@ function PoinInner() {
                   style={{ width: `${Math.min(100, (me.total_points / maxPts) * 100)}%` }}
                 />
               </div>
-              <p className="mt-1 text-[9px] text-white/50">
+              <p className="mt-1 text-[11px] text-white/50">
                 {me.total_points} poin · tap untuk alasan
               </p>
             </div>
@@ -684,10 +684,10 @@ function PoinInner() {
             <p className="text-[11px] font-semibold text-ink text-center">
               Scan → masuk sebagai guru → beri atau kurangi poin
             </p>
-            <p className="text-[9px] text-ink-soft/60 text-center break-all">
+            <p className="text-[11px] text-ink-soft/60 text-center break-all">
               {getQrBaseUrl()}/app/scan
             </p>
-            <p className="text-[9px] text-ink-soft/50">
+            <p className="text-[11px] text-ink-soft/50">
               Cetak & tempel di kelas · hanya akun guru yang diizinkan
             </p>
           </div>
@@ -703,8 +703,8 @@ function PoinInner() {
             {rows.length === 0 && (
               <div className="arena-bg rounded-2xl p-6 text-center border border-white/10">
                 <Trophy className="h-10 w-10 text-amber mx-auto mb-2" />
-                <p className="text-[12px] font-bold text-acid">Belum ada data poin</p>
-                <p className="text-[10px] text-white/50 mt-1">
+                <p className="text-sm font-bold text-acid">Belum ada data poin</p>
+                <p className="text-xs text-white/50 mt-1">
                   Belum ada siswa di Leaderboard
                 </p>
               </div>
@@ -733,12 +733,12 @@ function PoinInner() {
                 )}
                 <div className="relative flex items-center justify-center gap-1.5 mb-1">
                   <Trophy className={`h-4 w-4 ${podiumMuted ? "text-white/40" : "text-amber"}`} />
-                  <span className={`text-[10px] font-bold uppercase tracking-[0.15em] ${podiumMuted ? "text-white/45" : "text-acid"}`}>
+                  <span className={`text-xs font-bold uppercase tracking-[0.15em] ${podiumMuted ? "text-white/45" : "text-acid"}`}>
                     Leaderboard
                   </span>
                 </div>
                 {podiumMuted && (
-                  <p className="relative text-center text-[9px] text-white/45 mb-1">
+                  <p className="relative text-center text-[11px] text-white/45 mb-1">
                     Belum ada selisih poin
                   </p>
                 )}
@@ -790,7 +790,7 @@ function PoinInner() {
                   key={k}
                   type="button"
                   onClick={() => setTab(k)}
-                  className={`py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition flex items-center justify-center gap-1.5 ${
+                  className={`py-1.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-1.5 ${
                     tab === k ? "bg-forest text-white shadow-sm" : "text-ink-soft"
                   }`}
                 >
@@ -798,7 +798,7 @@ function PoinInner() {
                   {k === "report" && reportCount > 0 && (
                     <span
                       aria-hidden="true"
-                      className="inline-flex h-[16px] w-[16px] items-center justify-center rounded-full bg-[#EEA34C] text-white text-[9px] font-medium leading-none"
+                      className="inline-flex h-[16px] w-[16px] items-center justify-center rounded-full bg-[#EEA34C] text-white text-[11px] font-medium leading-none"
                     >
                       {reportCount > 9 ? "9+" : reportCount}
                     </span>
@@ -842,7 +842,7 @@ function PoinInner() {
                         >
                           <div className="flex items-center gap-2.5">
                             <span
-                              className={`flex h-8 w-8 items-center justify-center rounded-lg text-[12px] font-black shrink-0 ${
+                              className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-black shrink-0 ${
                                 rank === 4
                                   ? "bg-amber/20 text-amber"
                                   : "bg-surface text-ink-soft"
@@ -864,16 +864,16 @@ function PoinInner() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 min-w-0">
-                                <p className="text-[12px] font-semibold text-ink truncate">
+                                <p className="text-sm font-semibold text-ink truncate">
                                   {personName(p.full_name)}
                                 </p>
                                 {isMe && (
-                                  <span className="text-[8px] font-bold uppercase tracking-wide bg-forest text-white px-1 py-0 rounded shrink-0">
+                                  <span className="text-[11px] font-bold uppercase tracking-wide bg-forest text-white px-1 py-0 rounded shrink-0">
                                     Anda
                                   </span>
                                 )}
                                 {showPos && (
-                                  <span className="text-[8px] font-bold uppercase bg-surface text-ink-soft px-1 py-0 rounded shrink-0">
+                                  <span className="text-[11px] font-bold uppercase bg-surface text-ink-soft px-1 py-0 rounded shrink-0">
                                     {showPos}
                                   </span>
                                 )}
@@ -911,11 +911,11 @@ function PoinInner() {
                                 />
                               </div>
                               <div className="mt-1 flex items-center justify-between gap-2">
-                                <p className="text-[9px] text-ink-soft/60 truncate">
+                                <p className="text-[11px] text-ink-soft/60 truncate">
                                   {last ? last.reason : "Belum ada aktivitas"}
                                 </p>
                                 <span
-                                  className={`text-[9px] font-semibold shrink-0 ${
+                                  className={`text-[11px] font-semibold shrink-0 ${
                                     gap === 0 ? "text-forest" : "text-ink-soft/50"
                                   }`}
                                 >
@@ -945,7 +945,7 @@ function PoinInner() {
                                 {p.total_points}
                               </span>
                               <span
-                                className={`mt-0.5 text-[7px] font-medium uppercase tracking-wide leading-none ${
+                                className={`mt-0.5 text-[11px] font-medium uppercase tracking-wide leading-none ${
                                   isDown ? "" : isMe ? "text-forest/70" : "text-forest/50"
                                 }`}
                                 style={isDown ? { color: "#ff1500" } : undefined}
@@ -988,16 +988,16 @@ function PoinInner() {
         {detail?.student && (
           <div className="arena-bg rounded-xl p-3 text-white flex items-center justify-between">
             <div>
-              <p className="text-[10px] text-white/55">Total skor</p>
+              <p className="text-xs text-white/55">Total skor</p>
               <p className="text-2xl font-black text-acid leading-none">
                 {detail.student.total_points}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] text-amber font-bold">
+              <p className="text-xs text-amber font-bold">
                 #{(rows.findIndex((r) => r.student_id === detail.student!.student_id) + 1) || "?"}
               </p>
-              <p className="text-[9px] text-white/50">
+              <p className="text-[11px] text-white/50">
                 {detail.student.position !== "ANGGOTA"
                   ? detail.student.position
                   : "Siswa"}
@@ -1155,7 +1155,7 @@ function PoinInner() {
                 }`}
               >
                 <span
-                  className={`shrink-0 text-[15px] font-black leading-none tabular-nums ${
+                  className={`shrink-0 text-base font-black leading-none tabular-nums ${
                     kind === "PRESTASI" ? "text-lime" : "text-alert"
                   }`}
                 >

@@ -178,7 +178,7 @@ function MiniCalendar({
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <p className="text-[11px] font-semibold text-ink">
+          <p className="text-xs font-semibold text-ink">
             {MONTHS_ID[viewM]} {viewY}
           </p>
           <button
@@ -200,7 +200,7 @@ function MiniCalendar({
           {DOW.map((d) => (
             <span
               key={d}
-              className="text-center text-[9px] font-medium text-ink-soft/50 py-0.5"
+              className="text-center text-[11px] font-medium text-ink-soft/50 py-0.5"
             >
               {d}
             </span>
@@ -222,7 +222,7 @@ function MiniCalendar({
                   onSelect(day)
                   onClose()
                 }}
-                className={`relative h-10 rounded-lg text-[12px] font-medium flex flex-col items-center justify-center transition ${
+                className={`relative h-10 rounded-lg text-xs font-medium flex flex-col items-center justify-center transition ${
                   isSel
                     ? "bg-forest text-white"
                     : isToday
@@ -250,7 +250,7 @@ function MiniCalendar({
           })}
         </div>
 
-        <div className="mt-2 pt-2 border-t border-line/50 flex items-center gap-4 text-[10px] text-ink-soft/60">
+        <div className="mt-2 pt-2 border-t border-line/50 flex items-center gap-4 text-xs text-ink-soft/60">
           <span className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-forest" /> Masuk
           </span>
@@ -601,7 +601,7 @@ function BukuKasInner() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <h1 className="flex-1 text-[15px] font-bold text-ink leading-tight">Buku Kas</h1>
+          <h1 className="flex-1 text-lg font-bold text-ink leading-tight">Buku Kas</h1>
           <div className="relative shrink-0">
             <button
               ref={calBtnRef}
@@ -614,7 +614,7 @@ function BukuKasInner() {
                 setCalOpen((v) => !v)
               }}
               aria-label="Pilih tanggal"
-              className={`flex items-center gap-1.5 h-8 px-2 rounded-lg border bg-page text-[10px] font-medium text-ink ${
+              className={`flex items-center gap-1.5 h-8 px-2 rounded-lg border bg-page text-xs font-medium text-ink ${
                 calOpen ? "border-forest" : "border-line"
               }`}
             >
@@ -670,7 +670,7 @@ function BukuKasInner() {
               key={k}
               type="button"
               onClick={() => setView(k)}
-              className={`py-1.5 rounded-md text-[11px] font-semibold transition ${
+              className={`py-1.5 rounded-md text-xs font-semibold transition ${
                 view === k ? "bg-white text-forest shadow-sm" : "text-ink-soft"
               }`}
             >
@@ -688,7 +688,7 @@ function BukuKasInner() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Cari nama…"
-              className="flex-1 min-w-0 bg-transparent text-[12px] text-ink outline-none placeholder:text-ink-soft/40"
+              className="flex-1 min-w-0 bg-transparent text-sm text-ink outline-none placeholder:text-ink-soft/40"
               autoComplete="off"
               autoCorrect="off"
               spellCheck={false}
@@ -721,7 +721,7 @@ function BukuKasInner() {
               key={k}
               type="button"
               onClick={() => setOnly(k)}
-              className={`text-[10px] font-semibold px-2.5 py-1 rounded-full border shrink-0 ${
+              className={`text-xs font-semibold px-2.5 py-1 rounded-full border shrink-0 ${
                 only === k
                   ? "bg-forest text-white border-forest"
                   : "bg-white text-ink-soft border-line"
@@ -732,7 +732,7 @@ function BukuKasInner() {
           ))}
           {hasFilter && (
             <>
-              <span className="text-ink-soft/25 text-[10px] font-medium shrink-0">|</span>
+              <span className="text-ink-soft/25 text-xs font-medium shrink-0">|</span>
               <button
                 type="button"
                 onClick={() => {
@@ -740,7 +740,7 @@ function BukuKasInner() {
                   setDate("")
                   setOnly("all")
                 }}
-                className="text-[10px] font-semibold text-forest shrink-0"
+                className="text-xs font-semibold text-forest shrink-0"
               >
                 Reset
               </button>
@@ -748,11 +748,11 @@ function BukuKasInner() {
           )}
 
           <div className="ml-auto flex items-center gap-2.5 shrink-0">
-            <span className="flex items-center gap-0.5 text-[10px] font-semibold text-forest tabular-nums">
+            <span className="flex items-center gap-0.5 text-xs font-semibold text-forest tabular-nums">
               <ArrowUpRight className="h-3 w-3" />
               {rp(totalIn)}
             </span>
-            <span className="flex items-center gap-0.5 text-[10px] font-semibold text-alert tabular-nums">
+            <span className="flex items-center gap-0.5 text-xs font-semibold text-alert tabular-nums">
               <ArrowDownRight className="h-3 w-3" />
               {rp(totalOut)}
             </span>
@@ -763,18 +763,18 @@ function BukuKasInner() {
         {view === "ledger" && (date || q.trim()) && (
           <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
             {date && (
-              <span className="inline-flex items-center gap-1 text-[9px] font-semibold px-2 py-0.5 rounded-full bg-forest/10 text-forest">
+              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-forest/10 text-forest">
                 {MONTHS_ID[parseInt(date.slice(5, 7), 10) - 1]} {date.slice(0, 4)}
                 <button type="button" onClick={() => setDate("")} aria-label="Hapus tanggal">
-                  <X className="h-2.5 w-2.5" />
+                  <X className="h-3 w-3" />
                 </button>
               </span>
             )}
             {q.trim() && (
-              <span className="inline-flex items-center gap-1 text-[9px] font-semibold px-2 py-0.5 rounded-full bg-surface text-ink-soft">
+              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-surface text-ink-soft">
                 “{q.trim()}”
                 <button type="button" onClick={() => setQ("")} aria-label="Hapus cari">
-                  <X className="h-2.5 w-2.5" />
+                  <X className="h-3 w-3" />
                 </button>
               </span>
             )}
@@ -786,15 +786,15 @@ function BukuKasInner() {
         {view === "matriks" ? (
           <div className="bg-white border border-line shadow-sm rounded-2xl overflow-hidden">
             <div className="px-3 pt-2.5 pb-2 bg-forest text-white">
-              <p className="text-[11px] font-medium text-white/90">
+              <p className="text-xs font-medium text-white/90">
                 Matriks iuran · {matriks.monthLabel}
               </p>
-              <p className="text-[9px] text-white/50 mt-0.5">
+              <p className="text-[11px] text-white/50 mt-0.5">
                 {matriks.weeks.length} minggu · target 2x/minggu
               </p>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-[9px]">
+              <table className="w-full border-collapse text-[11px]">
                 <thead>
                   <tr className="bg-page/80 border-b border-line text-ink-soft/60 font-medium">
                     <th className="px-2 py-1.5 text-left sticky left-0 bg-page/80 min-w-[90px]">
@@ -811,8 +811,8 @@ function BukuKasInner() {
                   {matriks.rows.map((s, i) => (
                     <tr key={s.id} className="border-b border-line/40">
                       <td className="px-2 py-1.5 sticky left-0 bg-white max-w-[100px]">
-                        <span className="text-[9px] text-ink-soft/40 mr-1">{i + 1}</span>
-                        <span className="text-[10px] font-medium text-ink truncate">
+                        <span className="text-[11px] text-ink-soft/40 mr-1">{i + 1}</span>
+                        <span className="text-xs font-medium text-ink truncate">
                           {s.name}
                         </span>
                       </td>
@@ -826,7 +826,7 @@ function BukuKasInner() {
                         return (
                           <td key={wi} className="px-0.5 py-1 text-center">
                             <span
-                              className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-medium tabular-nums ${bg}`}
+                              className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-medium tabular-nums ${bg}`}
                             >
                               {c > 0 ? c : ""}
                             </span>
@@ -839,7 +839,7 @@ function BukuKasInner() {
                     <tr>
                       <td
                         colSpan={1 + matriks.weeks.length}
-                        className="p-5 text-center text-[11px] text-ink-soft/45"
+                        className="p-5 text-center text-xs text-ink-soft/45"
                       >
                         Belum ada data siswa
                       </td>
@@ -848,14 +848,14 @@ function BukuKasInner() {
                 </tbody>
               </table>
             </div>
-            <div className="px-3 py-2 bg-page/60 border-t border-line text-[9px] text-ink-soft/50 font-medium">
+            <div className="px-3 py-2 bg-page/60 border-t border-line text-[11px] text-ink-soft/50 font-medium">
               Kotak kosong = belum bayar · hijau ≥2 · kuning 1
             </div>
           </div>
         ) : view === "siswa" ? (
           <div className="bg-white border border-line shadow-sm rounded-2xl overflow-hidden">
             <div className="px-3 pt-2.5 pb-2 bg-forest text-white">
-              <p className="text-[11px] font-medium text-white/90">Rekap bayar per siswa</p>
+              <p className="text-xs font-medium text-white/90">Rekap bayar per siswa</p>
               <div className="mt-2 flex gap-1">
                 {(
                   [
@@ -868,7 +868,7 @@ function BukuKasInner() {
                     key={k}
                     type="button"
                     onClick={() => setPeriod(k)}
-                    className={`text-[10px] font-medium px-2 py-1 rounded-full transition ${
+                    className={`text-xs font-medium px-2 py-1 rounded-full transition ${
                       period === k
                         ? "bg-white text-forest"
                         : "bg-white/15 text-white/80"
@@ -879,7 +879,7 @@ function BukuKasInner() {
                 ))}
               </div>
             </div>
-            <div className="flex items-center gap-1 px-2.5 py-1.5 bg-page/80 border-b border-line text-[9px] font-medium uppercase text-ink-soft/55">
+            <div className="flex items-center gap-1 px-2.5 py-1.5 bg-page/80 border-b border-line text-[11px] font-medium uppercase text-ink-soft/55">
               <span className="w-5 text-center shrink-0">No</span>
               <span className="flex-1 min-w-0">Nama</span>
               <span className="w-9 text-center shrink-0">Kali</span>
@@ -894,35 +894,35 @@ function BukuKasInner() {
                     key={s.id}
                     className={`flex items-center gap-1 px-2.5 py-2 ${level.bg}`}
                   >
-                    <span className="w-5 text-center text-[9px] text-ink-soft/40 tabular-nums shrink-0">
+                    <span className="w-5 text-center text-[11px] text-ink-soft/40 tabular-nums shrink-0">
                       {i + 1}
                     </span>
-                    <p className="flex-1 min-w-0 text-[11px] font-semibold text-ink truncate">
+                    <p className="flex-1 min-w-0 text-sm font-semibold text-ink truncate">
                       {s.name}
                     </p>
                     <span
-                      className={`w-9 text-center text-[9px] font-medium tabular-nums shrink-0 ${level.cls}`}
+                      className={`w-9 text-center text-[11px] font-medium tabular-nums shrink-0 ${level.cls}`}
                     >
                       {s.times}x
                     </span>
                     <span
-                      className={`w-[64px] text-right text-[9px] font-medium tabular-nums shrink-0 ${level.cls}`}
+                      className={`w-[64px] text-right text-[11px] font-medium tabular-nums shrink-0 ${level.cls}`}
                     >
                       {s.total ? rp(s.total) : "—"}
                     </span>
-                    <span className="w-[48px] text-right text-[9px] text-ink-soft/50 tabular-nums shrink-0">
+                    <span className="w-[48px] text-right text-[11px] text-ink-soft/50 tabular-nums shrink-0">
                       {dmy(s.last)}
                     </span>
                   </div>
                 )
               })}
               {perSiswa.length === 0 && (
-                <p className="p-5 text-center text-[11px] text-ink-soft/45">
+                <p className="p-5 text-center text-xs text-ink-soft/45">
                   Belum ada data siswa
                 </p>
               )}
             </div>
-            <div className="px-3 py-2 bg-page/60 border-t border-line text-[9px] text-ink-soft/50 font-medium">
+            <div className="px-3 py-2 bg-page/60 border-t border-line text-[11px] text-ink-soft/50 font-medium">
               Target 8x/bulan · 0 merah · 2 cokelat · 4 kuning · 6 oranye · 8+ hijau
             </div>
           </div>
@@ -941,7 +941,7 @@ function BukuKasInner() {
           />
         ) : (
           <div className="bg-white border border-line shadow-sm rounded-2xl overflow-hidden">
-            <div className="flex items-center gap-1.5 px-2 py-1.5 bg-forest text-white text-[9px] font-medium uppercase tracking-wide">
+            <div className="flex items-center gap-1.5 px-2 py-1.5 bg-forest text-white text-[11px] font-medium uppercase tracking-wide">
               <span className="w-5 text-center shrink-0">No</span>
               <span className="w-[64px] shrink-0">Tanggal</span>
               <span className="flex-1 min-w-0">Uraian</span>
@@ -957,24 +957,24 @@ function BukuKasInner() {
                   onClick={() => line.detail && void openDetail(line.detail)}
                   className="flex w-full items-center gap-1.5 px-2 py-2 text-left active:bg-page/60 transition-colors"
                 >
-                  <span className="w-5 text-center text-[9px] text-ink-soft/40 tabular-nums shrink-0">
+                  <span className="w-5 text-center text-[11px] text-ink-soft/40 tabular-nums shrink-0">
                     {i + 1}
                   </span>
-                  <span className="w-[64px] text-[9px] text-ink-soft/55 shrink-0 leading-tight">
+                  <span className="w-[64px] text-[11px] text-ink-soft/55 shrink-0 leading-tight">
                     {formatDateID(new Date(line.day + "T12:00:00"))}
                   </span>
-                  <span className="flex-1 min-w-0 text-[11px] font-semibold text-ink truncate">
+                  <span className="flex-1 min-w-0 text-sm font-semibold text-ink truncate">
                     {line.uraian}
                   </span>
                   <span
-                    className={`w-[72px] text-right text-[9px] font-medium tabular-nums shrink-0 ${
+                    className={`w-[72px] text-right text-[11px] font-medium tabular-nums shrink-0 ${
                       line.masuk ? "text-forest" : "text-ink-soft/20"
                     }`}
                   >
                     {line.masuk ? rp(line.masuk) : "—"}
                   </span>
                   <span
-                    className={`w-[72px] text-right text-[9px] font-medium tabular-nums shrink-0 ${
+                    className={`w-[72px] text-right text-[11px] font-medium tabular-nums shrink-0 ${
                       line.keluar ? "text-alert" : "text-ink-soft/20"
                     }`}
                   >
@@ -987,11 +987,11 @@ function BukuKasInner() {
             <div className="flex items-center gap-1.5 px-2 py-2 bg-deep text-white">
               <span className="w-5 shrink-0" />
               <span className="w-[64px] shrink-0" />
-              <span className="flex-1 text-[9px] font-semibold">TOTAL</span>
-              <span className="w-[72px] text-right text-[9px] font-medium text-lime tabular-nums">
+              <span className="flex-1 text-[11px] font-semibold">TOTAL</span>
+              <span className="w-[72px] text-right text-[11px] font-medium text-lime tabular-nums">
                 {rp(totalIn)}
               </span>
-              <span className="w-[72px] text-right text-[9px] font-medium text-amber tabular-nums">
+              <span className="w-[72px] text-right text-[11px] font-medium text-amber tabular-nums">
                 {rp(totalOut)}
               </span>
             </div>
@@ -1001,7 +1001,7 @@ function BukuKasInner() {
         <button
           type="button"
           onClick={() => void mutate()}
-          className="mt-3 w-full text-[10px] font-semibold text-ink-soft py-2"
+          className="mt-3 w-full text-xs font-semibold text-ink-soft py-2"
         >
           Muat ulang
         </button>
@@ -1019,9 +1019,9 @@ function BukuKasInner() {
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <h2 className="text-[15px] font-bold text-ink flex-1">Detail transaksi</h2>
+            <h2 className="text-lg font-bold text-ink flex-1">Detail transaksi</h2>
             <span
-              className={`text-[10px] font-bold px-2 py-1 rounded-full ${
+              className={`text-xs font-bold px-2 py-1 rounded-full ${
                 detail.kind === "IN"
                   ? "bg-ok-bg text-forest"
                   : "bg-alert-bg text-alert"
@@ -1038,7 +1038,7 @@ function BukuKasInner() {
                 detail.kind === "IN" ? "bg-forest text-white" : "bg-alert text-white"
               }`}
             >
-              <p className="text-[11px] font-medium opacity-80">
+              <p className="text-xs font-medium opacity-80">
                 {detail.kind === "IN" ? "Pemasukan" : "Pengeluaran"}
               </p>
               <p className="mt-1 text-3xl font-black tabular-nums">
@@ -1061,8 +1061,8 @@ function BukuKasInner() {
                     key={label}
                     className="flex items-start justify-between gap-3 px-3.5 py-3"
                   >
-                    <span className="text-[11px] text-ink-soft shrink-0">{label}</span>
-                    <span className="text-[12px] font-semibold text-ink text-right min-w-0 break-words">
+                    <span className="text-xs text-ink-soft shrink-0">{label}</span>
+                    <span className="text-sm font-semibold text-ink text-right min-w-0 break-words">
                       {value}
                     </span>
                   </div>
@@ -1071,7 +1071,7 @@ function BukuKasInner() {
             </div>
 
             {/* Credit bar */}
-            <div className="flex items-center gap-2 text-[10px] text-ink-soft/60 px-1">
+            <div className="flex items-center gap-2 text-xs text-ink-soft/60 px-1">
               <User className="h-3 w-3 shrink-0" />
               <span className="truncate">
                 Terakhir dicatat: <strong className="text-ink font-semibold">{detail.recorded_by || "—"}</strong>
@@ -1090,7 +1090,7 @@ function BukuKasInner() {
                   Status siswa · {fullDate(detail.occurred_on)}
                 </h3>
                 {dayStatusLoading ? (
-                  <p className="text-[11px] text-ink-soft/50">Memuat status…</p>
+                  <p className="text-xs text-ink-soft/50">Memuat status…</p>
                 ) : dayStatus ? (
                   <>
                     {(
@@ -1105,15 +1105,15 @@ function BukuKasInner() {
                         className="bg-white border border-line shadow-sm rounded-2xl overflow-hidden"
                       >
                         <div className="flex items-center justify-between px-3 py-2 bg-page/60 border-b border-line">
-                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${chip}`}>
+                          <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${chip}`}>
                             {label}
                           </span>
-                          <span className="text-[10px] text-ink-soft/60 tabular-nums">
+                          <span className="text-xs text-ink-soft/60 tabular-nums">
                             {names.length} siswa
                           </span>
                         </div>
                         {names.length === 0 ? (
-                          <p className={`px-3 py-2.5 text-[11px] ${textCls} opacity-70`}>
+                          <p className={`px-3 py-2.5 text-xs ${textCls} opacity-70`}>
                             Tidak ada
                           </p>
                         ) : (
@@ -1123,10 +1123,10 @@ function BukuKasInner() {
                                 key={n}
                                 className="flex items-center gap-2 px-3 py-2"
                               >
-                                <span className="w-5 text-center text-[9px] text-ink-soft/40 tabular-nums shrink-0">
+                                <span className="w-5 text-center text-[11px] text-ink-soft/40 tabular-nums shrink-0">
                                   {i + 1}
                                 </span>
-                                <span className="text-[11px] font-medium text-ink truncate flex-1">
+                                <span className="text-xs font-medium text-ink truncate flex-1">
                                   {n}
                                 </span>
                               </div>
@@ -1135,13 +1135,13 @@ function BukuKasInner() {
                         )}
                       </div>
                     ))}
-                    <p className="text-[9px] text-ink-soft/50 leading-relaxed px-0.5">
+                    <p className="text-[11px] text-ink-soft/50 leading-relaxed px-0.5">
                       Izin = tidak tagih hari itu · bisa bayar lain hari lewat “Bayar Khusus”
                       atau setoran berikutnya · tidak otomatis dihitung lunas.
                     </p>
                   </>
                 ) : (
-                  <p className="text-[11px] text-ink-soft/50">Gagal memuat status siswa</p>
+                  <p className="text-xs text-ink-soft/50">Gagal memuat status siswa</p>
                 )}
               </div>
             )}
@@ -1157,7 +1157,7 @@ function BukuKasInner() {
             <button
               type="button"
               onClick={() => setDetail(null)}
-              className="w-full bg-forest text-white text-[13px] font-bold py-3 rounded-xl"
+              className="w-full bg-forest text-white text-sm font-bold py-3 rounded-xl"
             >
               Tutup
             </button>

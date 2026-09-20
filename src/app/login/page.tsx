@@ -58,7 +58,7 @@ function LoginForm() {
           <p className="text-xs text-red-500 text-center leading-snug">{errorMessage}</p>
         )}
 
-        <p className="text-[10px] text-ink-soft/60 text-center">
+        <p className="text-xs text-ink-soft/60 text-center">
           Hanya siswa & guru Kelas 7B yang dapat mengakses aplikasi ini.
         </p>
       </div>

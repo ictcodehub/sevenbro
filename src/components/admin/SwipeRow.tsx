@@ -58,7 +58,7 @@ export function SwipeRow({
           aria-label="Edit"
         >
           <Pencil className="h-3.5 w-3.5" />
-          <span className="text-[8px] font-semibold">Edit</span>
+          <span className="text-xs font-semibold">Edit</span>
         </button>
         {onDuplicate && (
           <button
@@ -71,7 +71,7 @@ export function SwipeRow({
             aria-label="Duplicate"
           >
             <Copy className="h-3.5 w-3.5" />
-            <span className="text-[8px] font-semibold">Copy</span>
+            <span className="text-xs font-semibold">Copy</span>
           </button>
         )}
         <button
@@ -84,7 +84,7 @@ export function SwipeRow({
           aria-label="Delete"
         >
           <Trash2 className="h-3.5 w-3.5" />
-          <span className="text-[8px] font-semibold">Hapus</span>
+          <span className="text-xs font-semibold">Hapus</span>
         </button>
       </div>
 

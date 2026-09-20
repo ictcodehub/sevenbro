@@ -133,15 +133,15 @@ function NotifCard({
                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-forest" />
               )}
               <span
-                className={`min-w-0 flex-1 truncate text-[11px] ${
+                className={`min-w-0 flex-1 truncate text-xs ${
                   n.read ? "font-medium text-ink/80" : "font-semibold text-ink"
                 }`}
               >
                 {n.title}
               </span>
             </div>
-            <p className="mt-0.5 truncate text-[10px] text-ink-soft/75">{n.body}</p>
-            <p className="mt-0.5 text-[10px] text-ink-soft/55">{n.time}</p>
+            <p className="mt-0.5 truncate text-xs text-ink-soft/75">{n.body}</p>
+            <p className="mt-0.5 text-xs text-ink-soft/55">{n.time}</p>
           </button>
         </div>
         <button
@@ -182,7 +182,7 @@ function QuickToggle({
       <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface shrink-0">
         {icon}
       </span>
-      <span className="flex-1 text-left text-[12px] font-semibold text-ink">
+      <span className="flex-1 text-left text-sm font-semibold text-ink">
         {label}
       </span>
       <span
@@ -307,7 +307,7 @@ export default function AppShell({
             >
               <Bell className="h-5 w-5" />
               {unread > 0 && (
-                <span className="absolute top-0 right-0 z-10 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-amber px-0.5 text-[9px] font-bold leading-none text-white ring-1 ring-white">
+                <span className="absolute top-0 right-0 z-10 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-amber px-0.5 text-[11px] font-bold leading-none text-white ring-1 ring-white">
                   {unread > 9 ? "9+" : unread}
                 </span>
               )}
@@ -399,11 +399,11 @@ export default function AppShell({
           >
             <div className="bg-white border border-line shadow-lg rounded-2xl overflow-hidden">
               <div className="flex items-center justify-between px-4 pt-3.5 pb-2">
-                <p className="text-[12px] font-semibold text-ink">Pengaturan Cepat</p>
+                <p className="text-sm font-semibold text-ink">Pengaturan Cepat</p>
                 <button
                   type="button"
                   onClick={() => setShowQuick(false)}
-                  className="text-[11px] font-medium text-forest active:opacity-70"
+                  className="text-xs font-medium text-forest active:opacity-70"
                 >
                   Selesai
                 </button>
@@ -449,19 +449,19 @@ export default function AppShell({
                 <h2 className="text-[20px] font-bold text-ink">
                   Belum ada notifikasi
                 </h2>
-                <p className="text-[13px] text-ink-soft/70 mt-2 leading-relaxed max-w-[250px]">
+                <p className="text-sm text-ink-soft/70 mt-2 leading-relaxed max-w-[250px]">
                   Notifikasi Anda akan muncul di sini setelah Anda menerimanya.
                 </p>
               </div>
             ) : (
               <div className="px-3 pt-2">
                 <div className="flex items-center justify-between px-1 pb-2">
-                  <p className="text-[12px] text-ink-soft/55 font-medium">Sebelumnya</p>
+                  <p className="text-sm text-ink-soft/55 font-medium">Sebelumnya</p>
                   {onClearAllNotifications && (
                     <button
                       type="button"
                       onClick={onClearAllNotifications}
-                      className="text-[11px] font-semibold text-alert active:opacity-70"
+                      className="text-xs font-semibold text-alert active:opacity-70"
                     >
                       Hapus Semua
                     </button>
@@ -486,14 +486,14 @@ export default function AppShell({
 
           {/* Link riwayat — selalu di area bawah */}
           <div className="shrink-0 px-6 pb-10 pt-6 text-center">
-            <p className="text-[12px] text-ink-soft/55">Notifikasi tidak ditemukan?</p>
+            <p className="text-sm text-ink-soft/55">Notifikasi tidak ditemukan?</p>
             <button
               type="button"
               onClick={() => {
                 closeAll()
                 onViewHistory?.()
               }}
-              className="text-[13px] font-semibold text-forest mt-0.5 active:opacity-70"
+              className="text-sm font-semibold text-forest mt-0.5 active:opacity-70"
             >
               Lihat Riwayat Notifikasi
             </button>
@@ -514,8 +514,8 @@ export default function AppShell({
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="text-[12px] font-bold text-ink truncate">{user?.name}</p>
-                <p className="text-[10px] text-ink-soft/55 truncate">
+                <p className="text-sm font-bold text-ink truncate">{user?.name}</p>
+                <p className="text-xs text-ink-soft/55 truncate">
                   {user?.role || "Siswa"} · 7B
                 </p>
               </div>
@@ -526,7 +526,7 @@ export default function AppShell({
                   key={href}
                   href={href}
                   onClick={() => setShowProfile(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 text-[12px] font-medium text-ink hover:bg-surface transition"
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-ink hover:bg-surface transition"
                 >
                   <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface text-ink-soft shrink-0">
                     <Icon className="h-3.5 w-3.5" />
@@ -539,7 +539,7 @@ export default function AppShell({
                   onSettings?.()
                   setShowProfile(false)
                 }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-[12px] font-medium text-ink hover:bg-surface transition"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-ink hover:bg-surface transition"
               >
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface text-ink-soft shrink-0">
                   <Settings2 className="h-3.5 w-3.5" />
@@ -552,7 +552,7 @@ export default function AppShell({
                     onSignOut()
                     setShowProfile(false)
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-[12px] font-medium text-red-600 hover:bg-red-50 transition"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition"
                 >
                   <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 text-red-500 shrink-0">
                     <LogOut className="h-3.5 w-3.5" />
@@ -594,7 +594,7 @@ export default function AppShell({
                   className="flex flex-col items-center justify-center gap-0.5 py-1.5 px-0.5 rounded-xl text-ink-soft/35 opacity-60 select-none"
                 >
                   <Icon className="h-[20px] w-[20px]" />
-                  <span className="text-[10px] font-semibold whitespace-nowrap">{label}</span>
+                  <span className="text-xs font-semibold whitespace-nowrap">{label}</span>
                 </span>
               )
             }
@@ -610,7 +610,7 @@ export default function AppShell({
                 }`}
               >
                 <Icon className="h-[20px] w-[20px]" />
-                <span className="text-[10px] font-semibold whitespace-nowrap">{label}</span>
+                <span className="text-xs font-semibold whitespace-nowrap">{label}</span>
               </Link>
             )
           })}
