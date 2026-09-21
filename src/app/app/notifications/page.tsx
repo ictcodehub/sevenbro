@@ -12,6 +12,7 @@ import {
   saveIdSet,
 } from "@/lib/notifications-store"
 import { pathForNotification } from "@/lib/notif-nav"
+import { useT } from "@/lib/i18n"
 
 type ApiNotif = {
   id: string
@@ -23,13 +24,13 @@ type ApiNotif = {
   deleted_at?: string | null
 }
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string, justNow: string, minutesAgo: string): string {
   const t = new Date(iso).getTime()
   if (!Number.isFinite(t)) return ""
   const diff = Math.max(0, Date.now() - t)
   const m = Math.floor(diff / 60000)
-  if (m < 1) return "Baru saja"
-  if (m < 60) return `${m} menit lalu`
+  if (m < 1) return justNow
+  if (m < 60) return minutesAgo.replace("{{n}}", String(m))
   // ≥ 60 menit → jam posting (mis. 23:00)
   return new Date(t).toLocaleTimeString("id-ID", {
     hour: "2-digit",
@@ -39,6 +40,7 @@ function timeAgo(iso: string): string {
 }
 
 export default function NotificationHistoryPage() {
+  const t = useT()
   const router = useRouter()
   const { data: session } = useSession()
   const role = (session?.user as { role?: string } | undefined)?.role
@@ -112,9 +114,9 @@ export default function NotificationHistoryPage() {
     <div className="px-4 py-3 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h1 className="text-lg font-bold text-ink">Riwayat Notifikasi</h1>
+          <h1 className="text-lg font-bold text-ink">{t("notif.history")}</h1>
           <p className="text-[11px] text-ink-soft/75">
-            Termasuk notifikasi yang dihapus dari shade
+            {t("notif.historyHint")}
           </p>
         </div>
         {ready && activeCount > 0 && (
@@ -124,14 +126,14 @@ export default function NotificationHistoryPage() {
               onClick={markAllRead}
               className="text-[11px] font-medium text-forest active:opacity-70"
             >
-              Tandai Dibaca
+              {t("notif.markRead")}
             </button>
             <button
               type="button"
               onClick={deleteAll}
               className="text-[11px] font-semibold text-alert active:opacity-70"
             >
-              Hapus Semua
+              {t("notif.clearAll")}
             </button>
           </div>
         )}
@@ -139,7 +141,7 @@ export default function NotificationHistoryPage() {
 
       {!ready ? null : items.length === 0 ? (
         <div className="bg-white border border-line shadow-sm rounded-2xl p-6 text-center">
-          <p className="text-[12px] text-ink-soft/70">Belum ada riwayat notifikasi.</p>
+          <p className="text-[12px] text-ink-soft/70">{t("notif.empty")}</p>
         </div>
       ) : (
         <ul className="space-y-1.5">
@@ -173,7 +175,7 @@ export default function NotificationHistoryPage() {
                     </div>
                     <p className="mt-0.5 truncate text-xs text-ink-soft/75">{n.body}</p>
                     <p className="mt-0.5 text-[11px] text-ink-soft/55">
-                      {timeAgo(n.created_at)}
+                      {timeAgo(n.created_at, t("common.justNow"), t("common.minutesAgo"))}
                     </p>
                   </button>
                 </div>
@@ -184,7 +186,7 @@ export default function NotificationHistoryPage() {
                       e.stopPropagation()
                       restore(n.id)
                     }}
-                    aria-label="Pulihkan"
+                    aria-label={t("notif.restore")}
                     className="flex h-10 w-10 shrink-0 items-center justify-center self-center rounded-lg text-forest active:bg-surface mr-1"
                   >
                     <RotateCcw className="h-4 w-4" />
@@ -196,7 +198,7 @@ export default function NotificationHistoryPage() {
                       e.stopPropagation()
                       removeOne(n.id)
                     }}
-                    aria-label="Hapus notifikasi"
+                    aria-label={t("notif.delete")}
                     className="flex h-10 w-10 shrink-0 items-center justify-center self-center rounded-lg text-ink-soft/70 active:bg-alert-bg active:text-alert mr-1"
                   >
                     <X className="h-4 w-4" />

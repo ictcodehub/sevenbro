@@ -28,6 +28,7 @@ import {
   type SubjectTeacherRow,
 } from "@/lib/info-brief"
 import { formatDisplayName } from "@/lib/format"
+import { useT } from "@/lib/i18n"
 import { StudentMultiSelect, type StudentLite } from "@/components/StudentSelect"
 
 type FormSubject = {
@@ -468,6 +469,7 @@ export default function InfoBriefForm({
   const isEditMode = Boolean(editBrief)
   const isDirty = isEditMode && formSignature !== editSignature
 
+  const t = useT()
   const flash = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(null), 2500)
@@ -550,7 +552,7 @@ export default function InfoBriefForm({
   ) => (
     <div className="space-y-2">
       {rows.length === 0 && (
-        <p className="text-xs text-ink-soft/55 px-0.5">Belum ada isian.</p>
+              <p className="text-xs text-ink-soft/55 px-0.5">{t("info.noEntries")}</p>
       )}
       {rows.map(({ it, index }, n) => (
         <div key={index} className="flex items-start gap-2">
@@ -568,7 +570,7 @@ export default function InfoBriefForm({
           <button
             type="button"
             onClick={() => setItems((p) => p.filter((_, j) => j !== index))}
-            aria-label="Hapus baris"
+            aria-label={t("info.deleteRow")}
             className={ROW_DELETE + " mt-6"}
           >
             <X className="h-4 w-4" />
@@ -586,10 +588,10 @@ export default function InfoBriefForm({
     try {
       await navigator.clipboard.writeText(preview)
       setCopied(true)
-      flash("Teks WA disalin")
+      flash(t("info.waCopied"))
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      flash("Gagal menyalin teks")
+      flash(t("info.copyFailed"))
     }
   }
 
@@ -655,13 +657,13 @@ export default function InfoBriefForm({
         }),
       })
       const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
-      flash(editBrief ? "Brief diperbarui" : "Brief diterbitkan")
+      if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
+      flash(t(editBrief ? "info.briefUpdated" : "info.briefPublished"))
       reset()
       await onSaved()
       onClose()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Gagal menyimpan")
+      setErr(e instanceof Error ? e.message : t("common.saveFailed"))
     } finally {
       setSaving(false)
     }
@@ -673,7 +675,7 @@ export default function InfoBriefForm({
     <Sheet
       open={open}
       onClose={onClose}
-      title={editBrief ? "Ubah Brief Harian" : "Brief Info Harian"}
+      title={editBrief ? t("info.editBrief") : t("info.briefInfoTitle")}
       fullHeight
     >
       <div className="rounded-2xl bg-forest px-3 py-3.5 flex items-center justify-between gap-3 min-h-[4.5rem]">
@@ -685,17 +687,17 @@ export default function InfoBriefForm({
             {formatBriefDateLong(dateKey)}
           </p>
           <p className="text-[11px] text-white/55 leading-tight">
-            Otomatis dari tanggal brief
+            {t("info.autoFromDate")}
           </p>
         </div>
         <button
           type="button"
           onClick={() => setPinned((v) => !v)}
           aria-pressed={pinned}
-          aria-label="Pin ke Beranda"
+          aria-label={t("info.pinHome")}
           className="flex shrink-0 items-center gap-2"
         >
-          <span className="text-xs font-semibold text-white/85">Pin</span>
+          <span className="text-xs font-semibold text-white/85">{t("info.pinToggle")}</span>
           <span
             className={`h-5 w-9 rounded-full relative transition-colors ${
               pinned ? "bg-lime" : "bg-white/30"
@@ -717,10 +719,10 @@ export default function InfoBriefForm({
       )}
 
       <BriefSectionCard
-        title="Hari & Seragam"
-        subtitle="Tanggal brief, sapaan, seragam otomatis"
+        title={t("info.dayUniform")}
+        subtitle={t("info.dayUniformHint")}
       >
-        <Field label="Tanggal brief" hint="Default: besok hari sekolah. Minggu → Senin.">
+        <Field label={t("info.date")} hint={t("info.dateHint")}>
           <input
             type="date"
             value={dateKey}
@@ -731,25 +733,25 @@ export default function InfoBriefForm({
             {rel ? `${rel} · ` : ""}
             {dateLong}
             {!schoolDay && (
-              <span className="ml-1 font-semibold text-alert">· Libur</span>
+              <span className="ml-1 font-semibold text-alert">{t("info.holiday")}</span>
             )}
           </span>
         </Field>
 
         {!schoolDay && (
           <div className="rounded-xl border border-alert/30 bg-alert-bg px-3 py-2.5">
-            <p className="text-sm font-bold text-alert">
-              {autoUniform.dayLabel} libur sekolah
-            </p>
-            <p className="text-xs text-ink-soft/80 mt-0.5 leading-relaxed">
-              Brief hanya untuk Senin-Jumat. Pilih hari sekolah berikutnya.
-            </p>
+              <p className="text-sm font-bold text-alert">
+                {t("info.holidayTitle", { day: autoUniform.dayLabel })}
+              </p>
+              <p className="text-xs text-ink-soft/80 mt-0.5 leading-relaxed">
+                {t("info.holidayHint")}
+              </p>
             <button
               type="button"
               onClick={() => setDateKey(defaultBriefDateKey())}
               className="mt-2 rounded-xl bg-forest px-3 py-1.5 text-sm font-semibold text-white"
             >
-              Ke hari sekolah berikutnya
+                {t("info.nextSchoolDay")}
             </button>
           </div>
         )}
@@ -763,11 +765,11 @@ export default function InfoBriefForm({
                 className={PILL_PRIMARY + " shrink-0"}
               >
                 <Pencil className="h-3.5 w-3.5" />
-                {showUniformCustom || customUniform ? "Jadwal Hari" : "Ganti Manual"}
+                {showUniformCustom || customUniform ? t("info.scheduleDay") : t("info.changeManual")}
               </button>
             }
           >
-            Seragam
+            {t("info.uniform")}
           </SectionLabel>
 
           {!showUniformCustom && !customUniform ? (
@@ -782,7 +784,7 @@ export default function InfoBriefForm({
                 </p>
               )}
               <p className="text-[11px] text-ink-soft/55 mt-1.5">
-                Jadwal otomatis · {dateLong}
+                {t("info.autoSchedule", { date: dateLong })}
               </p>
             </div>
           ) : (
@@ -791,20 +793,20 @@ export default function InfoBriefForm({
                 value={customUniform}
                 onChange={(e) => setCustomUniform(e.target.value)}
                 className={FIELD_SELECT}
-                placeholder="Nama seragam custom"
+                placeholder={t("info.customUniformPh")}
               />
               <input
                 value={customUniformNote}
                 onChange={(e) => setCustomUniformNote(e.target.value)}
                 className={FIELD_SELECT}
-                placeholder="Catatan (opsional)"
+                placeholder={t("info.customNotePh")}
               />
               <div className="space-y-1">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="min-w-0 flex-1 overflow-x-auto">
                     <div className="flex w-max items-center gap-x-1 whitespace-nowrap">
                       <span className="text-xs font-semibold text-ink-soft shrink-0">
-                        Preset Cepat:
+                        {t("info.quickPreset")}
                       </span>
                       {(
                         [
@@ -859,7 +861,7 @@ export default function InfoBriefForm({
                       setCustomUniformNote("")
                       setShowUniformCustom(false)
                     }}
-                    aria-label="Batal preset"
+                    aria-label={t("info.cancelPreset")}
                     className="flex min-h-8 min-w-8 shrink-0 items-center justify-center rounded-lg text-ink-soft active:text-alert"
                   >
                     <X className="h-3.5 w-3.5" />
@@ -868,7 +870,7 @@ export default function InfoBriefForm({
                 {customUniform && (
                   <div className="text-xs text-ink-soft/80 leading-relaxed space-y-0.5">
                     <p>
-                      <span className="font-semibold text-ink">Aktif: </span>
+                      <span className="font-semibold text-ink">{t("info.activeLabel")} </span>
                       {customUniform}
                     </p>
                     {customUniformNote && <p>{customUniformNote}</p>}
@@ -881,8 +883,8 @@ export default function InfoBriefForm({
       </BriefSectionCard>
 
       <BriefSectionCard
-        title="Pelajaran"
-        subtitle={`Jadwal KBM 7B · ${autoUniform.dayLabel} · tanpa guru di teks WA`}
+        title={t("info.subjects")}
+        subtitle={t("info.kbmSubtitle", { day: autoUniform.dayLabel })}
         action={
           schoolDay ? (
             <button
@@ -890,15 +892,15 @@ export default function InfoBriefForm({
               onClick={reloadTimetable}
               className={TEXT_ACTION}
             >
-              Muat ulang jadwal
+              {t("info.reloadSchedule")}
             </button>
           ) : null
         }
       >
         {!schoolDay ? (
-          <p className="text-xs text-ink-soft/65">Tidak ada jadwal KBM (libur).</p>
+          <p className="text-xs text-ink-soft/65">{t("info.noKbm")}</p>
         ) : rows.length === 0 ? (
-          <p className="text-xs text-ink-soft/60">Jadwal hari ini kosong.</p>
+          <p className="text-xs text-ink-soft/60">{t("info.emptySchedule")}</p>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-line bg-white">
             <table className="w-full text-left border-collapse">
@@ -906,11 +908,11 @@ export default function InfoBriefForm({
                 <tr className="bg-page border-b border-line">
                   <th className="px-2 py-1.5 text-xs font-semibold text-ink w-10">JP</th>
                   <th className="px-2 py-1.5 text-xs font-semibold text-ink whitespace-nowrap">
-                    Time
+                    {t("info.timeCol")}
                   </th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-ink">Mapel</th>
+                  <th className="px-2 py-1.5 text-xs font-semibold text-ink">{t("info.subjectCol")}</th>
                   <th className="px-2 py-1.5 text-xs font-semibold text-ink whitespace-nowrap">
-                    Nama Guru
+                    {t("info.teacherCol")}
                   </th>
                   <th className="px-1 py-1.5 w-8" />
                 </tr>
@@ -962,7 +964,7 @@ export default function InfoBriefForm({
                                 ),
                               )
                             }
-                            aria-label={`Hapus sesi ${sessionNo}`}
+                            aria-label={t("info.deleteSession", { n: sessionNo })}
                             className="h-6 w-6 rounded-md text-ink-soft hover:text-alert flex items-center justify-center"
                           >
                             <X className="h-3 w-3" />
@@ -979,8 +981,8 @@ export default function InfoBriefForm({
       </BriefSectionCard>
 
       <BriefSectionCard
-        title="Piket & Tugas"
-        subtitle="Piket harian dan barang / tugas yang dibawa"
+        title={t("info.dutyTasks")}
+        subtitle={t("info.dutyTasksHint")}
       >
         <div className="space-y-2">
           <SectionLabel
@@ -991,21 +993,21 @@ export default function InfoBriefForm({
                   onClick={reloadPiket}
                   className={TEXT_ACTION}
                 >
-                  Jadwal hari ini
+                  {t("info.todaySchedule")}
                 </button>
               ) : null
             }
           >
-            Piket
+            {t("info.duty")}
           </SectionLabel>
           <p className="text-xs text-ink-soft/65">
-            Otomatis dari jadwal kelas · bisa tambah / hapus manual
+            {t("info.dutyHint")}
           </p>
           <StudentMultiSelect
             students={activeStudents}
             selectedIds={duties.map((d) => d.student_id)}
             selectedNames={duties.map((d) => d.name)}
-            placeholder="Pilih Nama Siswa"
+            placeholder={t("poin.pickStudents")}
             onChange={(ids, names) => {
               setDuties(
                 ids.map((id, i) => ({
@@ -1026,27 +1028,27 @@ export default function InfoBriefForm({
                   onClick={reloadTugas}
                   className={TEXT_ACTION}
                 >
-                  Isi otomatis lagi
+                  {t("info.refillAuto")}
                 </button>
               ) : null
             }
           >
-            Tugas / Membawa
+            {t("info.carryTitle")}
           </SectionLabel>
           <p className="text-xs text-ink-soft/65">
-            3 bagian: Tugas · Remedial · Info lain. Auto dari jadwal, boleh edit.
+            {t("info.carryHint")}
           </p>
 
           <div className="rounded-xl border border-line bg-page p-2.5 space-y-2">
             <div>
-              <p className="text-sm font-bold text-ink">Tugas</p>
+              <p className="text-sm font-bold text-ink">{t("info.tasks")}</p>
               <p className="text-xs text-ink-soft/60 mt-0.5">
-                1 baris dulu — tambah hanya bila ada tugas. Mapel dari jadwal hari ini.
+                {t("info.taskHint")}
               </p>
             </div>
 
             {tugasRows.length === 0 && (
-              <p className="text-xs text-ink-soft/55 px-0.5">Belum ada baris tugas.</p>
+              <p className="text-xs text-ink-soft/55 px-0.5">{t("info.noTaskRows")}</p>
             )}
 
             {tugasRows.map(({ it, index }, n) => (
@@ -1065,9 +1067,9 @@ export default function InfoBriefForm({
                       patchItem(index, { subject_name })
                     }}
                     className={FIELD_SELECT + " flex-1 min-w-0"}
-                    aria-label="Mapel"
+                    aria-label={t("info.subjectAria")}
                   >
-                    <option value="">Pilih mapel</option>
+                    <option value="">{t("info.pickSubject")}</option>
                     {mapelOptions.map((m) => (
                       <option key={m} value={m}>
                         {m}
@@ -1077,7 +1079,7 @@ export default function InfoBriefForm({
                   <button
                     type="button"
                     onClick={() => setItems((p) => p.filter((_, j) => j !== index))}
-                    aria-label="Hapus tugas"
+                    aria-label={t("info.deleteTask")}
                     className={ROW_DELETE}
                   >
                     <X className="h-4 w-4" />
@@ -1085,20 +1087,20 @@ export default function InfoBriefForm({
                 </div>
                 <div className="px-2.5 py-2 space-y-2">
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-ink-soft/75">Siswa</p>
+                    <p className="text-xs font-medium text-ink-soft/75">{t("poin.student")}</p>
                     <StudentMultiSelect
                       students={activeStudents}
                       selectedIds={it.student_ids}
                       selectedNames={it.student_names}
-                      placeholder="Pilih Nama Siswa"
+                      placeholder={t("poin.pickStudents")}
                       onChange={(ids, names) =>
                         patchItem(index, { student_ids: ids, student_names: names })
                       }
                     />
                   </div>
                   <OptionalTextField
-                    label="Deskripsi"
-                    placeholder="Detail tugas"
+                    label={t("agenda.description")}
+                    placeholder={t("info.taskDetailPh")}
                     value={it.text}
                     onChange={(v) => patchItem(index, { text: v })}
                   />
@@ -1107,7 +1109,7 @@ export default function InfoBriefForm({
             ))}
 
             <button type="button" onClick={() => addItem("tugas")} className={ROW_ADD}>
-              + Add
+              {t("info.add")}
             </button>
           </div>
 
@@ -1115,12 +1117,12 @@ export default function InfoBriefForm({
             <div>
               <p className="text-sm font-bold text-ink">Remedial</p>
               <p className="text-xs text-ink-soft/60 mt-0.5">
-                Sama seperti Tugas: mapel + nama siswa yang remedial + deskripsi opsional
+                {t("info.remedialHint")}
               </p>
             </div>
 
             {remedialRows.length === 0 && (
-              <p className="text-xs text-ink-soft/55 px-0.5">Belum ada baris remedial.</p>
+              <p className="text-xs text-ink-soft/55 px-0.5">{t("info.noRemedialRows")}</p>
             )}
 
             {remedialRows.map(({ it, index }, n) => (
@@ -1136,9 +1138,9 @@ export default function InfoBriefForm({
                       patchItem(index, { subject_name })
                     }}
                     className={FIELD_SELECT + " flex-1 min-w-0"}
-                    aria-label="Mapel remedial"
+                    aria-label={t("info.remedialSubjectAria")}
                   >
-                    <option value="">Pilih mapel</option>
+                    <option value="">{t("info.pickSubject")}</option>
                     {mapelOptions.map((m) => (
                       <option key={m} value={m}>
                         {m}
@@ -1148,7 +1150,7 @@ export default function InfoBriefForm({
                   <button
                     type="button"
                     onClick={() => setItems((p) => p.filter((_, j) => j !== index))}
-                    aria-label="Hapus remedial"
+                    aria-label={t("info.deleteRemedial")}
                     className={ROW_DELETE}
                   >
                     <X className="h-4 w-4" />
@@ -1156,12 +1158,12 @@ export default function InfoBriefForm({
                 </div>
                 <div className="px-2.5 py-2 space-y-2">
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-ink-soft/75">Siswa</p>
+                    <p className="text-xs font-medium text-ink-soft/75">{t("poin.student")}</p>
                     <StudentMultiSelect
                       students={activeStudents}
                       selectedIds={it.student_ids}
                       selectedNames={it.student_names}
-                      placeholder="Pilih Nama Siswa"
+                      placeholder={t("poin.pickStudents")}
                       onChange={(ids, names) =>
                         patchItem(index, {
                           student_ids: ids,
@@ -1172,8 +1174,8 @@ export default function InfoBriefForm({
                     />
                   </div>
                   <OptionalTextField
-                    label="Deskripsi"
-                    placeholder="Detail remedial"
+                    label={t("agenda.description")}
+                    placeholder={t("info.remedialDetailPh")}
                     value={it.text}
                     onChange={(v) => patchItem(index, { text: v })}
                   />
@@ -1186,23 +1188,23 @@ export default function InfoBriefForm({
               onClick={() => addItem("remedial")}
               className={ROW_ADD}
             >
-              + Add
+              {t("info.add")}
             </button>
           </div>
 
           <div className="rounded-xl border border-line bg-page p-2.5 space-y-1.5">
-            <p className="text-sm font-bold text-ink">Info lain-lain</p>
+            <p className="text-sm font-bold text-ink">{t("info.others")}</p>
             <p className="text-xs text-ink-soft/60">
-              Bawa atribut, kegiatan, pengumuman tambahan
+              {t("info.othersHint")}
             </p>
-            {renderTextGroupRows(infoRows, "info", "Info", "Contoh: Bawa baju P.E / Siap LDKS")}
+            {renderTextGroupRows(infoRows, "info", t("info.infoTab"), t("info.examplePh"))}
           </div>
         </div>
       </BriefSectionCard>
 
       <BriefSectionCard
-        title="Pratinjau"
-        subtitle="Hasil generate untuk salin ke WA"
+        title={t("info.preview")}
+        subtitle={t("info.previewHint")}
         action={
           <button
             type="button"
@@ -1211,7 +1213,7 @@ export default function InfoBriefForm({
           >
             <span className="inline-flex items-center gap-1">
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-              Salin teks WA
+              {t("info.copyWA")}
             </span>
           </button>
         }
@@ -1238,17 +1240,17 @@ export default function InfoBriefForm({
         }
       >
         {isEditMode && !isDirty ? (
-          <>Cancel Edit</>
+          <>{t("info.cancelEdit")}</>
         ) : (
           <>
             <Check className="h-3.5 w-3.5" />
             {saving
-              ? "Menyimpan…"
+              ? t("kas.saving")
               : !schoolDay
-                ? "Libur — pilih hari sekolah"
+                ? t("info.holidayPick")
                 : isEditMode
-                  ? "Update Brief"
-                  : "Terbitkan Brief"}
+                  ? t("info.updateBrief")
+                  : t("info.publishBrief")}
           </>
         )}
       </button>

@@ -28,6 +28,7 @@ import {
   type Prefs,
 } from "@/lib/prefs"
 import MassReportVoteModal from "@/components/MassReportVoteModal"
+import { useT } from "@/lib/i18n"
 
 export type AppShellNav = {
   href: string
@@ -73,6 +74,7 @@ export type AppShellProps = {
   onViewHistory?: () => void
   onSignOut?: () => void
   adminItems?: { href: string; label: string; icon: LucideIcon }[]
+  t?: ReturnType<typeof import("@/lib/i18n").useT>
 }
 
 function notifIcon(title: string) {
@@ -103,10 +105,12 @@ function NotifCard({
   n,
   onDelete,
   onOpen,
+  t,
 }: {
   n: AppShellNotification
   onDelete: () => void
   onOpen: () => void
+  t: ReturnType<typeof useT>
 }) {
   return (
     <li className="relative select-none">
@@ -150,7 +154,7 @@ function NotifCard({
             e.stopPropagation()
             onDelete()
           }}
-          aria-label="Hapus notifikasi"
+          aria-label={t("notif.delete")}
           className="flex h-10 w-10 shrink-0 items-center justify-center self-center rounded-lg text-ink-soft/70 active:bg-alert-bg active:text-alert mr-1"
         >
           <X className="h-4 w-4" />
@@ -234,12 +238,13 @@ export default function AppShell({
     if (patch.push === true) {
       // Android shell: token FCM sudah di-register via useFcmTokenRegister
       showBrowserNotification(
-        "Notifikasi Push Aktif",
-        "Info kelas akan muncul di perangkat ini.",
+        t("settings.pushOnTitle"),
+        t("settings.pushOnBody"),
       )
     }
   }
 
+  const t = useT()
   const unread = notifications.filter((n) => !n.read).length
 
   useEffect(() => {
@@ -357,12 +362,12 @@ export default function AppShell({
             <button
               type="button"
               onClick={closeAll}
-              aria-label="Kembali"
+              aria-label={t("common.back")}
               className="absolute left-0 flex h-9 w-9 items-center justify-center text-ink active:opacity-70"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <h1 className="text-[17px] font-semibold text-ink">Notifikasi</h1>
+            <h1 className="text-[17px] font-semibold text-ink">{t("notif.title")}</h1>
             <button
               type="button"
               onClick={() => setShowQuick((v) => !v)}
@@ -399,18 +404,18 @@ export default function AppShell({
           >
             <div className="bg-white border border-line shadow-lg rounded-2xl overflow-hidden">
               <div className="flex items-center justify-between px-4 pt-3.5 pb-2">
-                <p className="text-sm font-semibold text-ink">Pengaturan Cepat</p>
+                <p className="text-sm font-semibold text-ink">{t("settings.title")}</p>
                 <button
                   type="button"
                   onClick={() => setShowQuick(false)}
                   className="text-xs font-medium text-forest active:opacity-70"
                 >
-                  Selesai
+                  {t("common.close")}
                 </button>
               </div>
               <div className="px-1.5 pb-2">
                 <QuickToggle
-                  label="Notifikasi Push"
+                  label={t("settings.push")}
                   on={prefs.push}
                   onChange={(v) => {
                     void updatePrefs({ push: v })
@@ -418,7 +423,7 @@ export default function AppShell({
                   icon={<BellRing className="h-4 w-4 text-forest" />}
                 />
                 <QuickToggle
-                  label="Mode Gelap"
+                  label={t("settings.dark")}
                   on={prefs.dark}
                   onChange={(v) => {
                     void updatePrefs({ dark: v })
@@ -426,7 +431,7 @@ export default function AppShell({
                   icon={<Moon className="h-4 w-4 text-forest" />}
                 />
                 <QuickToggle
-                  label="Mode Hemat Data"
+                  label={t("settings.dataSaver")}
                   on={prefs.offline}
                   onChange={(v) => {
                     void updatePrefs({ offline: v })
@@ -447,23 +452,23 @@ export default function AppShell({
                   <MailIcon />
                 </div>
                 <h2 className="text-[20px] font-bold text-ink">
-                  Belum ada notifikasi
+                  {t("notif.emptyTitle")}
                 </h2>
                 <p className="text-sm text-ink-soft/70 mt-2 leading-relaxed max-w-[250px]">
-                  Notifikasi Anda akan muncul di sini setelah Anda menerimanya.
+                  {t("notif.emptyBody")}
                 </p>
               </div>
             ) : (
               <div className="px-3 pt-2">
                 <div className="flex items-center justify-between px-1 pb-2">
-                  <p className="text-sm text-ink-soft/55 font-medium">Sebelumnya</p>
+                  <p className="text-sm text-ink-soft/55 font-medium">{t("notif.previous")}</p>
                   {onClearAllNotifications && (
                     <button
                       type="button"
                       onClick={onClearAllNotifications}
                       className="text-xs font-semibold text-alert active:opacity-70"
                     >
-                      Hapus Semua
+                      {t("notif.clearAll")}
                     </button>
                   )}
                 </div>
@@ -472,6 +477,7 @@ export default function AppShell({
                     <NotifCard
                       key={n.id}
                       n={n}
+                      t={t}
                       onDelete={() => onNotificationDelete?.(n.id)}
                       onOpen={() => {
                         onNotificationClick?.(n.id)
@@ -486,7 +492,7 @@ export default function AppShell({
 
           {/* Link riwayat — selalu di area bawah */}
           <div className="shrink-0 px-6 pb-10 pt-6 text-center">
-            <p className="text-sm text-ink-soft/55">Notifikasi tidak ditemukan?</p>
+            <p className="text-sm text-ink-soft/55">{t("notif.notFound")}</p>
             <button
               type="button"
               onClick={() => {
@@ -495,7 +501,7 @@ export default function AppShell({
               }}
               className="text-sm font-semibold text-forest mt-0.5 active:opacity-70"
             >
-              Lihat Riwayat Notifikasi
+              {t("notif.viewHistory")}
             </button>
           </div>
         </div>
@@ -544,7 +550,7 @@ export default function AppShell({
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface text-ink-soft shrink-0">
                   <Settings2 className="h-3.5 w-3.5" />
                 </span>
-                Pengaturan
+                {t("settings.title")}
               </button>
               {onSignOut && (
                 <button
@@ -557,7 +563,7 @@ export default function AppShell({
                   <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 text-red-500 shrink-0">
                     <LogOut className="h-3.5 w-3.5" />
                   </span>
-                  Keluar
+                  {t("settings.logout")}
                 </button>
               )}
             </div>

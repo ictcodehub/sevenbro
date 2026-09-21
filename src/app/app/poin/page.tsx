@@ -28,6 +28,7 @@ import { StudentMultiSelect } from "@/components/StudentSelect"
 import { canGivePoints, canAdmin } from "@/lib/policies"
 import { RoleGate } from "@/components/RoleGate"
 import FeatureGate from "@/components/FeatureGate"
+import { useT } from "@/lib/i18n"
 import QRCode from "qrcode"
 import { formatDateID, formatTimeID, formatDisplayName } from "@/lib/format"
 import MassReportPanel from "@/components/MassReportPanel"
@@ -103,12 +104,6 @@ function FormSectionCard({
   )
 }
 
-const RANK_LABEL: Record<number, string> = {
-  1: "Peringkat 1",
-  2: "Peringkat 2",
-  3: "Peringkat 3",
-}
-
 function personName(full: string) {
   return formatDisplayName(full)
 }
@@ -138,8 +133,9 @@ function DeltaBadge({ delta }: { delta: number }) {
 }
 
 function HistoryList({ items, showStudent }: { items: PointLog[]; showStudent?: boolean }) {
+  const t = useT()
   if (items.length === 0) {
-    return <EmptyState icon={<History className="h-6 w-6" />} message="Belum ada riwayat poin" />
+    return <EmptyState icon={<History className="h-6 w-6" />} message={t("poin.noHistory")} />
   }
   return (
     <div className="space-y-1.5">
@@ -166,7 +162,7 @@ function HistoryList({ items, showStudent }: { items: PointLog[]; showStudent?: 
             </div>
             <p className="mt-0.5 text-[11px] text-ink-soft/60 truncate">
               {showStudent && log.student?.full_name ? `${formatDisplayName(log.student.full_name)} · ` : ""}
-              {log.kind === "PELANGGARAN" ? "Pelanggaran" : "Prestasi"}
+              {log.kind === "PELANGGARAN" ? t("poin.pelanggaran") : t("poin.prestasi")}
               {" · "}
               {log.created_by || "—"}
               {" · "}
@@ -194,6 +190,7 @@ function PodiumCard({
   muted?: boolean
   onOpen: () => void
 }) {
+  const t = useT()
   const pct = maxPts > 0 ? Math.min(100, (student.total_points / maxPts) * 100) : 0
   const podiumClass = rank === 1 ? "podium-1" : rank === 2 ? "podium-2" : "podium-3"
 
@@ -281,13 +278,13 @@ function PodiumCard({
         {muted ? "—" : personName(student.full_name)}
       </p>
       <p className="text-[11px] font-semibold text-white/55 mt-0.5">
-        {muted ? "Menunggu poin" : RANK_LABEL[rank]}
+        {muted ? t("poin.waitingPts") : t("poin.rank", { n: rank })}
       </p>
       <div className={`mt-1.5 w-full rounded-t-lg px-2 pt-1.5 pb-2 ${muted ? "bg-ink-soft/40" : podiumClass}`}>
-        <p className="text-sm font-black text-white leading-none drop-shadow">
+        <p className="text-[14px] font-black text-white leading-none drop-shadow">
           {muted ? "—" : student.total_points}
         </p>
-        <p className="text-[11px] text-white/80 font-medium">poin</p>
+        <p className="text-[9px] text-white/80 font-medium">pts</p>
         {!muted && (
           <div className="mt-1 h-1 w-full bg-white/25 rounded-full overflow-hidden">
             <div
@@ -320,9 +317,10 @@ function getQrBaseUrl(): string {
 }
 
 export default function PoinPage() {
+  const t = useT()
   return (
     <RoleGate allow={PAGE_ROLES}>
-      <FeatureGate feature="poin_enabled" label="Poin">
+      <FeatureGate feature="poin_enabled" label={t("poin.title")}>
         <PoinInner />
       </FeatureGate>
     </RoleGate>
@@ -409,6 +407,7 @@ function PoinInner() {
     }
   }, [])
 
+  const t = useT()
   const flash = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(null), 3000)
@@ -417,12 +416,12 @@ function PoinInner() {
   const submit = async () => {
     setErr(null)
     if (studentIds.length === 0 || !reason.trim()) {
-      setErr("Pilih siswa dan isi alasan")
+      setErr(t("poin.pickStudentReason"))
       return
     }
     const abs = Math.abs(Math.round(amount))
     if (!Number.isFinite(abs) || abs < 1 || abs > 100) {
-      setErr("Skor harus 1–100")
+      setErr(t("poin.scoreRange"))
       return
     }
     setSaving(true)
@@ -444,10 +443,10 @@ function PoinInner() {
       setReason("")
       setAmount(2)
       setKind("PRESTASI")
-      flash("Poin berhasil disimpan.")
+      flash(t("poin.saved"))
       await mutate()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Gagal menyimpan")
+      setErr(e instanceof Error ? e.message : t("poin.formSaveError"))
     } finally {
       setSaving(false)
     }
@@ -612,8 +611,8 @@ function PoinInner() {
       <div className="arena-bg px-4 pt-4 pb-16 text-white">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h1 className="text-lg font-black text-white">Arena Poin</h1>
-            <p className="text-[11px] text-white/55">Siapa yang naik peringkat minggu ini?</p>
+            <h1 className="text-lg font-black text-white">{t("poin.arena")}</h1>
+            <p className="text-[11px] text-white/55">{t("poin.arenaSubtitle")}</p>
           </div>
           {canGive && (
             <div className="flex items-center gap-1.5 shrink-0">
@@ -621,7 +620,7 @@ function PoinInner() {
                 <button
                   type="button"
                   onClick={() => setShowQr((v) => !v)}
-                  aria-label="QR Beri Poin"
+                  aria-label={t("poin.qrGive")}
                   aria-pressed={showQr}
                   className={`flex h-9 w-9 items-center justify-center rounded-xl border transition active:scale-[0.95] ${
                     showQr
@@ -638,7 +637,7 @@ function PoinInner() {
                 className="flex items-center gap-1 bg-lime text-deep text-sm font-bold px-3 py-2 rounded-xl active:scale-[0.95] transition-transform shadow"
               >
                 <Plus className="h-3.5 w-3.5" />
-                Beri Poin
+                {t("poin.getGiveBtn")}
               </button>
             </div>
           )}
@@ -665,7 +664,7 @@ function PoinInner() {
                 />
               </div>
               <p className="mt-1 text-[11px] text-white/50">
-                {me.total_points} poin · tap untuk alasan
+                {me.total_points} {t("poin.pts")} · {t("poin.arenaMeHint")}
               </p>
             </div>
             <Sparkles className="h-4 w-4 text-amber shrink-0" />
@@ -679,16 +678,16 @@ function PoinInner() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={qrDataUrl} alt="QR Beri Poin" className="w-44 h-44" />
             ) : (
-              <p className="text-[11px] text-ink-soft/60 py-10">Menyiapkan QR…</p>
+              <p className="text-[11px] text-ink-soft/60 py-10">{t("poin.qrPreparing")}</p>
             )}
             <p className="text-[11px] font-semibold text-ink text-center">
-              Scan → masuk sebagai guru → beri atau kurangi poin
+              {t("poin.qrHint")}
             </p>
             <p className="text-[11px] text-ink-soft/60 text-center break-all">
               {getQrBaseUrl()}/app/scan
             </p>
             <p className="text-[11px] text-ink-soft/50">
-              Cetak & tempel di kelas · hanya akun guru yang diizinkan
+              {t("poin.qrNote")}
             </p>
           </div>
         )}
@@ -696,16 +695,16 @@ function PoinInner() {
 
       <div className="px-4 -mt-12 space-y-4">
         {error ? (
-          <EmptyState icon={<Inbox className="h-6 w-6" />} message="Gagal memuat arena" />
+          <EmptyState icon={<Inbox className="h-6 w-6" />} message={t("poin.arenaError")} />
         ) : (
           <>
             {/* Podium Top 3 */}
             {rows.length === 0 && (
               <div className="arena-bg rounded-2xl p-6 text-center border border-white/10">
                 <Trophy className="h-10 w-10 text-amber mx-auto mb-2" />
-                <p className="text-sm font-bold text-acid">Belum ada data poin</p>
+                <p className="text-sm font-bold text-acid">{t("poin.noData")}</p>
                 <p className="text-xs text-white/50 mt-1">
-                  Belum ada siswa di Leaderboard
+                  {t("poin.noStudentsBoard")}
                 </p>
               </div>
             )}
@@ -734,12 +733,12 @@ function PoinInner() {
                 <div className="relative flex items-center justify-center gap-1.5 mb-1">
                   <Trophy className={`h-4 w-4 ${podiumMuted ? "text-white/40" : "text-amber"}`} />
                   <span className={`text-xs font-bold uppercase tracking-[0.15em] ${podiumMuted ? "text-white/45" : "text-acid"}`}>
-                    Leaderboard
+                    {t("poin.leaderboard")}
                   </span>
                 </div>
                 {podiumMuted && (
                   <p className="relative text-center text-[11px] text-white/45 mb-1">
-                    Belum ada selisih poin
+                    {t("poin.podiumMuted")}
                   </p>
                 )}
                 <div className="relative flex items-end justify-center gap-1.5">
@@ -779,13 +778,13 @@ function PoinInner() {
 
             {/* Tabs */}
             <div className="grid grid-cols-3 gap-1 bg-surface rounded-xl p-1">
-              {(
-                [
-                  ["peringkat", "Leaderboard"],
-                  ["riwayat", "Battle Log"],
-                  ["report", "Report"],
-                ] as const
-              ).map(([k, label]) => (
+                {(
+                  [
+                    ["peringkat", t("poin.leaderboard")],
+                    ["riwayat", t("poin.battleLog")],
+                    ["report", t("poin.report")],
+                  ] as const
+                ).map(([k, label]) => (
                 <button
                   key={k}
                   type="button"
@@ -811,11 +810,11 @@ function PoinInner() {
               <MassReportPanel />
             ) : tab === "peringkat" ? (
               <div>
-                <SectionHeader title="Kejar Podium" count={String(rest.length)} />
+                <SectionHeader title={t("poin.chasePodium")} count={String(rest.length)} />
                 {rest.length === 0 ? (
                   <EmptyState
                     icon={<Flame className="h-6 w-6" />}
-                    message="Belum ada yang di luar podium"
+                    message={t("poin.noChasers")}
                   />
                 ) : (
                   <div className="space-y-1.5">
@@ -889,7 +888,7 @@ function PoinInner() {
                                         ? undefined
                                         : { color: "#ff1500" }
                                     }
-                                    aria-label={last.delta > 0 ? "Poin naik" : "Poin turun"}
+                                    aria-label={last.delta > 0 ? t("poin.up") : t("poin.down")}
                                   >
                                     {last.delta > 0 ? (
                                       <TrendingUp className="h-3.5 w-3.5" />
@@ -912,7 +911,7 @@ function PoinInner() {
                               </div>
                               <div className="mt-1 flex items-center justify-between gap-2">
                                 <p className="text-[11px] text-ink-soft/60 truncate">
-                                  {last ? last.reason : "Belum ada aktivitas"}
+                                  {last ? last.reason : t("poin.noActivity")}
                                 </p>
                                 <span
                                   className={`text-[11px] font-semibold shrink-0 ${
@@ -941,11 +940,11 @@ function PoinInner() {
                                   : undefined
                               }
                             >
-                              <span className="text-[16px] font-semibold leading-none tabular-nums">
+                              <span className="text-[14px] font-semibold leading-none tabular-nums">
                                 {p.total_points}
                               </span>
                               <span
-                                className={`mt-0.5 text-[11px] font-medium uppercase tracking-wide leading-none ${
+                                className={`mt-0.5 text-[9px] font-medium leading-none ${
                                   isDown ? "" : isMe ? "text-forest/70" : "text-forest/50"
                                 }`}
                                 style={isDown ? { color: "#ff1500" } : undefined}
@@ -963,7 +962,7 @@ function PoinInner() {
             ) : (
               <div>
                 <SectionHeader
-                  title="Aktivitas terbaru"
+                  title={t("poin.recent")}
                   count={String(data?.recent?.length ?? 0)}
                 />
                 <HistoryList items={data?.recent ?? []} showStudent />
@@ -983,7 +982,7 @@ function PoinInner() {
       <Sheet
         open={Boolean(detailId)}
         onClose={() => setDetailId(null)}
-        title={formatDisplayName(detail?.student?.full_name) || "Riwayat poin"}
+          title={formatDisplayName(detail?.student?.full_name) || t("poin.historyTitle")}
       >
         {detail?.student && (
           <div className="arena-bg rounded-xl p-3 text-white flex items-center justify-between">
@@ -1000,21 +999,21 @@ function PoinInner() {
               <p className="text-[11px] text-white/50">
                 {detail.student.position !== "ANGGOTA"
                   ? detail.student.position
-                  : "Siswa"}
+                  : t("poin.student")}
               </p>
             </div>
           </div>
         )}
         <div>
           <p className="text-[11px] font-semibold text-ink mb-1.5">
-            Alasan penambahan / pengurangan poin?
+            {t("poin.historyQ")}
           </p>
           <HistoryList items={detail?.history ?? []} />
         </div>
       </Sheet>
 
       {/* Form beri poin */}
-      <Sheet open={open} onClose={() => setOpen(false)} title="Beri Poin" fullHeight>
+      <Sheet open={open} onClose={() => setOpen(false)} title={t("poin.give")} fullHeight>
         {err && (
           <p className="text-sm text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
             {err}
@@ -1022,26 +1021,26 @@ function PoinInner() {
         )}
 
         <FormSectionCard
-          title="Form Beri Poin"
-          subtitle="Siswa, tipe, alasan, skor"
+          title={t("poin.formTitle")}
+          subtitle={t("poin.formSubtitle")}
         >
           <Field
-            label="Siswa"
-            hint={studentIds.length > 0 ? `${studentIds.length} terpilih` : undefined}
+            label={t("poin.student")}
+            hint={studentIds.length > 0 ? t("poin.selected", { n: studentIds.length }) : undefined}
           >
             <StudentMultiSelect
               students={students ?? []}
               selectedIds={studentIds}
               selectedNames={selectedNames}
               onChange={(ids) => setStudentIds(ids)}
-              placeholder="Pilih Nama Siswa"
-              selectAllLabel="Pilih Semua"
+              placeholder={t("poin.pickStudents")}
+              selectAllLabel={t("poin.selectAll")}
               selectAllMode="all"
             />
           </Field>
 
           <div className="space-y-1.5">
-            <span className="text-sm font-semibold text-ink">Tipe</span>
+            <span className="text-sm font-semibold text-ink">{t("poin.type")}</span>
             <div className="grid grid-cols-2 gap-2">
               {(["PRESTASI", "PELANGGARAN"] as const).map((k) => (
                 <button
@@ -1063,14 +1062,14 @@ function PoinInner() {
                   ) : (
                     <AlertTriangle className="h-4 w-4" />
                   )}
-                  {k === "PRESTASI" ? "Prestasi" : "Pelanggaran"}
+                  {k === "PRESTASI" ? t("poin.prestasi") : t("poin.pelanggaran")}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="relative w-full min-w-0 space-y-1.5">
-            <span className="text-sm font-semibold text-ink">Alasan Cepat</span>
+            <span className="text-sm font-semibold text-ink">{t("poin.quickReason")}</span>
             <button
               type="button"
               onClick={() => setQuickOpen((v) => !v)}
@@ -1082,7 +1081,7 @@ function PoinInner() {
                   reason.trim() ? "text-ink" : "text-ink-soft/60"
                 }`}
               >
-                {reason.trim() || "Pilih alasan cepat…"}
+                {reason.trim() || t("poin.pickReason")}
               </span>
               <ChevronDown
                 className={`h-4 w-4 shrink-0 text-ink-soft transition-transform ${
@@ -1093,7 +1092,7 @@ function PoinInner() {
             {quickOpen && (
               <div
                 role="listbox"
-                aria-label="Alasan cepat"
+                aria-label={t("poin.quickReasonAria")}
                 className="absolute left-0 right-0 top-full z-30 mt-1 w-full max-h-[16rem] overflow-y-auto scroll-y-only bg-white border border-line rounded-xl shadow-lg py-1"
               >
                 {POINT_PRESETS[kind as PointPresetKind].map((p) => {
@@ -1133,12 +1132,12 @@ function PoinInner() {
             )}
           </div>
 
-          <Field label="Skor">
+          <Field label={t("poin.score")}>
             {/* Pill tetap flex-1 · −/+ manual membatalkan listening Alasan Cepat */}
             <div className="flex w-full items-center gap-1">
               <button
                 type="button"
-                aria-label="Kurangi skor"
+                aria-label={t("poin.decreaseScore")}
                 onClick={() => {
                   setReason("")
                   setQuickOpen(false)
@@ -1168,7 +1167,7 @@ function PoinInner() {
                   max={100}
                   value={amount === 0 ? "" : amount}
                   placeholder="2"
-                  aria-label="Skor"
+                  aria-label={t("poin.score")}
                   onChange={(e) => {
                     const raw = e.target.value
                     if (raw === "") {
@@ -1186,7 +1185,7 @@ function PoinInner() {
 
               <button
                 type="button"
-                aria-label="Tambah skor"
+                aria-label={t("poin.increaseScore")}
                 onClick={() => {
                   setReason("")
                   setQuickOpen(false)
@@ -1199,15 +1198,15 @@ function PoinInner() {
             </div>
           </Field>
 
-          <Field label="Alasan" hint="Wajib — tampil di Battle Log semua siswa">
+          <Field label={t("poin.reason")} hint={t("poin.reasonHint")}>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
               placeholder={
                 kind === "PRESTASI"
-                  ? "Perfect Score DT Matematika…"
-                  : "Tidak mengerjakan piket hari ini…"
+                  ? t("poin.phGood")
+                  : t("poin.phBad")
               }
               className="min-h-11 w-full resize-none scroll-y-only rounded-xl border border-forest/45 bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink-soft/45 focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
             />
@@ -1221,7 +1220,7 @@ function PoinInner() {
           className="flex w-full items-center justify-center gap-1.5 rounded-full bg-forest px-3 py-3 text-sm font-semibold text-white active:scale-[0.97] transition-transform disabled:opacity-50"
         >
           <Check className="h-4 w-4" />
-          {saving ? "Menyimpan…" : "Beri Poin"}
+          {saving ? t("kas.saving") : t("poin.submit")}
         </button>
       </Sheet>
 

@@ -16,6 +16,7 @@ import { EmptyState } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
 import { Sheet, Field } from "@/components/ui/sheet"
 import { canPostAnnouncement } from "@/lib/policies"
+import { useT } from "@/lib/i18n"
 import { RoleGate } from "@/components/RoleGate"
 import FeatureGate from "@/components/FeatureGate"
 import InfoBriefForm, {
@@ -138,13 +139,14 @@ function PinCardToggle({
   pinned: boolean
   onToggle: () => void
 }) {
+  const t = useT()
   return (
     <button
       type="button"
       onClick={onToggle}
-      aria-label={pinned ? "Lepas sematan" : "Sematkan"}
+      aria-label={pinned ? t("info.unpinAria") : t("info.pinAria")}
       aria-pressed={pinned}
-      title={pinned ? "Lepas sematan" : "Sematkan"}
+      title={pinned ? t("info.unpinAria") : t("info.pinAria")}
       className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg active:bg-amber/10 ${
         pinned ? "text-amber" : "text-ink-soft/40"
       }`}
@@ -165,9 +167,10 @@ function PinCardToggle({
 const PAGE_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
 
 export default function PengumumanPage() {
+  const t = useT()
   return (
     <RoleGate allow={PAGE_ROLES}>
-      <FeatureGate feature="info_enabled" label="Info">
+      <FeatureGate feature="info_enabled" label={t("info.featureLabel")}>
         <PengumumanInner />
       </FeatureGate>
     </RoleGate>
@@ -223,6 +226,7 @@ function PengumumanInner() {
     safePage * PAGE_LIMIT + PAGE_LIMIT,
   )
 
+  const t = useT()
   const flash = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(null), 3000)
@@ -289,8 +293,8 @@ function PengumumanInner() {
           }),
         })
         const b = await r.json().catch(() => null)
-        if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
-        flash("Pengumuman diperbarui")
+        if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
+        flash(t("info.annUpdated"))
       } else {
         const r = await fetch("/api/announcements", {
           method: "POST",
@@ -298,8 +302,8 @@ function PengumumanInner() {
           body: JSON.stringify({ title: title.trim(), body: body.trim(), pinned }),
         })
         const b = await r.json().catch(() => null)
-        if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
-        flash("Pengumuman diterbitkan")
+        if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
+        flash(t("info.annPublished"))
       }
       closeSheet()
       setTitle("")
@@ -322,27 +326,27 @@ function PengumumanInner() {
       })
       if (!r.ok) {
         const b = await r.json().catch(() => null)
-        throw new Error(b?.error || "Gagal")
+        throw new Error(b?.error || t("common.failed"))
       }
-      flash(a.pinned ? "Sematan dilepas" : "Disematkan")
+      flash(a.pinned ? t("info.unpinned") : t("home.pinned"))
       await mutate()
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Gagal")
+      flash(e instanceof Error ? e.message : t("common.failed"))
     }
   }
 
   const remove = async (a: Announcement) => {
-    if (!confirm(`Hapus "${a.title}"?`)) return
+    if (!confirm(t("info.deleteConfirm", { title: a.title }))) return
     try {
       const r = await fetch(`/api/announcements/${a.id}`, { method: "DELETE" })
       if (!r.ok) {
         const b = await r.json().catch(() => null)
-        throw new Error(b?.error || "Gagal")
+        throw new Error(b?.error || t("common.failed"))
       }
-      flash("Pengumuman dihapus")
+      flash(t("info.annDeleted"))
       await mutate()
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Gagal")
+      flash(e instanceof Error ? e.message : t("common.failed"))
     }
   }
 
@@ -350,7 +354,7 @@ function PengumumanInner() {
     <div className="px-4 py-3 space-y-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h1 className="text-lg font-bold text-ink">Pengumuman</h1>
+          <h1 className="text-lg font-bold text-ink">{t("info.title")}</h1>
           <p className="text-xs text-ink-soft/75">
             Info penting dari guru & pengurus kelas
           </p>
@@ -383,7 +387,7 @@ function PengumumanInner() {
       <div>
         {/* Header section — ringkas, count tetap noticeable */}
         <div className="flex items-center justify-between gap-2 mb-2">
-          <h2 className="text-sm font-semibold text-ink">Semua Pengumuman</h2>
+          <h2 className="text-sm font-semibold text-ink">{t("info.all")}</h2>
           <span
             className="inline-flex items-center gap-1 rounded-full bg-forest text-white text-xs font-bold px-2 py-0.5 tabular-nums"
             title={`${sorted.length} pengumuman`}
@@ -395,12 +399,12 @@ function PengumumanInner() {
         {error ? (
           <EmptyState
             icon={<Inbox className="h-6 w-6" />}
-            message="Gagal memuat pengumuman"
+            message={t("info.loadError")}
           />
         ) : sorted.length === 0 ? (
           <EmptyState
             icon={<Inbox className="h-6 w-6" />}
-            message="Belum ada pengumuman"
+            message={t("info.empty")}
           />
         ) : (
           <div className="space-y-1.5">
@@ -472,7 +476,7 @@ function PengumumanInner() {
                           <button
                             type="button"
                             onClick={() => openEdit(a)}
-                            aria-label="Ubah brief"
+                            aria-label={t("info.editBriefShort")}
                             className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-soft active:bg-surface"
                           >
                             <Pencil className="h-3.5 w-3.5" />
@@ -480,7 +484,7 @@ function PengumumanInner() {
                           <button
                             type="button"
                             onClick={() => void remove(a)}
-                            aria-label="Hapus"
+                            aria-label={t("common.delete")}
                             className="flex h-8 w-8 items-center justify-center rounded-lg text-alert active:bg-alert-bg"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -524,7 +528,7 @@ function PengumumanInner() {
                         <button
                           type="button"
                           onClick={() => openEdit(a)}
-                          aria-label="Ubah pengumuman"
+                          aria-label={t("info.editAnnAria")}
                           className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-soft active:bg-surface"
                         >
                           <Pencil className="h-3.5 w-3.5" />
@@ -532,7 +536,7 @@ function PengumumanInner() {
                         <button
                           type="button"
                           onClick={() => void remove(a)}
-                          aria-label="Hapus"
+                          aria-label={t("common.delete")}
                           className="flex h-8 w-8 items-center justify-center rounded-lg text-alert active:bg-alert-bg"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -588,7 +592,7 @@ function PengumumanInner() {
       <Sheet
         open={open}
         onClose={closeSheet}
-        title={editing ? "Ubah Pengumuman" : "Pengumuman Umum"}
+        title={editing ? t("info.editGeneral") : t("info.generalTitle")}
         fullHeight
       >
         {err && (
@@ -596,21 +600,21 @@ function PengumumanInner() {
             {err}
           </p>
         )}
-        <Field label="Judul">
+        <Field label={t("info.judul")}>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="min-h-11 w-full rounded-lg border border-forest/40 bg-white px-3 text-sm font-medium text-ink focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
-            placeholder="Jadwal piket…"
+            placeholder={t("info.titlePlaceholder")}
           />
         </Field>
-        <Field label="Isi">
+        <Field label={t("info.isi")}>
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={16}
             className="min-h-11 w-full resize-none scroll-y-only rounded-xl border border-forest/45 bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink-soft/45 focus:outline-none focus:ring-2 focus:ring-forest/25 focus:border-forest"
-            placeholder="Tulis info untuk kelas…"
+            placeholder={t("info.bodyPlaceholder")}
           />
         </Field>
         <button
@@ -642,10 +646,10 @@ function PengumumanInner() {
         >
           <Check className="h-3.5 w-3.5" />
           {saving
-            ? "Menyimpan…"
+            ? t("kas.saving")
             : editing
-              ? "Simpan Perubahan"
-              : "Terbitkan"}
+              ? t("info.saveChanges")
+              : t("info.publish")}
         </button>
       </Sheet>
 

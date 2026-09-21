@@ -17,6 +17,7 @@ import { useAppSWR } from "@/lib/fetcher"
 import { formatDisplayName } from "@/lib/format"
 import { canCreateMassReport } from "@/lib/policies"
 import { inputClass } from "@/components/ui/sheet"
+import { useT } from "@/lib/i18n"
 
 const PAGE_ROLES = ["HOMEROOM", "KETUA"]
 
@@ -26,7 +27,7 @@ type Student = { id: string; full_name: string; position: string }
 type Preset = { label: string; delta: number; builtin: boolean }
 type PresetsPayload = { presets: Preset[]; reports: unknown[] }
 
-async function compressImage(file: File): Promise<{ data: string; mime: string }> {
+async function compressImage(file: File, errMsg: string): Promise<{ data: string; mime: string }> {
   const bitmap = await createImageBitmap(file)
   const max = 960
   const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height))
@@ -36,7 +37,7 @@ async function compressImage(file: File): Promise<{ data: string; mime: string }
   canvas.width = w
   canvas.height = h
   const ctx = canvas.getContext("2d")
-  if (!ctx) throw new Error("Canvas gagal")
+  if (!ctx) throw new Error(errMsg)
   ctx.drawImage(bitmap, 0, 0, w, h)
   bitmap.close()
   const dataUrl = canvas.toDataURL("image/jpeg", 0.7)
@@ -52,6 +53,7 @@ export default function NewReportPage() {
 }
 
 function NewReportInner() {
+  const t = useT()
   const { data: session } = useSession()
   const role = (session?.user as { role?: string } | undefined)?.role
   const router = useRouter()
@@ -95,21 +97,21 @@ function NewReportInner() {
     if (!file) return
     try {
       setErr(null)
-      const compressed = await compressImage(file)
+      const compressed = await compressImage(file, t("report.new.errorPhotoFailed"))
       const preview = compressed.data
       setPhoto({ data: compressed.data, mime: compressed.mime, preview })
     } catch {
-      setErr("Gagal memproses foto")
+      setErr(t("report.new.errorPhotoFailed"))
     }
   }
 
   const submit = async () => {
     if (!finalReason) {
-      setErr("Pilih alasan atau tulis custom")
+      setErr(t("report.new.errorReasonRequired"))
       return
     }
     if (targets.size === 0) {
-      setErr("Pilih minimal satu target")
+      setErr(t("report.new.errorTargetRequired"))
       return
     }
     setSaving(true)
@@ -129,10 +131,10 @@ function NewReportInner() {
         }),
       })
       const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || "Gagal membuat report")
+      if (!r.ok) throw new Error(b?.error || t("report.new.errorSubmitFailed"))
       router.push("/app/poin")
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Gagal")
+      setErr(e instanceof Error ? e.message : t("report.new.errorGeneric"))
     } finally {
       setSaving(false)
     }
@@ -141,7 +143,7 @@ function NewReportInner() {
   if (!canSubmit) {
     return (
       <div className="px-4 py-3">
-        <p className="text-xs text-ink-soft/70">Hanya Ketua / Wali Kelas.</p>
+        <p className="text-xs text-ink-soft/70">{t("report.new.accessDenied")}</p>
       </div>
     )
   }
@@ -153,13 +155,13 @@ function NewReportInner() {
           <Link
             href="/app/poin"
             className="flex h-9 w-9 items-center justify-center rounded-xl text-ink"
-            aria-label="Kembali"
+            aria-label={t("report.new.backAria")}
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div className="min-w-0">
-            <h1 className="text-base font-bold text-ink leading-tight">Buat Mass Report</h1>
-            <p className="text-xs text-alert font-semibold">Ketua · menunggu vote & review</p>
+            <h1 className="text-base font-bold text-ink leading-tight">{t("report.new.title")}</h1>
+            <p className="text-xs text-alert font-semibold">{t("report.new.subtitle")}</p>
           </div>
         </div>
       </header>
@@ -167,32 +169,31 @@ function NewReportInner() {
       <div className="flex-1 px-4 py-4 space-y-5">
         {/* Alasan */}
         <div className="space-y-1.5">
-          <label className="text-sm font-semibold text-ink">Alasan (Preset)</label>
+          <label className="text-sm font-semibold text-ink">{t("report.new.reasonLabel")}</label>
           <select
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             className={inputClass}
           >
-            <option value="">Pilih alasan…</option>
+            <option value="">{t("report.new.reasonPlaceholder")}</option>
             {presets.map((p) => (
               <option key={p.label} value={p.label}>
                 {p.label} (−{p.delta})
               </option>
             ))}
-            <option value={CUSTOM}>Custom Report</option>
+            <option value={CUSTOM}>{t("report.new.customOption")}</option>
           </select>
 
           {customOpen && (
             <div className="mt-2 space-y-1.5 rounded-xl bg-alert/5 border border-alert/20 p-3">
               <p className="text-xs text-ink-soft/70 leading-snug">
-                Tulis pelanggaran sendiri. Vote langsung jalan; wali kelas bisa perbaiki
-                kalimat sebelum dijadikan preset permanen.
+                {t("report.new.customHint")}
               </p>
               <textarea
                 value={customText}
                 onChange={(e) => setCustomText(e.target.value)}
                 rows={3}
-                placeholder="Contoh: Memukul teman…"
+                placeholder={t("report.new.customPlaceholder")}
                 className={inputClass + " resize-none scroll-y-only"}
               />
             </div>
@@ -202,8 +203,8 @@ function NewReportInner() {
         {/* Target */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-semibold text-ink">Target siswa</label>
-            <span className="text-xs text-ink-soft/60">{targets.size} dipilih</span>
+            <label className="text-sm font-semibold text-ink">{t("report.new.targetLabel")}</label>
+            <span className="text-xs text-ink-soft/60">{t("report.new.targetCount", { n: targets.size })}</span>
           </div>
           <div className="bg-white border border-line shadow-sm rounded-2xl divide-y divide-line/50 max-h-72 overflow-y-auto">
             {(students ?? []).map((s) => {
@@ -234,21 +235,21 @@ function NewReportInner() {
               )
             })}
             {(students ?? []).length === 0 && (
-              <p className="p-4 text-center text-xs text-ink-soft/50">Memuat siswa…</p>
+              <p className="p-4 text-center text-xs text-ink-soft/50">{t("report.new.loadingStudents")}</p>
             )}
           </div>
         </div>
 
         {/* Foto bukti */}
         <div className="space-y-1.5">
-          <label className="text-sm font-semibold text-ink">Foto bukti (opsional)</label>
+          <label className="text-sm font-semibold text-ink">{t("report.new.photoLabel")}</label>
           <div className="rounded-xl border border-dashed border-line bg-white p-3">
             {photo?.preview ? (
               <div className="space-y-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photo.preview}
-                  alt="Bukti"
+                  alt={t("report.new.photoAlt")}
                   className="w-full max-h-48 object-contain rounded-lg bg-page"
                 />
                 <button
@@ -257,14 +258,14 @@ function NewReportInner() {
                   className="inline-flex items-center gap-1 text-xs font-semibold text-alert"
                 >
                   <X className="h-3 w-3" />
-                  Hapus foto
+                  {t("report.new.removePhoto")}
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
                 <label className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-surface text-sm font-semibold text-forest cursor-pointer">
                   <ImagePlus className="h-4 w-4" />
-                  Pilih foto
+                  {t("report.new.pickPhoto")}
                   <input
                     type="file"
                     accept="image/*"
@@ -288,18 +289,18 @@ function NewReportInner() {
           </div>
           {photo && (
             <p className="text-xs text-ink-soft/55">
-              Foto dikompres otomatis · hanya wali kelas yang bisa melihat yang utuh
+              {t("report.new.photoNote")}
             </p>
           )}
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-semibold text-ink">Catatan (opsional)</label>
+          <label className="text-sm font-semibold text-ink">{t("report.new.noteLabel")}</label>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
             rows={3}
-            placeholder="Detail kejadian, waktu, saksi…"
+            placeholder={t("report.new.notePlaceholder")}
             className={inputClass + " resize-none scroll-y-only"}
           />
         </div>
@@ -319,10 +320,10 @@ function NewReportInner() {
           className="w-full flex items-center justify-center gap-2 bg-alert text-white text-sm font-bold py-3 rounded-xl disabled:opacity-50 active:scale-[0.98]"
         >
           <Flag className="h-4 w-4" />
-          {saving ? "Mengirim…" : `Buka Report · −${delta} poin`}
+          {saving ? t("report.new.sending") : t("report.new.submitButton", { delta })}
         </button>
         <p className="mt-1.5 text-center text-xs text-ink-soft/50">
-          {targets.size} target · vote kelas → review wali kelas
+          {t("report.new.footerNote", { n: targets.size })}
         </p>
       </div>
     </div>

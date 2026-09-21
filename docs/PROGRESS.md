@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: **tipografi M3 f1–f3 deployed `a7cf598` 2026-09-20** · sebelumnya i18n `f83273e` · APK 1.1.0; `allowBackup` tetap `true`.
+> Status terakhir: **Poin arena angka 14px + pts 9px lowercase (visual fix) · deploy `<hash>` 2026-09-21** · sebelumnya tipografi M3 f1–f3 `a7cf598` · i18n `f83273e` · APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 

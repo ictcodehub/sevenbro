@@ -24,6 +24,7 @@ import { Sheet, Field, inputClass } from "@/components/ui/sheet"
 import { canManageKas, canViewKas } from "@/lib/policies"
 import { RoleGate } from "@/components/RoleGate"
 import FeatureGate from "@/components/FeatureGate"
+import { useT } from "@/lib/i18n"
 
 /** Kas: manage = HOMEROOM & BENDAHARA; siswa lain read-only */
 const PAGE_ROLES = ["HOMEROOM", "BENDAHARA", "KETUA", "SEKRETARIS", "ANGGOTA"]
@@ -131,9 +132,10 @@ function isCollectionDay() {
 }
 
 export default function KasPage() {
+  const t = useT()
   return (
     <RoleGate allow={PAGE_ROLES}>
-      <FeatureGate feature="kas_enabled" label="Kas">
+      <FeatureGate feature="kas_enabled" label={t("kas.special")}>
         <KasInner />
       </FeatureGate>
     </RoleGate>
@@ -177,6 +179,7 @@ function KasInner() {
   const [spAmount, setSpAmount] = useState("20000")
   const [spNote, setSpNote] = useState("")
   const [savingSp, setSavingSp] = useState(false)
+  const t = useT()
 
   const collectionDay = isCollectionDay()
   const list = students ?? []
@@ -195,7 +198,7 @@ function KasInner() {
   const toggle = (id: string) => {
     // Bayar & izin saling eksklusif di hari yang sama
     if (izinIds.has(id) && !picked.has(id)) {
-      flash("Siswa ini sudah izin hari ini")
+      flash(t("kas.alreadyLeave"))
       return
     }
     setPicked((prev) => {
@@ -210,7 +213,7 @@ function KasInner() {
     if (markMode === "izin") {
       const ids = list.map((s) => s.id).filter((id) => !izinIds.has(id))
       if (ids.length === 0) {
-        flash("Semua siswa sudah izin")
+        flash(t("kas.allLeave"))
         return
       }
       void (async () => {
@@ -222,11 +225,11 @@ function KasInner() {
             body: JSON.stringify({ studentIds: ids, date: today }),
           })
           const b = await r.json().catch(() => null)
-          if (!r.ok) throw new Error(b?.error || "Gagal")
-          flash(`${ids.length} siswa ditandai izin`)
+          if (!r.ok) throw new Error(b?.error || t("common.failed"))
+          flash(t("kas.markedLeave", { n: ids.length }))
           await Promise.all([mutateIzin(), mutate(), mutateTunggak()])
         } catch (e) {
-          flash(e instanceof Error ? e.message : "Gagal")
+          flash(e instanceof Error ? e.message : t("common.failed"))
         } finally {
           setSaving(false)
         }
@@ -234,7 +237,7 @@ function KasInner() {
       return
     }
     setPicked(new Set(list.map((s) => s.id)))
-    flash(`${list.length} siswa dicentang`)
+    flash(t("kas.checkedCount", { n: list.length }))
   }
 
   const clearAll = async () => {
@@ -242,7 +245,7 @@ function KasInner() {
     if (markMode === "izin") {
       const ids = [...izinIds]
       if (ids.length === 0) {
-        flash("Belum ada izin hari ini")
+        flash(t("kas.noLeaveToday"))
         return
       }
       setSaving(true)
@@ -252,16 +255,16 @@ function KasInner() {
             method: "DELETE",
           })
         }
-        flash(`${ids.length} izin dihapus`)
+        flash(t("kas.leaveDeleted", { n: ids.length }))
         await Promise.all([mutateIzin(), mutate(), mutateTunggak()])
       } catch {
-        flash("Gagal menghapus izin")
+        flash(t("kas.deleteLeaveFailed"))
       } finally {
         setSaving(false)
       }
       return
     }
-    flash("Centang pembayaran dikosongkan")
+    flash(t("kas.pickCleared"))
   }
 
   const saveCollect = async () => {
@@ -276,12 +279,12 @@ function KasInner() {
           body: JSON.stringify({ studentIds: [...picked], date: today }),
         })
         const b = await r.json().catch(() => null)
-        if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
-        flash(b?.message || "Izin tersimpan")
+        if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
+        flash(b?.message || t("kas.leaveSaved"))
       } else {
         const bayarIds = [...picked].filter((id) => !izinIds.has(id))
         if (bayarIds.length === 0) {
-          flash("Tidak ada siswa yang dipilih untuk bayar")
+          flash(t("kas.noPaySelection"))
           setSaving(false)
           return
         }
@@ -291,13 +294,13 @@ function KasInner() {
           body: JSON.stringify({ studentIds: bayarIds, amountPer: NOMINAL }),
         })
         const b = await r.json().catch(() => null)
-        if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
-        flash(b?.message || "Setoran tersimpan")
+        if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
+        flash(b?.message || t("kas.depositSaved"))
       }
       setPicked(new Set())
       await Promise.all([mutate(), mutateIzin(), mutateTunggak()])
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Gagal")
+      setErr(e instanceof Error ? e.message : t("common.failed"))
     } finally {
       setSaving(false)
     }
@@ -312,9 +315,9 @@ function KasInner() {
         )
         if (!r.ok) {
           const b = await r.json().catch(() => null)
-          throw new Error(b?.error || "Gagal")
+          throw new Error(b?.error || t("common.failed"))
         }
-        flash("Izin dibatalkan")
+        flash(t("kas.leaveCancelled"))
       } else {
         // Saat tandai izin, lepas centang bayar
         setPicked((prev) => {
@@ -328,12 +331,12 @@ function KasInner() {
           body: JSON.stringify({ studentIds: [id], date: today }),
         })
         const b = await r.json().catch(() => null)
-        if (!r.ok) throw new Error(b?.error || "Gagal")
-        flash("Ditandai sebagai izin")
+        if (!r.ok) throw new Error(b?.error || t("common.failed"))
+        flash(t("kas.markedLeaveOne"))
       }
       await Promise.all([mutateIzin(), mutate(), mutateTunggak()])
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Gagal")
+      flash(e instanceof Error ? e.message : t("common.failed"))
     }
   }
 
@@ -342,13 +345,13 @@ function KasInner() {
     const n = Number(spAmount)
     const name = list.find((s) => s.id === spStudent)?.full_name
     if (!spStudent || !Number.isFinite(n) || n <= 0) {
-      setErr("Pilih siswa dan isi nominal")
+      setErr(t("kas.specialSelectError"))
       return
     }
     setSavingSp(true)
     try {
       const kali = Math.round(n / NOMINAL)
-      const note = spNote.trim() || (kali > 1 ? `Bayar ${kali}x` : "Bayar Khusus")
+      const note = spNote.trim() || (kali > 1 ? t("kas.payNx", { n: kali }) : t("kas.special"))
       const r = await fetch("/api/kas/transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -360,15 +363,15 @@ function KasInner() {
         }),
       })
       const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
+      if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
       setOpenSpecial(false)
       setSpStudent("")
       setSpNote("")
       setSpAmount("20000")
-      flash(`${name} · ${formatIDR(n)} tercatat`)
+      flash(t("kas.recordedFor", { name: name ?? "", amount: formatIDR(n) }))
       await mutate()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Gagal")
+      setErr(e instanceof Error ? e.message : t("common.failed"))
     } finally {
       setSavingSp(false)
     }
@@ -378,7 +381,7 @@ function KasInner() {
     setErr(null)
     const n = Number(outAmount)
     if (!outNote.trim() || !Number.isFinite(n) || n <= 0) {
-      setErr("Keterangan dan nominal wajib diisi")
+      setErr(t("kas.descRequired"))
       return
     }
     setSavingOut(true)
@@ -394,14 +397,14 @@ function KasInner() {
         }),
       })
       const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
+      if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
       setOpenOut(false)
       setOutAmount("")
       setOutNote("")
-      flash("Pengeluaran tercatat")
+      flash(t("kas.expenseRecorded"))
       await mutate()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Gagal")
+      setErr(e instanceof Error ? e.message : t("common.failed"))
     } finally {
       setSavingOut(false)
     }
@@ -411,11 +414,9 @@ function KasInner() {
     <div className="px-4 py-3 space-y-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h1 className="text-lg font-bold text-ink">Kas Kelas</h1>
+          <h1 className="text-lg font-bold text-ink">{t("kas.pageTitle")}</h1>
           <p className="text-xs text-ink-soft/75">
-            {canManage
-              ? "Centang siswa yang sudah membayar"
-              : "Hanya dapat dilihat — pengelolaan oleh Bendahara & Wali Kelas"}
+            {canManage ? t("kas.hintManage") : t("kas.hintReadOnly")}
           </p>
         </div>
         <Link
@@ -423,12 +424,12 @@ function KasInner() {
           className="flex items-center gap-1.5 bg-white border border-line shadow-sm text-forest text-xs font-bold px-2.5 py-2 rounded-xl active:scale-[0.95] transition-transform shrink-0"
         >
           <BookOpen className="h-4 w-4" />
-          Buku Kas
+          {t("kas.book")}
         </Link>
       </div>
 
       {error ? (
-        <EmptyState icon={<Inbox className="h-6 w-6" />} message="Gagal memuat kas" />
+        <EmptyState icon={<Inbox className="h-6 w-6" />} message={t("kas.loadError")} />
       ) : (
         <>
           {/* Saldo + tombol aksi sejajar (aksi hanya manage) */}
@@ -437,17 +438,17 @@ function KasInner() {
               <div>
                 <span className="flex items-center gap-1.5 text-xs font-medium text-white/70">
                   <Wallet className="h-3.5 w-3.5" />
-                  Saldo Kas
+                  {t("kas.balanceTitle")}
                 </span>
                 <p className="mt-1.5 text-2xl font-bold leading-none text-acid">
                   {formatIDR(data?.balance ?? 0)}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   <span className="inline-flex items-center gap-1 rounded-full bg-lime/15 border border-lime/30 px-2 py-0.5 text-[11px] font-semibold text-lime">
-                    + {formatIDR(data?.monthIn ?? 0)} Masuk
+                    + {formatIDR(data?.monthIn ?? 0)} {t("home.in")}
                   </span>
                   <span className="inline-flex items-center gap-1 rounded-full bg-amber/15 border border-amber/30 px-2 py-0.5 text-[11px] font-semibold text-amber">
-                    − {formatIDR(data?.monthOut ?? 0)} Keluar
+                    − {formatIDR(data?.monthOut ?? 0)} {t("home.out")}
                   </span>
                 </div>
               </div>
@@ -470,10 +471,10 @@ function KasInner() {
                   </span>
                   <span className="flex-1 min-w-0 text-left">
                     <span className="block text-xs font-semibold text-ink leading-tight whitespace-nowrap">
-                      Bayar Khusus
+                      {t("kas.special")}
                     </span>
                     <span className="block text-[11px] text-ink-soft/55 leading-tight mt-0.5 whitespace-nowrap">
-                      Nominal Bebas
+                      {t("kas.freeNominal")}
                     </span>
                   </span>
                 </button>
@@ -487,10 +488,10 @@ function KasInner() {
                   </span>
                   <span className="flex-1 min-w-0 text-left">
                     <span className="block text-xs font-semibold text-ink leading-tight whitespace-nowrap">
-                      Pengeluaran
+                      {t("kas.expense")}
                     </span>
                     <span className="block text-[11px] text-ink-soft/55 leading-tight mt-0.5 whitespace-nowrap">
-                      ATK, cetak, dll
+                      {t("kas.expenseHint")}
                     </span>
                   </span>
                 </button>
@@ -502,18 +503,18 @@ function KasInner() {
           {!canManage && canView && (
             <div className="bg-white border border-line shadow-sm rounded-xl p-3 flex items-center justify-between gap-2">
               <div>
-                <p className="text-xs text-ink-soft/70">Iuran saya bulan ini</p>
+                <p className="text-xs text-ink-soft/70">{t("kas.myShareMonth")}</p>
                 <p className="mt-0.5 text-sm font-bold text-forest tabular-nums">
                   {data?.myPaid != null && data.myPaid > 0
                     ? formatIDR(data.myPaid)
-                    : "Belum tercatat"}
+                    : t("kas.notRecorded")}
                 </p>
               </div>
               {data?.month && (
                 <p className="text-[11px] text-ink-soft/55 text-right shrink-0">
                   {data.month.title}
                   <br />
-                  {formatIDR(data.month.amount)}/orang
+                  {formatIDR(data.month.amount)}{t("kas.perPerson")}
                 </p>
               )}
             </div>
@@ -524,14 +525,14 @@ function KasInner() {
               <div className="px-3.5 pt-3.5 pb-2 bg-page/60 border-b border-line">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-bold text-ink">Setoran Hari Ini</p>
+                    <p className="text-sm font-bold text-ink">{t("kas.todayDeposit")}</p>
                     <p className="text-xs text-ink-soft/70 mt-0.5">
-                      {todayLabel()} · {formatIDR(NOMINAL)}/orang
+                      {todayLabel()} · {formatIDR(NOMINAL)}{t("kas.perPerson")}
                     </p>
                   </div>
                   {collectionDay && (
                     <span className="text-[11px] font-bold uppercase tracking-wide bg-forest text-white px-2 py-1 rounded-full">
-                      Hari setoran
+                      {t("kas.depositDay")}
                     </span>
                   )}
                 </div>
@@ -544,7 +545,7 @@ function KasInner() {
                         markMode === "bayar" ? "bg-forest text-white" : "text-ink-soft"
                       }`}
                     >
-                      Bayar
+                      {t("kas.pay")}
                     </button>
                     <button
                       type="button"
@@ -553,19 +554,19 @@ function KasInner() {
                         markMode === "izin" ? "bg-amber text-white" : "text-ink-soft"
                       }`}
                     >
-                      Izin
+                      {t("kas.leave")}
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
                     <p className="text-xs font-semibold text-forest">
-                      {totalPick} · {markMode === "izin" ? "izin" : formatIDR(totalRupiah)}
+                      {totalPick} · {markMode === "izin" ? t("kas.leaveLower") : formatIDR(totalRupiah)}
                     </p>
                     <button
                       type="button"
                       onClick={selectAll}
                       className="text-xs font-semibold px-2 py-1 rounded-lg bg-white border border-line text-ink"
                     >
-                      Semua
+                      {t("common.all")}
                     </button>
                     <button
                       type="button"
@@ -573,7 +574,7 @@ function KasInner() {
                       disabled={saving}
                       className="text-xs font-semibold px-2 py-1 rounded-lg bg-white border border-line text-ink-soft disabled:opacity-50"
                     >
-                      {markMode === "izin" ? "Hapus Izin" : "Kosongkan"}
+                      {markMode === "izin" ? t("kas.clearLeave") : t("kas.clear")}
                     </button>
                   </div>
                 </div>
@@ -586,14 +587,14 @@ function KasInner() {
               {/* Tabel: No | Nama | Bayar | Izin */}
               <div>
                 <div className="flex items-center gap-2 px-2.5 py-1.5 bg-page/80 border-b border-line text-[11px] font-medium uppercase tracking-wide text-ink-soft/60">
-                  <span className="w-6 text-center shrink-0">No</span>
-                  <span className="flex-1 min-w-0">Nama</span>
-                  <span className="w-12 text-center shrink-0">Bayar</span>
-                  <span className="w-12 text-center shrink-0">Izin</span>
+                  <span className="w-6 text-center shrink-0">{t("kas.colNo")}</span>
+                  <span className="flex-1 min-w-0">{t("kas.colName")}</span>
+                  <span className="w-12 text-center shrink-0">{t("kas.pay")}</span>
+                  <span className="w-12 text-center shrink-0">{t("kas.leave")}</span>
                 </div>
                 {list.length === 0 ? (
                   <p className="p-5 text-center text-xs text-ink-soft/60">
-                    Memuat daftar siswa…
+                    {t("kas.loadingStudents")}
                   </p>
                 ) : (
                   <div className="divide-y divide-line/40">
@@ -639,22 +640,22 @@ function KasInner() {
                             </p>
                             {(() => {
                               if (!tunggak) return null
-                              const t = tunggakByName.get(s.full_name.toLowerCase())
-                              if (t && t.tunggak > 0) {
+                              const row = tunggakByName.get(s.full_name.toLowerCase())
+                              if (row && row.tunggak > 0) {
                                 return (
                                   <p className="mt-0.5 text-[11px] text-ink-soft/70">
-                                    Hutang:{" "}
+                                    {t("kas.arrearsLabel")}{" "}
                                     <span className="font-semibold text-alert">
-                                      {formatIDR(t.tunggak)}
+                                      {formatIDR(row.tunggak)}
                                     </span>{" "}
-                                    / {formatIDR(t.expected)}
+                                    / {formatIDR(row.expected)}
                                   </p>
                                 )
                               }
                               return (
                                 <p className="mt-0.5 text-[11px] text-forest/70 flex items-center gap-1">
                                   <Check className="h-3 w-3" />
-                                  Lunas
+                                  {t("kas.paidOff")}
                                 </p>
                               )
                             })()}
@@ -701,14 +702,14 @@ function KasInner() {
                 >
                   <Check className="h-4 w-4" />
                   {saving
-                    ? "Menyimpan…"
+                    ? t("kas.saving")
                     : totalPick === 0
                       ? markMode === "izin"
-                        ? "Centang siswa yang izin"
-                        : "Centang siswa yang sudah membayar"
+                        ? t("kas.checkLeave")
+                        : t("kas.hintManage")
                       : markMode === "izin"
-                        ? `Simpan ${totalPick} izin`
-                        : `Simpan ${totalPick} setoran · ${formatIDR(totalRupiah)}`}
+                        ? t("kas.saveLeaveCount", { n: totalPick })
+                        : t("kas.saveDepositCount", { n: totalPick, amount: formatIDR(totalRupiah) })}
                 </button>
               </div>
             </div>
@@ -719,7 +720,7 @@ function KasInner() {
             <div className="flex items-center gap-2 rounded-xl bg-alert/8 border border-alert/15 px-3 py-2">
               <AlertTriangle className="h-3.5 w-3.5 text-alert shrink-0" />
               <p className="text-xs text-ink-soft/70 flex-1 min-w-0">
-                {tunggak.rows.length} siswa masih memiliki tunggak · kumulatif semester
+                {t("kas.arrearsLine", { n: tunggak.rows.length })}
               </p>
               <span className="text-xs font-semibold text-alert shrink-0">
                 {formatIDR(tunggak.totalTunggak)}
@@ -739,7 +740,7 @@ function KasInner() {
       <Sheet
         open={Boolean(detailTx)}
         onClose={() => setDetailTx(null)}
-        title="Detail transaksi"
+        title={t("kas.txDetail")}
       >
         {detailTx && (
           <div className="space-y-3">
@@ -750,7 +751,7 @@ function KasInner() {
             >
               <div>
                 <p className="text-xs font-semibold text-ink-soft/70 uppercase">
-                  {detailTx.kind === "IN" ? "Masuk" : "Keluar"}
+                  {detailTx.kind === "IN" ? t("home.in") : t("home.out")}
                 </p>
                 <p className="text-xs text-ink-soft">{detailTx.category}</p>
               </div>
@@ -765,13 +766,13 @@ function KasInner() {
             </div>
             <div className="space-y-2 text-xs">
               <div className="flex justify-between gap-3">
-                <span className="text-ink-soft">Keterangan</span>
+                <span className="text-ink-soft">{t("kas.descLabel")}</span>
                 <span className="font-semibold text-ink text-right flex-1">
                   {detailTx.description || "—"}
                 </span>
               </div>
               <div className="flex justify-between gap-3">
-                <span className="text-ink-soft">Dicatat oleh</span>
+                <span className="text-ink-soft">{t("kas.recordedBy")}</span>
                 <span className="font-semibold text-ink text-right flex-1">
                   {actorName(
                     detailTx.recorded_by,
@@ -781,13 +782,13 @@ function KasInner() {
                 </span>
               </div>
               <div className="flex justify-between gap-3">
-                <span className="text-ink-soft">Tanggal catat</span>
+                <span className="text-ink-soft">{t("kas.recordDate")}</span>
                 <span className="font-semibold text-ink text-right flex-1">
                   {whenShort(detailTx.created_at)}
                 </span>
               </div>
               <div className="flex justify-between gap-3">
-                <span className="text-ink-soft">Tanggal kejadian</span>
+                <span className="text-ink-soft">{t("kas.eventDate")}</span>
                 <span className="font-semibold text-ink text-right flex-1">
                   {formatDateID(new Date(detailTx.occurred_on))}
                 </span>
@@ -807,40 +808,39 @@ function KasInner() {
       <Sheet
         open={openSpecial}
         onClose={() => setOpenSpecial(false)}
-        title="Bayar Khusus"
+        title={t("kas.special")}
       >
         {err && (
           <p className="text-xs text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
             {err}
           </p>
         )}
-        <Field label="Siswa">
+        <Field label={t("kas.student")}>
           <select
             value={spStudent}
             onChange={(e) => {
               const id = e.target.value
               setSpStudent(id)
               const name = list.find((s) => s.id === id)?.full_name
-              const t = name
+              const row = name
                 ? (tunggak?.all ?? []).find(
                     (r) => r.name.toLowerCase() === name.toLowerCase(),
                   )
                 : undefined
-              if (t && t.tunggak > 0) {
-                setSpAmount(String(t.tunggak))
+              if (row && row.tunggak > 0) {
+                setSpAmount(String(row.tunggak))
                 if (!spNote) setSpNote("Lunas tunggak semester")
               }
             }}
             className={inputClass}
           >
-            <option value="">Pilih Siswa…</option>
+            <option value="">{t("kas.pickStudent")}</option>
             {list.map((s) => {
-              const t = tunggakByName.get(s.full_name.toLowerCase())
-              const badge = t && t.tunggak > 0 ? ` — tunggak ${formatIDR(t.tunggak)}` : ""
+              const row = tunggakByName.get(s.full_name.toLowerCase())
+              const badge = row && row.tunggak > 0 ? t("kas.arrearsBadge", { amount: formatIDR(row.tunggak) }) : ""
               return (
                 <option key={s.id} value={s.id}>
-                  {formatDisplayName(s.full_name)}
-                  {badge}
+                  {formatDisplayName(s.full_name)} {badge}
                 </option>
               )
             })}
@@ -850,61 +850,61 @@ function KasInner() {
         {/* Ringkasan utang siswa terpilih */}
         {(() => {
           const name = list.find((s) => s.id === spStudent)?.full_name
-          const t = name
+          const row = name
             ? (tunggak?.all ?? []).find(
                 (r) => r.name.toLowerCase() === name.toLowerCase(),
               )
             : undefined
-          if (!spStudent || !t) return null
+          if (!spStudent || !row) return null
           return (
             <div
               className={`rounded-xl border px-3 py-2.5 ${
-                t.tunggak > 0
+                row.tunggak > 0
                   ? "bg-alert/8 border-alert/20"
                   : "bg-ok-bg/50 border-forest/20"
               }`}
             >
               <p className="text-sm font-semibold text-ink mb-1.5">
-                {formatDisplayName(t.name)}
+                {formatDisplayName(row.name)}
               </p>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div>
-                  <p className="text-[11px] text-ink-soft/55">Wajib</p>
+                  <p className="text-[11px] text-ink-soft/55">{t("common.required")}</p>
                   <p className="text-xs font-semibold text-ink tabular-nums">
-                    {formatIDR(t.expected)}
+                    {formatIDR(row.expected)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[11px] text-ink-soft/55">Sudah Membayar</p>
+                  <p className="text-[11px] text-ink-soft/55">{t("kas.paid")}</p>
                   <p className="text-xs font-semibold text-forest tabular-nums">
-                    {formatIDR(t.paid)}
+                    {formatIDR(row.paid)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[11px] text-ink-soft/55">Sisa Tunggak</p>
+                  <p className="text-[11px] text-ink-soft/55">{t("kas.arrearsLeft")}</p>
                   <p
                     className={`text-xs font-semibold tabular-nums ${
-                      t.tunggak > 0 ? "text-alert" : "text-forest"
+                      row.tunggak > 0 ? "text-alert" : "text-forest"
                     }`}
                   >
-                    {t.tunggak > 0 ? formatIDR(t.tunggak) : "Lunas ✓"}
+                    {row.tunggak > 0 ? formatIDR(row.tunggak) : t("kas.paidOffCheck")}
                   </p>
                 </div>
               </div>
-              {t.tunggak > 0 && (
+              {row.tunggak > 0 && (
                 <button
                   type="button"
-                  onClick={() => setSpAmount(String(t.tunggak))}
+                  onClick={() => setSpAmount(String(row.tunggak))}
                   className="mt-2 w-full text-xs font-semibold text-forest py-1 rounded-lg border border-forest/30"
                 >
-                  Gunakan sisa tunggak ({formatIDR(t.tunggak)})
+                  {t("kas.useArrears", { amount: formatIDR(row.tunggak) })}
                 </button>
               )}
             </div>
           )
         })()}
         <div className="space-y-1">
-          <span className="text-sm font-semibold text-ink">Nominal</span>
+          <span className="text-sm font-semibold text-ink">{t("kas.nominal")}</span>
           <div className="grid grid-cols-4 gap-1.5">
             {[2000, 10000, 20000, 50000].map((n) => (
               <button
@@ -922,7 +922,7 @@ function KasInner() {
             ))}
           </div>
         </div>
-        <Field label="Jumlah (Rp)">
+        <Field label={t("kas.amountRp")}>
           <input
             type="number"
             inputMode="numeric"
@@ -933,17 +933,17 @@ function KasInner() {
             className={inputClass}
           />
         </Field>
-        <Field label="Catatan (opsional)" hint="Mis. bayar 10× / numpuk">
+        <Field label={t("kas.noteOptional")} hint={t("kas.noteHint")}>
           <input
             value={spNote}
             onChange={(e) => setSpNote(e.target.value)}
             className={inputClass}
-            placeholder="Bayar 10×"
+            placeholder={t("kas.notePlaceholder")}
           />
         </Field>
         {Number(spAmount) > 0 && spStudent && (
           <p className="text-xs font-semibold text-forest">
-            ≈ {Math.round(Number(spAmount) / NOMINAL)}× setoran harian
+            {t("kas.dailyCount", { n: Math.round(Number(spAmount) / NOMINAL) })}
           </p>
         )}
         <button
@@ -952,26 +952,26 @@ function KasInner() {
           onClick={() => void saveSpecial()}
           className="w-full bg-forest text-white text-sm font-semibold py-2.5 rounded-xl disabled:opacity-50"
         >
-          {savingSp ? "Menyimpan…" : "Simpan Bayar Khusus"}
+          {savingSp ? t("kas.saving") : t("kas.saveSpecial")}
         </button>
       </Sheet>
 
       {/* Pengeluaran minimal */}
-      <Sheet open={openOut} onClose={() => setOpenOut(false)} title="Pengeluaran">
+      <Sheet open={openOut} onClose={() => setOpenOut(false)} title={t("kas.expense")}>
         {err && (
           <p className="text-xs text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
             {err}
           </p>
         )}
-        <Field label="Keterangan">
+        <Field label={t("kas.descLabel")}>
           <input
             value={outNote}
             onChange={(e) => setOutNote(e.target.value)}
             className={inputClass}
-            placeholder="Beli kapur / spidol…"
+            placeholder={t("kas.expensePlaceholder")}
           />
         </Field>
-        <Field label="Jumlah (Rp)">
+        <Field label={t("kas.amountRp")}>
           <input
             type="number"
             inputMode="numeric"
@@ -988,7 +988,7 @@ function KasInner() {
           onClick={() => void saveOut()}
           className="w-full bg-forest text-white text-sm font-semibold py-2.5 rounded-xl disabled:opacity-50"
         >
-          {savingOut ? "Menyimpan…" : "Simpan"}
+          {savingOut ? t("kas.saving") : t("common.save")}
         </button>
       </Sheet>
 

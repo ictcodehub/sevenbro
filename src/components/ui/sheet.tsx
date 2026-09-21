@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useT } from "@/lib/i18n"
 
 /**
  * Tinggi/posisi aman untuk shell Android + browser PWA:
@@ -34,6 +35,7 @@ export function Sheet({
   /** Modal full viewport — menutup bottom nav app */
   fullHeight?: boolean
 }) {
+  const t = useT()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -55,7 +57,7 @@ export function Sheet({
     <div className="fixed inset-0 z-[60]">
       <button
         type="button"
-        aria-label="Tutup"
+        aria-label={t("common.close")}
         className="absolute inset-0 bg-deep/40"
         onClick={onClose}
       />
@@ -87,7 +89,7 @@ export function Sheet({
             <button
               type="button"
               onClick={onClose}
-              aria-label="Tutup"
+              aria-label={t("common.close")}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-soft hover:bg-surface"
             >
               <X className="h-4 w-4" />

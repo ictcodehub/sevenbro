@@ -20,6 +20,7 @@ import { SectionHeader, EmptyState } from "@/components/ui-primitives"
 import { Sheet, inputClass } from "@/components/ui/sheet"
 import { formatDisplayName } from "@/lib/format"
 import { canProposeRoster, canViewRoster } from "@/lib/policies"
+import { useT } from "@/lib/i18n"
 
 type Student = {
   id: string
@@ -165,6 +166,7 @@ export default function AdminRosterPage() {
   const [editName, setEditName] = useState("")
   const [editEmail, setEditEmail] = useState("")
   const [editNis, setEditNis] = useState("")
+  const t = useT()
 
   const flash = (msg: string) => {
     setToast(msg)
@@ -224,9 +226,9 @@ export default function AdminRosterPage() {
           setPending(items)
           if (autoLinked.length) {
             flash(
-              `Auto-match: ${autoLinked
-                .map((a) => `${a.email} → ${a.student_name}`)
-                .join(", ")}`,
+              t("roster.autoMatch", {
+                list: autoLinked.map((a) => `${a.email} → ${a.student_name}`).join(", "),
+              }),
             )
           }
           const sug: Record<string, string> = {}
@@ -245,7 +247,7 @@ export default function AdminRosterPage() {
         if (Array.isArray(rb)) setProposals(rb as RosterProposal[])
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal memuat roster")
+      setError(e instanceof Error ? e.message : t("roster.loadFailed"))
     } finally {
       setLoading(false)
     }
@@ -261,7 +263,7 @@ export default function AdminRosterPage() {
   if (status === "loading") {
     return (
       <div className="px-4 py-3">
-        <p className="text-[11px] text-ink-soft/75">Memuat…</p>
+          <p className="text-[11px] text-ink-soft/75">{t("common.loading")}</p>
       </div>
     )
   }
@@ -286,11 +288,11 @@ export default function AdminRosterPage() {
         body: JSON.stringify(body),
       })
       const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
+      if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
       flash(okMsg)
       await load()
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Gagal mengirim usulan")
+      flash(e instanceof Error ? e.message : t("roster.proposalFailed"))
     } finally {
       setSaving(false)
     }
@@ -304,18 +306,18 @@ export default function AdminRosterPage() {
         body: JSON.stringify({ decision }),
       })
       const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || "Gagal")
-      flash(decision === "APPROVED" ? "Usulan disetujui & diterapkan" : "Usulan ditolak")
+      if (!r.ok) throw new Error(b?.error || t("common.failed"))
+      flash(t(decision === "APPROVED" ? "roster.proposalApproved" : "roster.proposalRejected"))
       await load()
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Gagal")
+      flash(e instanceof Error ? e.message : t("common.failed"))
     }
   }
 
   const saveEdit = async () => {
     const name = editName.trim()
     if (!name) {
-      flash("Nama tidak boleh kosong")
+      flash(t("roster.nameRequired"))
       return
     }
     setSaving(true)
@@ -336,7 +338,7 @@ export default function AdminRosterPage() {
               email: editEmail.trim() || null,
               nis: editNis.trim() || null,
             },
-            "Usulan ubah data dikirim ke wali kelas",
+            t("roster.proposeUpdateSent"),
           )
         } else {
           const r = await fetch(`/api/admin/students/${editStudent.id}`, {
@@ -345,11 +347,11 @@ export default function AdminRosterPage() {
             body: JSON.stringify(payload),
           })
           const b = await r.json().catch(() => null)
-          if (!r.ok) throw new Error(b?.error || "Gagal menyimpan siswa")
+          if (!r.ok) throw new Error(b?.error || t("roster.saveStudentFailed"))
           setStudents((prev) =>
             prev.map((s) => (s.id === editStudent.id ? { ...s, ...payload, nis: payload.nis } : s)),
           )
-          flash("Data siswa diperbarui")
+          flash(t("roster.studentUpdated"))
         }
       } else if (editTeacher) {
         const r = await fetch(`/api/admin/teachers/${editTeacher.id}`, {
@@ -361,7 +363,7 @@ export default function AdminRosterPage() {
           }),
         })
         const b = await r.json().catch(() => null)
-        if (!r.ok) throw new Error(b?.error || "Gagal menyimpan guru")
+          if (!r.ok) throw new Error(b?.error || t("roster.saveTeacherFailed"))
         setTeachers((prev) =>
           prev.map((t) =>
             t.id === editTeacher.id
@@ -369,11 +371,11 @@ export default function AdminRosterPage() {
               : t,
           ),
         )
-        flash("Data guru diperbarui")
+        flash(t("roster.teacherUpdated"))
       }
       closeEdit()
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Gagal")
+      flash(e instanceof Error ? e.message : t("common.failed"))
     } finally {
       setSaving(false)
     }
@@ -386,7 +388,7 @@ export default function AdminRosterPage() {
       .filter(Boolean)
     if (names.length === 0) return
     if (canProposeRoster(role ?? "")) {
-      await propose({ action: "ADD", names }, "Usulan tambah siswa dikirim ke wali kelas")
+      await propose({ action: "ADD", names }, t("roster.proposeAddSent"))
       setBulkNames("")
       setShowBulk(false)
       return
@@ -400,13 +402,13 @@ export default function AdminRosterPage() {
         body: JSON.stringify({ names }),
       })
       const body = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(body?.error || `Gagal (${r.status})`)
+      if (!r.ok) throw new Error(body?.error || t("common.failedWithStatus", { status: r.status }))
       setBulkNames("")
       setShowBulk(false)
-      flash("Siswa ditambahkan")
+      flash(t("roster.studentAdded"))
       await load()
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal menambah siswa")
+      setError(e instanceof Error ? e.message : t("roster.addStudentFailed"))
     } finally {
       setSaving(false)
     }
@@ -416,7 +418,7 @@ export default function AdminRosterPage() {
     if (canProposeRoster(role ?? "")) {
       await propose(
         { action: "UPDATE", studentId: s.id, label: s.full_name, position },
-        "Usulan ubah posisi dikirim ke wali kelas",
+        t("roster.proposePositionSent"),
       )
       return
     }
@@ -428,12 +430,12 @@ export default function AdminRosterPage() {
       })
       if (!r.ok) {
         const b = await r.json().catch(() => null)
-        throw new Error(b?.error || "Gagal")
+        throw new Error(b?.error || t("common.failed"))
       }
       setStudents((prev) => prev.map((x) => (x.id === s.id ? { ...x, position } : x)))
-      flash("Posisi diperbarui")
+      flash(t("roster.positionUpdated"))
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Gagal")
+      flash(e instanceof Error ? e.message : t("common.failed"))
     }
   }
 
@@ -441,7 +443,7 @@ export default function AdminRosterPage() {
     if (canProposeRoster(role ?? "")) {
       await propose(
         { action: "UPDATE", studentId: s.id, label: s.full_name, active: !s.active },
-        "Usulan ubah status dikirim ke wali kelas",
+        t("roster.proposeStatusSent"),
       )
       return
     }
@@ -453,44 +455,44 @@ export default function AdminRosterPage() {
       })
       if (!r.ok) {
         const b = await r.json().catch(() => null)
-        throw new Error(b?.error || "Gagal")
+        throw new Error(b?.error || t("common.failed"))
       }
       setStudents((prev) =>
         prev.map((x) => (x.id === s.id ? { ...x, active: !x.active } : x)),
       )
-      flash(s.active ? "Dinonaktifkan" : "Diaktifkan")
+      flash(t(s.active ? "roster.deactivated" : "roster.activated"))
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Gagal")
+      flash(e instanceof Error ? e.message : t("common.failed"))
     }
   }
 
   const removeStudent = async (s: Student) => {
-    if (!confirm(`Usulkan hapus ${formatDisplayName(s.full_name)}?`)) return
+    if (!confirm(t("roster.proposeDelete", { name: formatDisplayName(s.full_name) }))) return
     if (canProposeRoster(role ?? "")) {
       await propose(
         { action: "DELETE", studentId: s.id, label: s.full_name },
-        "Usulan hapus siswa dikirim ke wali kelas",
+        t("roster.proposeDeleteSent"),
       )
       return
     }
-    if (!confirm("Hapus siswa ini dari roster?")) return
+    if (!confirm(t("roster.deleteStudentConfirm"))) return
     try {
       const r = await fetch(`/api/admin/students/${s.id}`, { method: "DELETE" })
       if (!r.ok) {
         const b = await r.json().catch(() => null)
-        throw new Error(b?.error || "Gagal")
+        throw new Error(b?.error || t("common.failed"))
       }
       setStudents((prev) => prev.filter((x) => x.id !== s.id))
-      flash("Siswa dihapus")
+      flash(t("roster.studentDeleted"))
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Gagal")
+      flash(e instanceof Error ? e.message : t("common.failed"))
     }
   }
 
   const linkAccount = async (userId: string) => {
     const studentId = linkStudent[userId]
     if (!studentId) {
-      flash("Pilih siswa dulu")
+      flash(t("roster.pickFirst"))
       return
     }
     try {
@@ -500,18 +502,18 @@ export default function AdminRosterPage() {
         body: JSON.stringify({ studentId }),
       })
       const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || "Gagal menautkan")
-      flash("Akun tertaut — siswa bisa masuk")
+      if (!r.ok) throw new Error(b?.error || t("roster.linkFailed"))
+      flash(t("roster.accountLinked"))
       await load()
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Gagal")
+      flash(e instanceof Error ? e.message : t("common.failed"))
     }
   }
 
   const addTeacher = async () => {
     const email = teacherEmail.trim().toLowerCase()
     if (!email) {
-      flash("Email wajib diisi")
+      flash(t("roster.emailRequired"))
       return
     }
     setSaving(true)
@@ -522,30 +524,30 @@ export default function AdminRosterPage() {
         body: JSON.stringify({ email, name: teacherName.trim() || null }),
       })
       const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || "Gagal menambah guru")
+      if (!r.ok) throw new Error(b?.error || t("roster.addTeacherFailed"))
       setTeacherEmail("")
       setTeacherName("")
-      flash("Guru berhasil ditambahkan. Dapat memindai QR.")
+      flash(t("roster.teacherAddedQR"))
       await load()
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Gagal")
+      flash(e instanceof Error ? e.message : t("common.failed"))
     } finally {
       setSaving(false)
     }
   }
 
   const removeTeacher = async (id: string) => {
-    if (!confirm("Hapus izin guru ini?")) return
+    if (!confirm(t("roster.deleteTeacherConfirm"))) return
     try {
       const r = await fetch(`/api/admin/teachers/${id}`, { method: "DELETE" })
       if (!r.ok) {
         const b = await r.json().catch(() => null)
-        throw new Error(b?.error || "Gagal")
+        throw new Error(b?.error || t("common.failed"))
       }
       setTeachers((prev) => prev.filter((t) => t.id !== id))
-      flash("Guru dihapus")
+      flash(t("roster.teacherDeleted"))
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Gagal")
+      flash(e instanceof Error ? e.message : t("common.failed"))
     }
   }
 
@@ -556,11 +558,9 @@ export default function AdminRosterPage() {
     <div className="px-4 py-3 space-y-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h1 className="text-lg font-bold text-ink">Roster Kelas</h1>
+          <h1 className="text-lg font-bold text-ink">{t("roster.title")}</h1>
           <p className="text-[11px] text-ink-soft/75">
-            {isKetua
-              ? "Usul perubahan — menunggu persetujuan wali kelas"
-              : "Siswa, guru & tautan akun"}
+            {isKetua ? t("roster.hintPropose") : t("roster.hintManage")}
           </p>
         </div>
         <button
@@ -569,20 +569,20 @@ export default function AdminRosterPage() {
           className="flex items-center gap-1 bg-forest text-white text-sm font-semibold px-3 py-1.5 rounded-xl active:scale-[0.97] transition-transform"
         >
           <UserPlus className="h-3.5 w-3.5" />
-          {isKetua ? "Usul Tambah" : "Tambah"}
+          {isKetua ? t("roster.addPropose") : t("agenda.add")}
         </button>
       </div>
 
       {showBulk && (
         <div className="bg-white border border-line shadow-sm rounded-2xl p-3 space-y-2">
           <p className="text-[11px] font-semibold text-ink">
-            {isKetua ? "Usul tambah siswa (satu nama per baris)" : "Satu nama per baris"}
+            {isKetua ? t("roster.bulkHintPropose") : t("roster.bulkHint")}
           </p>
           <textarea
             value={bulkNames}
             onChange={(e) => setBulkNames(e.target.value)}
             rows={5}
-            placeholder={"Nama siswa 1\nNama siswa 2"}
+            placeholder={t("roster.bulkPlaceholder")}
             className="w-full text-[11px] border border-line rounded-xl p-2 bg-page text-ink resize-none scroll-y-only"
           />
           <button
@@ -591,7 +591,7 @@ export default function AdminRosterPage() {
             onClick={() => void bulkSubmit()}
             className="w-full bg-forest text-white text-[11px] font-semibold py-2 rounded-xl disabled:opacity-50"
           >
-            {saving ? "Mengirim…" : isKetua ? "Kirim Usulan" : "Simpan"}
+            {saving ? t("roster.sending") : isKetua ? t("roster.sendProposal") : t("common.save")}
           </button>
         </div>
       )}
@@ -606,7 +606,7 @@ export default function AdminRosterPage() {
       {isHomeroom && pendingProposals.length > 0 && (
         <div>
           <SectionHeader
-            title="Usulan Ketua"
+            title={t("roster.proposalsTitle")}
             count={String(pendingProposals.length)}
           />
           <div className="space-y-2">
@@ -622,7 +622,7 @@ export default function AdminRosterPage() {
                       <p className="text-[11px] font-semibold text-ink truncate">{title}</p>
                       <p className="text-xs text-ink-soft/70 mt-0.5 truncate">{detail}</p>
                       <p className="text-[11px] text-ink-soft/55 mt-1">
-                        Diusulkan {formatDisplayName(p.proposed_by_name) || p.proposed_by}
+                        {t("roster.proposedBy", { name: formatDisplayName(p.proposed_by_name) || p.proposed_by })}
                         {" · "}
                         {new Date(p.created_at).toLocaleDateString("id-ID")}
                       </p>
@@ -636,7 +636,7 @@ export default function AdminRosterPage() {
                       className="flex-1 flex items-center justify-center gap-1 bg-forest text-white text-[11px] font-semibold py-2 rounded-xl"
                     >
                       <Check className="h-3.5 w-3.5" />
-                      Setujui
+                      {t("roster.approve")}
                     </button>
                     <button
                       type="button"
@@ -644,7 +644,7 @@ export default function AdminRosterPage() {
                       className="flex-1 flex items-center justify-center gap-1 bg-alert-bg text-alert border border-alert/25 text-[11px] font-semibold py-2 rounded-xl"
                     >
                       <X className="h-3.5 w-3.5" />
-                      Tolak
+                      {t("roster.reject")}
                     </button>
                   </div>
                 </div>
@@ -657,7 +657,7 @@ export default function AdminRosterPage() {
       {/* Guru — Homeroom only */}
       {isHomeroom && (
         <div>
-          <SectionHeader title="Guru (Scan Beri Poin)" count={String(teachers.length)} />
+          <SectionHeader title={t("roster.teachersTitle")} count={String(teachers.length)} />
           <div className="bg-white border border-line shadow-sm rounded-2xl p-3 space-y-2 mb-2">
             <div className="flex gap-2">
               <input
@@ -671,7 +671,7 @@ export default function AdminRosterPage() {
             <input
               value={teacherName}
               onChange={(e) => setTeacherName(e.target.value)}
-              placeholder="Nama (opsional)"
+              placeholder={t("roster.teacherNamePlaceholder")}
               className={inputClass}
             />
             <button
@@ -681,39 +681,39 @@ export default function AdminRosterPage() {
               className="w-full bg-forest text-white text-[11px] font-semibold py-2 rounded-xl flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
               <GraduationCap className="h-3.5 w-3.5" />
-              {saving ? "Menyimpan…" : "Daftarkan guru"}
+              {saving ? t("kas.saving") : t("roster.registerTeacher")}
             </button>
           </div>
           {teachers.length === 0 ? (
             <EmptyState
               icon={<GraduationCap className="h-6 w-6" />}
-              message="Belum ada guru — daftarkan email sekolah"
+              message={t("roster.noTeachers")}
             />
           ) : (
             <div className="bg-white border border-line shadow-sm rounded-2xl divide-y divide-line/60">
-              {teachers.map((t) => (
-                <div key={t.id} className="p-2.5 flex items-center gap-2.5">
+              {teachers.map((tc) => (
+                <div key={tc.id} className="p-2.5 flex items-center gap-2.5">
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber/15 shrink-0">
                     <GraduationCap className="h-3.5 w-3.5 text-amber" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] font-semibold text-ink truncate">
-                      {formatDisplayName(t.name) || t.email}
+                      {formatDisplayName(tc.name) || tc.email}
                     </p>
-                    <p className="text-xs text-ink-soft/70 truncate">{t.email}</p>
+                    <p className="text-xs text-ink-soft/70 truncate">{tc.email}</p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => openEditTeacher(t)}
-                    aria-label="Ubah data guru"
+                    onClick={() => openEditTeacher(tc)}
+                    aria-label={t("roster.editTeacherAria")}
                     className="flex h-7 w-7 items-center justify-center rounded-lg text-ink-soft hover:bg-surface shrink-0"
                   >
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
                   <button
                     type="button"
-                    onClick={() => void removeTeacher(t.id)}
-                    aria-label="Hapus guru"
+                    onClick={() => void removeTeacher(tc.id)}
+                    aria-label={t("roster.deleteTeacherAria")}
                     className="flex h-7 w-7 items-center justify-center rounded-lg text-alert hover:bg-alert-bg shrink-0"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -727,7 +727,7 @@ export default function AdminRosterPage() {
 
       {isHomeroom && pending.length > 0 && (
         <div>
-          <SectionHeader title="Akun menunggu" count={String(pending.length)} />
+          <SectionHeader title={t("roster.pendingTitle")} count={String(pending.length)} />
           <div className="space-y-2">
             {pending.map((u) => (
               <div
@@ -740,9 +740,9 @@ export default function AdminRosterPage() {
                 <p className="text-xs text-ink-soft/70 truncate">{u.email}</p>
                 {u.suggested_student_name && (
                   <p className="text-xs text-amber font-medium">
-                    Saran tautan: {u.suggested_student_name}
-                    {u.match_reason === "marga-mirip" && " (nama depan beda)"}
-                    {" — konfirmasi manual"}
+                    {t("roster.linkSuggestion", { name: u.suggested_student_name })}
+                    {u.match_reason === "marga-mirip" && ` ${t("roster.nameDiff")}`}
+                    {` ${t("roster.confirmManual")}`}
                   </p>
                 )}
                 <div className="flex gap-2">
@@ -753,7 +753,7 @@ export default function AdminRosterPage() {
                     }
                     className={inputClass + " flex-1"}
                   >
-                    <option value="">Tautkan ke siswa…</option>
+                    <option value="">{t("roster.linkToStudent")}</option>
                     {students.map((s) => (
                       <option key={s.id} value={s.id}>
                         {formatDisplayName(s.full_name)}
@@ -766,7 +766,7 @@ export default function AdminRosterPage() {
                     className="flex items-center gap-1 bg-forest text-white text-sm font-semibold px-3 rounded-xl shrink-0"
                   >
                     <Link2 className="h-3.5 w-3.5" />
-                    Tautkan
+                    {t("roster.link")}
                   </button>
                 </div>
               </div>
@@ -777,13 +777,13 @@ export default function AdminRosterPage() {
 
       <div>
         <SectionHeader
-          title={isKetua ? "Daftar siswa" : "Daftar siswa"}
+          title={t("roster.studentList")}
           count={String(students.length)}
         />
         {loading ? (
-          <EmptyState icon={<Users className="h-6 w-6" />} message="Memuat roster…" />
+          <EmptyState icon={<Users className="h-6 w-6" />} message={t("roster.loading")} />
         ) : students.length === 0 ? (
-          <EmptyState icon={<Inbox className="h-6 w-6" />} message="Belum ada siswa" />
+          <EmptyState icon={<Inbox className="h-6 w-6" />} message={t("roster.noStudents")} />
         ) : (
           <div className="bg-white border border-line shadow-sm rounded-2xl divide-y divide-line/60">
             {students.map((s) => (
@@ -796,7 +796,7 @@ export default function AdminRosterPage() {
                     {formatDisplayName(s.full_name)}
                   </p>
                   <p className="text-xs text-ink-soft/75 truncate">
-                    {s.email || "belum terhubung"}
+                    {s.email || t("roster.notLinked")}
                   </p>
                   <div className="flex items-center gap-1.5">
                     <select
@@ -819,7 +819,7 @@ export default function AdminRosterPage() {
                           : "bg-alert-bg text-alert border-alert/20"
                       }`}
                     >
-                      {s.active ? "Aktif" : "Nonaktif"}
+                      {s.active ? t("roster.active") : t("roster.inactive")}
                     </button>
                   </div>
                 </div>
@@ -827,7 +827,7 @@ export default function AdminRosterPage() {
                 <button
                   type="button"
                   onClick={() => openEditStudent(s)}
-                  aria-label="Ubah data siswa"
+                  aria-label={t("roster.editStudentAria")}
                   className="flex h-7 w-7 items-center justify-center rounded-lg text-ink-soft hover:bg-surface shrink-0"
                 >
                   <Pencil className="h-3.5 w-3.5" />
@@ -835,7 +835,7 @@ export default function AdminRosterPage() {
                 <button
                   type="button"
                   onClick={() => void removeStudent(s)}
-                  aria-label={isKetua ? "Usul hapus siswa" : "Hapus siswa"}
+                  aria-label={isKetua ? t("roster.deleteStudentAriaPropose") : t("roster.deleteStudentAria")}
                   className="flex h-7 w-7 items-center justify-center rounded-lg text-alert hover:bg-alert-bg shrink-0"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -850,7 +850,7 @@ export default function AdminRosterPage() {
       {proposals.length > 0 && (
         <div>
           <SectionHeader
-            title={isKetua ? "Usulan saya" : "Riwayat usulan"}
+            title={isKetua ? t("roster.myProposals") : t("roster.proposalHistory")}
             count={String(isKetua ? proposals.length : proposals.length - pendingProposals.length)}
           />
           <div className="space-y-1.5">
@@ -875,7 +875,7 @@ export default function AdminRosterPage() {
                             year: "numeric",
                           })}
                           {isHomeroom && p.reviewed_at
-                            ? ` · diulas ${new Date(p.reviewed_at).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}`
+                            ? t("roster.reviewed", { date: new Date(p.reviewed_at).toLocaleDateString("id-ID", { day: "numeric", month: "short" }) })
                             : ""}
                         </p>
                       </div>
@@ -897,20 +897,20 @@ export default function AdminRosterPage() {
       <Sheet
         open={Boolean(editStudent || editTeacher)}
         onClose={closeEdit}
-        title={editStudent ? "Ubah Data Siswa" : "Ubah Data Guru"}
+        title={editStudent ? t("roster.editStudentTitle") : t("roster.editTeacherTitle")}
       >
         <div className="space-y-2">
           <div>
-            <span className="text-[11px] font-semibold text-ink">Nama Lengkap</span>
+            <span className="text-[11px] font-semibold text-ink">{t("roster.fullName")}</span>
             <input
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               className={inputClass + " mt-1"}
-              placeholder="Nama lengkap"
+              placeholder={t("roster.fullNamePlaceholder")}
             />
           </div>
           <div>
-            <span className="text-[11px] font-semibold text-ink">Email</span>
+            <span className="text-[11px] font-semibold text-ink">{t("roster.emailLabel")}</span>
             <input
               value={editEmail}
               onChange={(e) => setEditEmail(e.target.value)}
@@ -921,18 +921,18 @@ export default function AdminRosterPage() {
           </div>
           {editStudent && (
             <div>
-              <span className="text-[11px] font-semibold text-ink">NIS</span>
-              <input
-                value={editNis}
-                onChange={(e) => setEditNis(e.target.value)}
-                className={inputClass + " mt-1"}
-                placeholder="Nomor Induk Siswa (opsional)"
-              />
+            <span className="text-[11px] font-semibold text-ink">{t("roster.nisLabel")}</span>
+            <input
+              value={editNis}
+              onChange={(e) => setEditNis(e.target.value)}
+              className={inputClass + " mt-1"}
+              placeholder={t("roster.nisPlaceholder")}
+            />
             </div>
           )}
           {isKetua && editStudent && (
             <p className="text-xs text-ink-soft/70 bg-amber/10 border border-amber/20 rounded-xl px-2.5 py-2">
-              Perubahan dikirim sebagai usulan. Wali kelas harus menyetujui sebelum diterapkan.
+              {t("roster.proposeNote")}
             </p>
           )}
           <button
@@ -941,7 +941,7 @@ export default function AdminRosterPage() {
             onClick={() => void saveEdit()}
             className="w-full bg-forest text-white text-sm font-semibold py-2.5 rounded-xl disabled:opacity-50 active:scale-[0.98] transition-transform"
           >
-            {saving ? "Menyimpan…" : isKetua ? "Kirim Usulan" : "Simpan Perubahan"}
+            {saving ? t("kas.saving") : isKetua ? t("roster.sendProposal") : t("info.saveChanges")}
           </button>
         </div>
       </Sheet>

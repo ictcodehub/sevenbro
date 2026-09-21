@@ -22,6 +22,7 @@ import {
 import { useAppSWR } from "@/lib/fetcher"
 import { formatIDR, formatDateID, formatTimeID, formatDisplayName } from "@/lib/format"
 import { RoleGate } from "@/components/RoleGate"
+import { useT } from "@/lib/i18n"
 
 type Announcement = {
   id: string
@@ -60,29 +61,31 @@ type PointsPayload = {
   leaderboard: { student_id: string; full_name: string; total_points: number }[]
 }
 
-const MEDAL = [
-  {
-    chip: "bg-amber text-white",
-    ring: "ring-amber/40 bg-amber/10",
-    icon: Trophy,
-    label: "Juara 1",
-    note: "Terbaik",
-  },
-  {
-    chip: "bg-ink-soft text-white",
-    ring: "ring-ink-soft/30 bg-surface",
-    icon: Award,
-    label: "Juara 2",
-    note: "Hebat",
-  },
-  {
-    chip: "bg-amber/70 text-white",
-    ring: "ring-amber/25 bg-amber/5",
-    icon: Star,
-    label: "Juara 3",
-    note: "Bagus",
-  },
-] as const
+function medalData(t: (k: any) => string) {
+  return [
+    {
+      chip: "bg-amber text-white",
+      ring: "ring-amber/40 bg-amber/10",
+      icon: Trophy,
+      label: t("home.1st"),
+      note: t("home.best"),
+    },
+    {
+      chip: "bg-ink-soft text-white",
+      ring: "ring-ink-soft/30 bg-surface",
+      icon: Award,
+      label: t("home.2nd"),
+      note: t("home.great"),
+    },
+    {
+      chip: "bg-amber/70 text-white",
+      ring: "ring-amber/25 bg-amber/5",
+      icon: Star,
+      label: t("home.3rd"),
+      note: t("home.good"),
+    },
+  ] as const
+}
 
 function firstName(full: string) {
   const w = full.trim().split(/\s+/)
@@ -139,6 +142,7 @@ export default function HomePage() {
 }
 
 function HomeInner() {
+  const t = useT()
   const { data: session } = useSession()
   const role = (session?.user as { role?: string } | undefined)?.role
   const displayName = firstName(formatDisplayName(session?.user?.name) || "Kelas")
@@ -156,6 +160,7 @@ function HomeInner() {
     .sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at))
     .slice(0, 3)
   const top3 = (points?.leaderboard ?? []).slice(0, 3)
+  const medals = medalData(t)
   const totalSiswa = points?.leaderboard?.length ?? 0
   // Mati kalau top skor masih seri
   const podiumMuted =
@@ -166,13 +171,13 @@ function HomeInner() {
       {/* ── Sapaan ── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold text-ink">Halo {displayName}</h1>
+          <h1 className="text-lg font-bold text-ink">{t("home.greeting", { name: displayName })}</h1>
           <p className="text-xs text-ink-soft/75">
-            Ringkasan informasi & aktivitas kelas
+            {t("home.subtitle")}
           </p>
         </div>
         <span className="text-[11px] font-semibold text-forest bg-forest/10 px-2 py-1 rounded-full">
-          {totalSiswa > 0 ? `${totalSiswa} siswa` : "7B"}
+          {totalSiswa > 0 ? t("home.students", { n: totalSiswa }) : "7B"}
         </span>
       </div>
 
@@ -189,7 +194,7 @@ function HomeInner() {
               </h3>
               <span className="inline-flex shrink-0 items-center gap-1 bg-amber/20 text-amber rounded-full px-2 py-0.5 text-[11px] font-bold mt-0.5">
                 <Pin className="h-3 w-3" />
-                {pinned.pinned ? "Disematkan" : "Terbaru"}
+                {pinned.pinned ? t("home.pinned") : t("home.latest")}
               </span>
             </div>
             <p
@@ -204,7 +209,7 @@ function HomeInner() {
             )}
             <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between">
               <span className="text-xs text-acid font-semibold flex items-center gap-0.5">
-                Baca selengkapnya <ArrowRight className="h-3.5 w-3.5" />
+                {t("home.readMore")} <ArrowRight className="h-3.5 w-3.5" />
               </span>
               <Megaphone className="h-4 w-4 text-white/30" />
             </div>
@@ -213,8 +218,8 @@ function HomeInner() {
       ) : (
         <div className="bg-deep rounded-2xl p-4 text-white flex items-center justify-between">
           <div>
-            <p className="text-xs text-white/55">Tidak ada pengumuman</p>
-            <p className="text-sm font-bold text-acid mt-0.5">Cek Info untuk update</p>
+            <p className="text-xs text-white/55">{t("home.noAnnouncement")}</p>
+            <p className="text-sm font-bold text-acid mt-0.5">{t("home.checkInfo")}</p>
           </div>
           <Megaphone className="h-7 w-7 text-white/30" />
         </div>
@@ -226,11 +231,11 @@ function HomeInner() {
           <div className="flex items-center justify-between mb-1.5">
             <span className="flex items-center gap-1.5 text-xs font-medium text-white/70">
               <Wallet className="h-3.5 w-3.5" />
-              Saldo Kas Kelas
+              {t("home.cashBalance")}
             </span>
             <span className="inline-flex items-center gap-0.5 text-xs text-acid">
               <ArrowUpRight className="h-3.5 w-3.5" />
-              Lihat Kas
+              {t("home.viewCash")}
             </span>
           </div>
           <p className="text-2xl font-bold leading-none text-acid">
@@ -238,10 +243,10 @@ function HomeInner() {
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             <span className="inline-flex items-center gap-1 rounded-full bg-lime/15 border border-lime/30 px-2 py-0.5 text-[11px] font-semibold text-lime">
-              + {formatIDR(kas?.monthIn ?? 0)} Masuk
+              + {formatIDR(kas?.monthIn ?? 0)} {t("home.in")}
             </span>
             <span className="inline-flex items-center gap-1 rounded-full bg-amber/15 border border-amber/30 px-2 py-0.5 text-[11px] font-semibold text-amber">
-              − {formatIDR(kas?.monthOut ?? 0)} Keluar
+              − {formatIDR(kas?.monthOut ?? 0)} {t("home.out")}
             </span>
           </div>
         </div>
@@ -256,9 +261,9 @@ function HomeInner() {
                 <Trophy className={`h-3.5 w-3.5 ${podiumMuted ? "text-ink-soft/50" : "text-amber"}`} />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-ink">Peringkat Poin</h2>
+                <h2 className="text-sm font-semibold text-ink">{t("home.pointsRank")}</h2>
                 <p className="text-[11px] text-ink-soft/60">
-                  {podiumMuted ? "Belum ada selisih poin" : "Top 3 kelas 7B"}
+                  {podiumMuted ? t("home.noDiff") : t("home.top3")}
                 </p>
               </div>
             </div>
@@ -277,7 +282,7 @@ function HomeInner() {
             <div className="rounded-xl border border-dashed border-line bg-surface/40 px-3 py-4 text-center">
               <p className="text-sm font-bold text-ink-soft/60">—  ·  —  ·  —</p>
               <p className="text-[11px] text-ink-soft/55 mt-1.5">
-                Belum ada selisih poin
+                {t("home.noDiff")}
               </p>
             </div>
           ) : (
@@ -285,7 +290,7 @@ function HomeInner() {
               {/* Juara 1 dulu — lebih menonjol */}
               {(() => {
                 const p = top3[0]
-                const m = MEDAL[0]
+                const m = medals[0]
                 const Icon = m.icon
                 return (
                   <div className={`flex items-center gap-2.5 rounded-xl p-2.5 ring-1 ${m.ring}`}>
@@ -305,7 +310,7 @@ function HomeInner() {
                       <p className="text-sm font-bold text-forest leading-none">
                         {p.total_points}
                       </p>
-                      <p className="text-[11px] text-ink-soft/60">poin</p>
+                      <p className="text-[11px] text-ink-soft/60">{t("home.points")}</p>
                     </div>
                   </div>
                 )
@@ -314,7 +319,7 @@ function HomeInner() {
               {/* Juara 2 & 3 */}
               <div className="grid grid-cols-2 gap-2">
                 {top3.slice(1, 3).map((p, idx) => {
-                  const m = MEDAL[idx + 1]
+                  const m = medals[idx + 1]
                   const Icon = m.icon
                   return (
                     <div
@@ -334,7 +339,7 @@ function HomeInner() {
                         <p className="text-[11px] text-ink-soft/60">{m.label}</p>
                       </div>
                       <p className="text-sm font-bold text-forest">
-                        {p.total_points} <span className="font-medium text-ink-soft/60">poin</span>
+                        {p.total_points} <span className="font-medium text-ink-soft/60">{t("home.points")}</span>
                       </p>
                     </div>
                   )
@@ -345,7 +350,7 @@ function HomeInner() {
 
           <div className="mt-3 pt-2 border-t border-line/40">
             <span className="text-xs text-forest font-semibold flex items-center gap-0.5">
-              Lihat semua <ArrowRight className="h-3.5 w-3.5" />
+              {t("home.viewAll")} <ArrowRight className="h-3.5 w-3.5" />
             </span>
           </div>
         </div>
@@ -354,9 +359,9 @@ function HomeInner() {
       {/* ── Agenda — semua siswa aktif ── */}
       <div>
         <SectionHeader
-          title="Agenda Terdekat"
+          title={t("home.upcomingAgenda")}
           count={events?.length ?? 0}
-          action={{ href: "/app/agenda", label: "Semua" }}
+          action={{ href: "/app/agenda", label: t("home.all") }}
         />
         <div className="space-y-1.5 mt-1">
           {upcoming.map((e, i) => (
@@ -373,7 +378,7 @@ function HomeInner() {
           ))}
           {upcoming.length === 0 && (
             <div className="bg-white border border-line shadow-sm rounded-xl p-3 text-center text-xs text-ink-soft/60">
-              Belum ada agenda
+              {t("home.noAgenda")}
             </div>
           )}
         </div>

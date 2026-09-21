@@ -9,6 +9,7 @@ import { Sheet, inputClass } from "@/components/ui/sheet"
 import { formatDisplayName } from "@/lib/format"
 import { canReviewMassReport, canCreateMassReport } from "@/lib/policies"
 import { useAppSWR } from "@/lib/fetcher"
+import { useT } from "@/lib/i18n"
 
 type ReportRow = {
   id: string
@@ -39,14 +40,6 @@ type ListPayload = {
   reports: ReportRow[]
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  VOTING: "Voting",
-  READY: "Siap Review",
-  APPROVED: "Diterima",
-  REJECTED: "Ditolak",
-  CLOSED: "Ditutup",
-}
-
 export default function MassReportPanel() {
   const { data: session } = useSession()
   const role = (session?.user as { role?: string } | undefined)?.role
@@ -65,6 +58,8 @@ export default function MassReportPanel() {
   const [detailId, setDetailId] = useState<string | null>(null)
   const [donePage, setDonePage] = useState(0)
 
+  const t = useT()
+  const statusLabel = (s: string) => t(`report.status.${s.toLowerCase()}` as "report.status.voting" | "report.status.ready" | "report.status.approved" | "report.status.rejected" | "report.status.closed")
   const flash = (m: string) => {
     setToast(m)
     setTimeout(() => setToast(null), 2500)
@@ -95,15 +90,13 @@ export default function MassReportPanel() {
         body: JSON.stringify({ choice }),
       })
       const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || "Gagal vote")
+      if (!r.ok) throw new Error(b?.error || t("report.voteFailed"))
       flash(
-        choice === "YES"
-          ? "Anda menyetujui vote ini"
-          : "Anda tidak menyetujui vote ini",
+        t(choice === "YES" ? "report.voteYesDone" : "report.voteNoDone"),
       )
       await mutate()
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Gagal")
+      flash(e instanceof Error ? e.message : t("common.failed"))
     }
   }
 
@@ -115,12 +108,12 @@ export default function MassReportPanel() {
         body: JSON.stringify({ decision, reason }),
       })
       const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || "Gagal")
-      flash(decision === "APPROVED" ? "Disetujui — poin sudah dikurangi" : "Report ditolak")
+      if (!r.ok) throw new Error(b?.error || t("common.failed"))
+      flash(t(decision === "APPROVED" ? "report.approvedPoints" : "report.rejected"))
       setEditId(null)
       await mutate()
     } catch (e) {
-      flash(e instanceof Error ? e.message : "Gagal")
+      flash(e instanceof Error ? e.message : t("common.failed"))
     }
   }
 
@@ -132,35 +125,35 @@ export default function MassReportPanel() {
       setPhotoUrl(`data:${b.mime || "image/jpeg"};base64,${b.data.replace(/^data:[^,]+,/, "")}`)
       setPhotoOpen(true)
     } catch {
-      flash("Foto tidak tersedia")
+      flash(t("report.photoMissing"))
     }
   }
 
   return (
     <div>
       <div className="flex items-center justify-between gap-2">
-        <SectionHeader title="Mass Report" />
+        <SectionHeader title={t("report.title")} />
         {canCreate && (
           <Link
             href="/app/report/new"
             className="flex items-center gap-1 bg-alert text-white text-sm font-semibold px-3 py-1.5 rounded-xl active:scale-[0.97] transition-transform shrink-0 mb-2"
           >
             <Flag className="h-3.5 w-3.5" />
-            Buat Report
+            {t("report.create")}
           </Link>
         )}
       </div>
 
       {error && (
         <p className="text-[11px] text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
-          Gagal memuat report
+          {t("report.loadError")}
         </p>
       )}
 
       {active.length === 0 && !error ? (
         <EmptyState
           icon={<Flag className="h-6 w-6" />}
-          message="Belum ada Mass Report aktif"
+          message={t("report.emptyActive")}
         />
       ) : (
         <div className="space-y-2">
@@ -176,11 +169,11 @@ export default function MassReportPanel() {
                     <p className="text-sm font-semibold text-ink truncate">{r.reason}</p>
                     {r.is_custom && r.original_reason && r.original_reason !== r.reason && (
                       <p className="text-xs text-ink-soft/50 truncate">
-                        Draft ketua: {r.original_reason}
+                        {t("report.draftKetua")} {r.original_reason}
                       </p>
                     )}
                     <p className="text-xs mt-0.5 truncate">
-                      <span className="text-ink-soft/70">Target: </span>
+                      <span className="text-ink-soft/70">{t("report.target")} </span>
                       <span className="font-semibold text-forest">
                         {r.target_names.join(", ") || "—"}
                       </span>
@@ -189,7 +182,7 @@ export default function MassReportPanel() {
                     </p>
                     <p className="text-xs text-ink-soft/50 mt-1">
                       Oleh {formatDisplayName(r.created_by_name) || r.created_by}
-                      {r.hasPhoto ? " · ada foto" : ""}
+                      {r.hasPhoto ? t("report.hasPhoto") : ""}
                     </p>
                   </div>
                   <span
@@ -199,13 +192,13 @@ export default function MassReportPanel() {
                         : "bg-forest/10 text-forest border border-forest/20"
                     }`}
                   >
-                    {STATUS_LABEL[r.status]}
+                    {statusLabel(r.status)}
                   </span>
                 </div>
 
                 {r.note && (
                   <div className="rounded-xl border border-dashed border-[#EEA34C]/50 bg-white px-2.5 py-2">
-                    <p className="text-[11px] font-semibold text-[#9a6a20] mb-0.5">Catatan:</p>
+                      <p className="text-[11px] font-semibold text-[#9a6a20] mb-0.5">{t("report.noteLabel")}</p>
                     <p className="text-[11px] text-ink leading-snug whitespace-pre-wrap">
                       {r.note}
                     </p>
@@ -214,9 +207,9 @@ export default function MassReportPanel() {
 
                 <div className="space-y-1">
                   <div className="flex justify-between text-[11px] text-ink-soft/60">
-                    <span>
-                      {r.yesCount ?? 0} setuju · {r.noCount ?? 0} tidak · min. {r.threshold ?? 10} vote
-                    </span>
+                      <span>
+                        {t("report.voteCount", { yes: r.yesCount ?? 0, no: r.noCount ?? 0, min: r.threshold ?? 10 })}
+                      </span>
                   </div>
                   <div className="h-1.5 bg-surface rounded-full overflow-hidden">
                     <div
@@ -233,23 +226,23 @@ export default function MassReportPanel() {
                     className="text-xs font-semibold text-forest"
                   >
                     {expandId === r.id
-                      ? "Sembunyikan detail vote"
-                      : `Siapa yang vote (${(r.yesVoters?.length ?? 0) + (r.noVoters?.length ?? 0)})`}
+                      ? t("report.hideVoteDetail")
+                      : t("report.showVoters", { n: (r.yesVoters?.length ?? 0) + (r.noVoters?.length ?? 0) })}
                   </button>
                 )}
 
                 {canReview && expandId === r.id && (
                   <div className="rounded-xl border border-line overflow-hidden">
                     <div className="bg-page/80 px-3 py-1.5 border-b border-line flex items-center justify-between">
-                      <p className="text-xs font-bold text-ink">Detail vote</p>
+                      <p className="text-xs font-bold text-ink">{t("report.voteDetail")}</p>
                       <span className="text-[11px] text-ink-soft/50">
-                        {(r.yesVoters?.length ?? 0) + (r.noVoters?.length ?? 0)} orang
+                        {t("report.votersCount", { n: (r.yesVoters?.length ?? 0) + (r.noVoters?.length ?? 0) })}
                       </span>
                     </div>
                     <div className="grid grid-cols-[2rem_minmax(0,1fr)_2.5rem] gap-2 px-3 py-1.5 bg-page/60 border-b border-line text-[11px] font-medium uppercase tracking-wide text-ink-soft/55">
-                      <span className="text-center">No</span>
-                      <span className="min-w-0">Nama</span>
-                      <span className="text-center">Votes</span>
+                      <span className="text-center">{t("kas.colNo")}</span>
+                      <span className="min-w-0">{t("kas.colName")}</span>
+                      <span className="text-center">{t("report.votesCol")}</span>
                     </div>
                     <div className="max-h-48 scroll-y-only divide-y divide-line/40">
                       {(r.yesVoters ?? []).map((name, i) => (
@@ -288,7 +281,7 @@ export default function MassReportPanel() {
                         )
                       })}
                       {(r.yesVoters?.length || r.noVoters?.length) ? null : (
-                        <p className="px-3 py-3 text-xs text-ink-soft/60">Belum ada vote</p>
+                        <p className="px-3 py-3 text-xs text-ink-soft/60">                        {t("report.noVotesYet")}</p>
                       )}
                     </div>
                   </div>
@@ -303,7 +296,7 @@ export default function MassReportPanel() {
                       className="w-full flex items-center justify-center gap-1.5 text-sm font-semibold text-[#9a6a20] bg-[#EEA34C]/12 border border-[#EEA34C]/45 rounded-xl py-2"
                     >
                       <ImageIcon className="h-3.5 w-3.5" />
-                      Lihat Bukti
+                      {t("report.viewProof")}
                     </button>
                   )}
 
@@ -319,7 +312,7 @@ export default function MassReportPanel() {
                           className="flex items-center justify-center gap-1 bg-forest text-white text-sm font-semibold py-2.5 rounded-xl"
                         >
                           <Check className="h-3.5 w-3.5" />
-                          Terima
+                          {t("report.accept")}
                         </button>
                         <button
                           type="button"
@@ -327,7 +320,7 @@ export default function MassReportPanel() {
                           className="flex items-center justify-center gap-1 bg-page border border-line text-ink text-sm font-semibold py-2.5 rounded-xl"
                         >
                           <X className="h-3.5 w-3.5" />
-                          Tolak
+                          {t("roster.reject")}
                         </button>
                       </div>
                     )
@@ -341,7 +334,7 @@ export default function MassReportPanel() {
                             className="flex items-center justify-center gap-1 bg-forest text-white text-sm font-semibold py-2.5 rounded-xl"
                           >
                             <Check className="h-3.5 w-3.5" />
-                            Setuju
+                            {t("report.voteYes")}
                           </button>
                           <button
                             type="button"
@@ -349,19 +342,19 @@ export default function MassReportPanel() {
                             className="flex items-center justify-center gap-1 bg-page border border-line text-ink text-sm font-semibold py-2.5 rounded-xl"
                           >
                             <X className="h-3.5 w-3.5" />
-                            Tidak
+                            {t("report.voteNo")}
                           </button>
                         </div>
                       )}
                       {r.iVoted && (
                         <p className="text-xs font-medium text-forest text-center py-1">
-                          Anda sudah vote
-                          {r.iChoice === "NO" ? " (Tidak Setuju)" : r.iChoice ? " (Setuju)" : ""}
+                          {t("report.voted")}
+                          {r.iChoice === "NO" ? ` (${t("report.voteNo")})` : r.iChoice ? ` (${t("report.voteYes")})` : ""}
                         </p>
                       )}
                       {r.isTarget && (
                         <p className="text-xs text-ink-soft/60 text-center py-1">
-                          Anda termasuk target — tidak bisa vote
+                          {t("report.isTarget")}
                         </p>
                       )}
                     </>
@@ -376,7 +369,7 @@ export default function MassReportPanel() {
       {done.length > 0 && (
         <div className="mt-4">
           <div className="flex items-center justify-between gap-2 mb-2">
-            <SectionHeader title="Riwayat report" />
+            <SectionHeader title={t("report.history")} />
             {donePages > 1 && (
               <span className="text-xs text-ink-soft/60 shrink-0 mb-2">
                 {page + 1}/{donePages}
@@ -385,9 +378,9 @@ export default function MassReportPanel() {
           </div>
           <div className="bg-white border border-line shadow-sm rounded-xl overflow-hidden">
             <div className="grid grid-cols-[1fr_7.5rem_4.5rem] gap-2 px-3 py-1.5 bg-page/80 border-b border-line text-[11px] font-semibold uppercase tracking-wide text-ink-soft/60">
-              <span>Laporan</span>
-              <span className="text-center">Tanggal</span>
-              <span className="text-right">Status</span>
+              <span>{t("report.colReport")}</span>
+              <span className="text-center">{t("report.colDate")}</span>
+              <span className="text-right">{t("report.colStatus")}</span>
             </div>
             <div className="divide-y divide-line/40">
               {donePageItems.map((r) => {
@@ -412,7 +405,7 @@ export default function MassReportPanel() {
                         {r.reason}
                       </p>
                       <p className="text-xs text-ink-soft/60 truncate mt-0.5">
-                        Target: {r.target_names.join(", ")} · −{r.delta} poin
+                        {t("report.targetLine", { names: r.target_names.join(", "), amount: r.delta })}
                       </p>
                     </div>
                     <p className="text-center text-xs text-ink-soft/70 tabular-nums whitespace-nowrap">
@@ -426,7 +419,7 @@ export default function MassReportPanel() {
                             : "bg-alert-bg text-alert"
                         }`}
                       >
-                        {STATUS_LABEL[r.status]}
+                        {statusLabel(r.status)}
                       </span>
                     </div>
                   </button>
@@ -443,10 +436,10 @@ export default function MassReportPanel() {
                 onClick={() => setDonePage((p) => Math.max(0, p - 1))}
                 className="px-3 py-1.5 text-sm font-semibold rounded-xl bg-white border border-line text-ink disabled:opacity-40"
               >
-                Sebelumnya
+                {t("common.prev")}
               </button>
               <span className="text-xs text-ink-soft/60 tabular-nums">
-                Halaman {page + 1} dari {donePages}
+                {t("report.pageOf", { a: page + 1, b: donePages })}
               </span>
               <button
                 type="button"
@@ -454,7 +447,7 @@ export default function MassReportPanel() {
                 onClick={() => setDonePage((p) => Math.min(donePages - 1, p + 1))}
                 className="px-3 py-1.5 text-sm font-semibold rounded-xl bg-white border border-line text-ink disabled:opacity-40"
               >
-                Berikutnya
+                {t("common.next")}
               </button>
             </div>
           )}
@@ -465,11 +458,11 @@ export default function MassReportPanel() {
       <Sheet
         open={Boolean(editId)}
         onClose={() => setEditId(null)}
-        title="Terima Report"
+        title={t("report.acceptTitle")}
       >
         <div className="space-y-3">
           <div>
-            <p className="text-sm font-semibold text-ink">Deskripsi (bisa diperbaiki)</p>
+            <p className="text-sm font-semibold text-ink">{t("report.descEditable")}</p>
             <textarea
               value={editReason}
               onChange={(e) => setEditReason(e.target.value)}
@@ -477,7 +470,7 @@ export default function MassReportPanel() {
               className={inputClass + " mt-1 resize-none scroll-y-only"}
             />
             <p className="mt-1 text-[11px] text-ink-soft/55">
-              Jika report custom, teks ini menjadi preset baru untuk kelas.
+              {t("report.customPresetHint")}
             </p>
           </div>
           <button
@@ -486,7 +479,7 @@ export default function MassReportPanel() {
             onClick={() => void review(editId!, "APPROVED", editReason.trim())}
             className="w-full bg-forest text-white text-sm font-bold py-2.5 rounded-xl disabled:opacity-50"
           >
-            Apply & Kurangi Poin
+            {t("report.applyDeduct")}
           </button>
         </div>
       </Sheet>
@@ -495,7 +488,7 @@ export default function MassReportPanel() {
       <Sheet
         open={Boolean(detailId)}
         onClose={() => setDetailId(null)}
-        title="Detail Report"
+        title={t("report.detailTitle")}
         fullHeight
       >
         {detail && (
@@ -513,7 +506,7 @@ export default function MassReportPanel() {
             </div>
             {detail.note && (
               <div className="rounded-xl border border-dashed border-[#EEA34C]/50 bg-white px-3 py-2 min-w-0">
-                <p className="text-[11px] font-semibold text-[#9a6a20] mb-0.5">Catatan:</p>
+                <p className="text-[11px] font-semibold text-[#9a6a20] mb-0.5">{t("report.noteLabel")}</p>
                 <p className="text-[11px] text-ink leading-relaxed whitespace-pre-wrap break-words">
                   {detail.note}
                 </p>
@@ -522,7 +515,7 @@ export default function MassReportPanel() {
 
             <div className="rounded-xl border border-line bg-page/50 divide-y divide-line/40 min-w-0">
               <div className="flex items-center justify-between gap-3 px-3 py-2">
-                <span className="text-xs text-ink-soft/60">Status</span>
+                <span className="text-xs text-ink-soft/60">{t("report.status")}</span>
                 <span
                   className={`text-xs font-bold px-2 py-0.5 rounded ${
                     detail.status === "APPROVED"
@@ -532,17 +525,17 @@ export default function MassReportPanel() {
                         : "bg-amber/15 text-amber-800"
                   }`}
                 >
-                  {STATUS_LABEL[detail.status]}
+                  {statusLabel(detail.status)}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-3 px-3 py-2 min-w-0">
-                <span className="text-xs text-ink-soft/60 shrink-0">Dilaporkan</span>
+                <span className="text-xs text-ink-soft/60 shrink-0">{t("report.reportedBy")}</span>
                 <span className="text-[11px] font-medium text-ink text-right truncate min-w-0">
                   {formatDisplayName(detail.created_by_name) || detail.created_by}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-3 px-3 py-2 min-w-0">
-                <span className="text-xs text-ink-soft/60 shrink-0">Tanggal</span>
+                <span className="text-xs text-ink-soft/60 shrink-0">{t("report.colDate")}</span>
                 <span className="text-[11px] font-medium text-ink text-right whitespace-nowrap">
                   {detail.created_at
                     ? new Date(detail.created_at).toLocaleDateString("id-ID", {
@@ -557,9 +550,9 @@ export default function MassReportPanel() {
               <div className="flex items-center justify-between gap-3 px-3 py-2 min-w-0">
                 <span className="text-xs text-ink-soft/60 shrink-0">Vote</span>
                 <span className="text-[11px] font-medium text-ink whitespace-nowrap">
-                  <span className="text-forest font-semibold">{detail.yesCount ?? 0} setuju</span>
+                  <span className="text-forest font-semibold">{t("report.voteYesCount", { n: detail.yesCount ?? 0 })}</span>
                   <span className="text-ink-soft/40"> · </span>
-                  <span className="text-alert font-semibold">{detail.noCount ?? 0} tidak</span>
+                  <span className="text-alert font-semibold">{t("report.voteNoCount", { n: detail.noCount ?? 0 })}</span>
                 </span>
               </div>
             </div>
@@ -568,15 +561,15 @@ export default function MassReportPanel() {
             {canReview && (
               <div className="rounded-xl border border-line overflow-hidden">
                 <div className="bg-page/80 px-3 py-1.5 border-b border-line flex items-center justify-between">
-                  <p className="text-xs font-bold text-ink">Siapa yang vote</p>
-                  <span className="text-[11px] text-ink-soft/50">
-                    {(detail.yesVoters?.length ?? 0) + (detail.noVoters?.length ?? 0)} orang
-                  </span>
+                    <p className="text-xs font-bold text-ink">{t("report.whoVoted")}</p>
+                    <span className="text-[11px] text-ink-soft/50">
+                      {t("report.votersCount", { n: (detail.yesVoters?.length ?? 0) + (detail.noVoters?.length ?? 0) })}
+                    </span>
                 </div>
                 <div className="grid grid-cols-[2rem_minmax(0,1fr)_2.5rem] gap-2 px-3 py-1.5 bg-page/60 border-b border-line text-[11px] font-medium uppercase tracking-wide text-ink-soft/55">
-                  <span className="text-center">No</span>
-                  <span className="min-w-0">Nama</span>
-                  <span className="text-center">Votes</span>
+                  <span className="text-center">{t("kas.colNo")}</span>
+                  <span className="min-w-0">{t("kas.colName")}</span>
+                  <span className="text-center">{t("report.votesCol")}</span>
                 </div>
                 <div className="scroll-y-only divide-y divide-line/40">
                   {(detail.yesVoters ?? []).map((name, i) => (
@@ -617,7 +610,7 @@ export default function MassReportPanel() {
                   {(detail.yesVoters?.length ?? 0) === 0 &&
                     (detail.noVoters?.length ?? 0) === 0 && (
                       <p className="px-3 py-3 text-[11px] text-ink-soft/55">
-                        Belum ada yang vote
+                        {t("report.noVoters")}
                       </p>
                     )}
                 </div>
@@ -629,8 +622,8 @@ export default function MassReportPanel() {
                 onClick={() => void openPhoto(detail.id)}
                 className="w-full flex items-center justify-center gap-1.5 text-sm font-semibold text-[#9a6a20] bg-[#EEA34C]/12 border border-[#EEA34C]/45 rounded-xl py-2"
               >
-                <ImageIcon className="h-3.5 w-3.5" />
-                Lihat Bukti
+<ImageIcon className="h-3.5 w-3.5" />
+                      {t("report.viewProof")}
               </button>
             )}
           </div>
@@ -643,11 +636,11 @@ export default function MassReportPanel() {
           className="fixed inset-0 z-[80] flex items-center justify-center p-4"
           role="dialog"
           aria-modal="true"
-          aria-label="Foto bukti"
+          aria-label={t("report.photoProof")}
         >
           <button
             type="button"
-            aria-label="Tutup foto"
+            aria-label={t("report.closePhoto")}
             onClick={() => setPhotoOpen(false)}
             className="absolute inset-0 bg-ink/70"
           />
@@ -655,7 +648,7 @@ export default function MassReportPanel() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={photoUrl}
-              alt="Foto bukti"
+              alt={t("report.photoProof")}
               className="max-w-full max-h-[75vh] object-contain rounded-xl border border-white/10 shadow-2xl bg-page"
             />
             <button
@@ -663,7 +656,7 @@ export default function MassReportPanel() {
               onClick={() => setPhotoOpen(false)}
               className="rounded-xl bg-white/95 px-4 py-2 text-sm font-semibold text-ink"
             >
-              Tutup
+              {t("common.close")}
             </button>
           </div>
         </div>

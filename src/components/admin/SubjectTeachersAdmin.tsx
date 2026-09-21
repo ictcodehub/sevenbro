@@ -5,6 +5,7 @@ import { Check } from "lucide-react"
 import { useAppSWR } from "@/lib/fetcher"
 import { inputClass } from "@/components/ui/sheet"
 import type { SubjectTeacherRow } from "@/lib/info-brief"
+import { useT } from "@/lib/i18n"
 
 /**
  * Guru mapel — frame section standar (kotak putih + header page)
@@ -23,6 +24,7 @@ export default function SubjectTeachersAdmin() {
     setDrafts(next)
   }, [data])
 
+  const t = useT()
   const flash = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(null), 2500)
@@ -43,11 +45,11 @@ export default function SubjectTeachersAdmin() {
         body: JSON.stringify({ subject_name, teacher_name, active: true }),
       })
       const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
-      flash(`Tersimpan: ${subject_name}`)
+      if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
+      flash(t("roster.subjectSaved", { name: subject_name }))
       await mutate()
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Gagal menyimpan")
+      setErr(e instanceof Error ? e.message : t("common.saveFailed"))
     } finally {
       setSavingKey(null)
     }
@@ -57,9 +59,9 @@ export default function SubjectTeachersAdmin() {
     <div className="rounded-2xl border border-line bg-white shadow-sm overflow-hidden">
       <div className="flex items-start justify-between gap-2 border-b border-line bg-page px-3 py-2.5">
         <div className="min-w-0">
-          <p className="text-sm font-bold text-ink">Guru Mapel</p>
+          <p className="text-sm font-bold text-ink">{t("roster.subjectTeachers")}</p>
           <p className="text-xs text-ink-soft/70 leading-snug">
-            Tabel Brief Info · ganti guru di sini, tanpa deploy
+            {t("roster.briefTableHint")}
           </p>
         </div>
       </div>
@@ -73,17 +75,17 @@ export default function SubjectTeachersAdmin() {
 
         {!data ? (
           <div className="rounded-xl border border-dashed border-line bg-page px-3 py-4 text-center">
-            <p className="text-xs font-semibold text-ink-soft">Memuat daftar mapel…</p>
+            <p className="text-xs font-semibold text-ink-soft">{t("roster.loadingSubjects")}</p>
           </div>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-line">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-page border-b border-line">
-                  <th className="px-2 py-1.5 text-xs font-semibold text-ink w-8">No.</th>
-                  <th className="px-2 py-1.5 text-xs font-semibold text-ink">Mapel</th>
+                  <th className="px-2 py-1.5 text-xs font-semibold text-ink w-8">{t("roster.colNo")}</th>
+                  <th className="px-2 py-1.5 text-xs font-semibold text-ink">{t("info.subjectCol")}</th>
                   <th className="px-2 py-1.5 text-xs font-semibold text-ink whitespace-nowrap">
-                    Nama Guru
+                    {t("info.teacherCol")}
                   </th>
                   <th className="px-1 py-1.5 w-10" />
                 </tr>
@@ -110,7 +112,7 @@ export default function SubjectTeachersAdmin() {
                             setDrafts((p) => ({ ...p, [row.subject_name]: e.target.value }))
                           }
                           className={inputClass + " !py-1 !text-xs min-w-[140px]"}
-                          placeholder="Nama guru"
+                          placeholder={t("roster.teacherNamePh")}
                         />
                       </td>
                       <td className="px-1 py-1.5 align-middle">

@@ -19,6 +19,7 @@ import { RoleGate } from "@/components/RoleGate"
 import { formatDisplayName } from "@/lib/format"
 import { formatRoleLabel } from "@/lib/roles"
 import { clearSwrCache } from "@/lib/swr-store"
+import { useT } from "@/lib/i18n"
 
 type LeaderRow = {
   student_id: string
@@ -64,11 +65,12 @@ function ScanInner() {
   const [err, setErr] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [lastSaved, setLastSaved] = useState<string | null>(null)
+  const t = useT()
 
   if (status === "loading") {
     return (
       <div className="px-4 py-3">
-        <p className="text-xs text-ink-soft/75">Memuat…</p>
+        <p className="text-xs text-ink-soft/75">{t("common.loading")}</p>
       </div>
     )
   }
@@ -78,7 +80,7 @@ function ScanInner() {
       <div className="px-4 py-3">
         <EmptyState
           icon={<Shield className="h-6 w-6" />}
-          message="Fitur ini hanya untuk guru dan wali kelas"
+          message={t("scan.onlyTeachers")}
         />
       </div>
     )
@@ -103,14 +105,14 @@ function ScanInner() {
         body: JSON.stringify({ studentId, kind, delta: amount, reason: reason.trim() }),
       })
       const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
-      const name = students?.find((s) => s.id === studentId)?.full_name ?? "Siswa"
+      if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
+      const name = students?.find((s) => s.id === studentId)?.full_name ?? t("poin.student")
       setLastSaved(
-        `${kind === "PRESTASI" ? "+" : "−"}${amount} → ${name}`,
+        t("scan.lastSaved", { sign: kind === "PRESTASI" ? "+" : "−", amount, name }),
       )
       setReason("")
       setStudentId("")
-      flash("Poin berhasil disimpan.")
+      flash(t("poin.saved"))
       await mutate()
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Gagal menyimpan")
@@ -124,9 +126,9 @@ function ScanInner() {
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-forest/70">
-            Scan Mode
+            {t("scan.mode")}
           </p>
-          <h1 className="text-lg font-bold text-ink">Beri Poin</h1>
+          <h1 className="text-lg font-bold text-ink">{t("poin.give")}</h1>
           <p className="text-xs text-ink-soft/75">
             {formatDisplayName(session?.user?.name)} · {formatRoleLabel(role)}
           </p>
@@ -138,7 +140,7 @@ function ScanInner() {
 
       {lastSaved && (
         <div className="rounded-xl border border-lime/40 bg-lime-soft/40 px-3 py-2 text-xs font-semibold text-forest">
-          Terakhir: {lastSaved}
+          {t("scan.lastSavedLabel")} {lastSaved}
         </div>
       )}
 
@@ -148,13 +150,13 @@ function ScanInner() {
         </p>
       )}
 
-      <Field label="Siswa">
+      <Field label={t("poin.student")}>
         <select
           value={studentId}
           onChange={(e) => setStudentId(e.target.value)}
           className={inputClass}
         >
-          <option value="">Pilih siswa…</option>
+          <option value="">{t("scan.pickStudent")}</option>
           {(students ?? []).map((s) => (
             <option key={s.id} value={s.id}>
               {formatDisplayName(s.full_name)}
@@ -174,7 +176,7 @@ function ScanInner() {
       )}
 
       <div className="space-y-1">
-        <span className="text-sm font-semibold text-ink">Jenis</span>
+        <span className="text-sm font-semibold text-ink">{t("scan.kind")}</span>
         <div className="grid grid-cols-2 gap-2">
           {(["PRESTASI", "PELANGGARAN"] as const).map((k) => (
             <button
@@ -191,11 +193,11 @@ function ScanInner() {
             >
               {k === "PRESTASI" ? (
                 <span className="flex items-center justify-center gap-1">
-                  <Zap className="h-4 w-4" /> Prestasi
+                  <Zap className="h-4 w-4" /> {t("poin.prestasi")}
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-1">
-                  <ArrowDownRight className="h-4 w-4" /> Pelanggaran
+                  <ArrowDownRight className="h-4 w-4" /> {t("poin.pelanggaran")}
                 </span>
               )}
             </button>
@@ -204,7 +206,7 @@ function ScanInner() {
       </div>
 
       <div className="space-y-1">
-        <span className="text-sm font-semibold text-ink">Poin</span>
+        <span className="text-sm font-semibold text-ink">{t("poin.title")}</span>
         <div className="grid grid-cols-3 gap-2">
           {AMOUNTS.map((n) => (
             <button
@@ -224,15 +226,15 @@ function ScanInner() {
         </div>
       </div>
 
-      <Field label="Alasan" hint="Wajib — muncul di riwayat kelas">
+      <Field label={t("poin.reason")} hint={t("scan.reasonHint")}>
         <textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           rows={3}
           placeholder={
             kind === "PRESTASI"
-              ? "Membantu teman…"
-              : "Terlambat / tidak nurut…"
+              ? t("scan.phGood")
+              : t("scan.phBad")
           }
           className={inputClass + " resize-none scroll-y-only"}
         />
@@ -245,12 +247,12 @@ function ScanInner() {
         className="w-full bg-forest text-white text-sm font-black py-3.5 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.98]"
       >
         <Check className="h-5 w-5" />
-        {saving ? "Menyimpan…" : "Simpan Poin"}
+        {saving ? t("kas.saving") : t("scan.savePoints")}
       </button>
 
       {(data?.leaderboard?.length ?? 0) > 0 && (
         <p className="text-xs text-ink-soft/50 text-center">
-          {data!.leaderboard.length} siswa terdaftar · kelas aktif
+          {t("scan.registered", { n: data!.leaderboard.length })}
         </p>
       )}
 
@@ -262,7 +264,7 @@ function ScanInner() {
         }}
         className="w-full text-xs font-semibold text-ink-soft py-2"
       >
-        Keluar
+        {t("scan.signOut")}
       </button>
 
       {toast && (

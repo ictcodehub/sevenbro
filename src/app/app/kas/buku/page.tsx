@@ -20,6 +20,7 @@ import { EmptyState } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
 import { formatIDR, formatDateID, formatTimeID, formatDisplayName } from "@/lib/format"
 import { RoleGate } from "@/components/RoleGate"
+import { useT } from "@/lib/i18n"
 
 type Tx = {
   id: string
@@ -136,6 +137,7 @@ function MiniCalendar({
   onClose: () => void
   top: number
 }) {
+  const t = useT()
   const now = selected ? new Date(selected + "T12:00:00") : new Date()
   const [viewY, setViewY] = useState(now.getFullYear())
   const [viewM, setViewM] = useState(now.getMonth())
@@ -155,7 +157,7 @@ function MiniCalendar({
       {/* Scrim — tutup kalau tap di luar */}
       <button
         type="button"
-        aria-label="Tutup kalender"
+        aria-label={t("kas.closeCalendar")}
         onClick={onClose}
         className="fixed inset-0 z-30"
       />
@@ -174,7 +176,7 @@ function MiniCalendar({
               } else setViewM((m) => m - 1)
             }}
             className="p-1 text-ink-soft"
-            aria-label="Bulan sebelumnya"
+            aria-label={t("kas.prevMonth")}
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -190,7 +192,7 @@ function MiniCalendar({
               } else setViewM((m) => m + 1)
             }}
             className="p-1 text-ink-soft"
-            aria-label="Bulan berikutnya"
+            aria-label={t("kas.nextMonth")}
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -252,10 +254,10 @@ function MiniCalendar({
 
         <div className="mt-2 pt-2 border-t border-line/50 flex items-center gap-4 text-xs text-ink-soft/60">
           <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-forest" /> Masuk
+            <span className="h-1.5 w-1.5 rounded-full bg-forest" /> {t("home.in")}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-alert" /> Keluar
+            <span className="h-1.5 w-1.5 rounded-full bg-alert" /> {t("home.out")}
           </span>
           <button
             type="button"
@@ -265,7 +267,7 @@ function MiniCalendar({
             }}
             className="ml-auto text-forest font-semibold"
           >
-            Semua Bulan
+            {t("kas.allMonths")}
           </button>
         </div>
       </div>
@@ -289,6 +291,7 @@ function BukuKasInner() {
   )
 
   const [q, setQ] = useState("")
+  const t = useT()
   const [only, setOnly] = useState<"all" | "IN" | "OUT">("all")
   const [date, setDate] = useState("")
   const [calOpen, setCalOpen] = useState(false)
@@ -558,7 +561,7 @@ function BukuKasInner() {
         }
         const paidCount = nameSet.size > 0 ? nameSet.size : iuran.length
         const label =
-          totalSiswa > 0 ? `${paidCount}/${totalSiswa} Siswa` : `${paidCount} Siswa`
+          totalSiswa > 0 ? t("kas.studentsCount", { paid: paidCount, total: totalSiswa }) : t("kas.studentsCountLabel", { n: paidCount })
         lines.push({
           key: `iuran-${day}`,
           day,
@@ -596,12 +599,12 @@ function BukuKasInner() {
         <div className="flex items-center gap-2 mb-3">
           <Link
             href="/app/kas"
-            aria-label="Kembali"
+            aria-label={t("common.back")}
             className="flex items-center justify-center text-ink shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <h1 className="flex-1 text-lg font-bold text-ink leading-tight">Buku Kas</h1>
+          <h1 className="flex-1 text-lg font-bold text-ink leading-tight">{t("kas.book")}</h1>
           <div className="relative shrink-0">
             <button
               ref={calBtnRef}
@@ -613,7 +616,7 @@ function BukuKasInner() {
                 }
                 setCalOpen((v) => !v)
               }}
-              aria-label="Pilih tanggal"
+              aria-label={t("kas.pickDate")}
               className={`flex items-center gap-1.5 h-8 px-2 rounded-lg border bg-page text-xs font-medium text-ink ${
                 calOpen ? "border-forest" : "border-line"
               }`}
@@ -622,7 +625,7 @@ function BukuKasInner() {
               <span className="max-w-[100px] truncate">
                 {date
                   ? `${MONTHS_ID[parseInt(date.slice(5, 7), 10) - 1]} ${date.slice(0, 4)}`
-                  : "Bulan"}
+                  : t("kas.month")}
               </span>
               {date && (
                 <span
@@ -638,7 +641,7 @@ function BukuKasInner() {
                       setDate("")
                     }
                   }}
-                  aria-label="Hapus filter tanggal"
+                  aria-label={t("kas.clearDateFilter")}
                   className="text-ink-soft/40 p-0.5"
                 >
                   <X className="h-3 w-3" />
@@ -659,13 +662,13 @@ function BukuKasInner() {
 
         {/* Tab: ledger vs per siswa vs matriks */}
         <div className="grid grid-cols-3 gap-1 bg-surface rounded-lg p-0.5 mb-3">
-          {(
-            [
-              ["ledger", "Transaksi"],
-              ["siswa", "Per Siswa"],
-              ["matriks", "Matriks"],
-            ] as const
-          ).map(([k, label]) => (
+            {(
+              [
+                ["ledger", t("kas.tabLedger")],
+                ["siswa", t("kas.tabPerStudent")],
+                ["matriks", t("kas.tabMatrix")],
+              ] as const
+            ).map(([k, label]) => (
             <button
               key={k}
               type="button"
@@ -687,7 +690,7 @@ function BukuKasInner() {
               type="text"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Cari nama…"
+              placeholder={t("kas.searchName")}
               className="flex-1 min-w-0 bg-transparent text-sm text-ink outline-none placeholder:text-ink-soft/40"
               autoComplete="off"
               autoCorrect="off"
@@ -698,7 +701,7 @@ function BukuKasInner() {
               <button
                 type="button"
                 onClick={() => setQ("")}
-                aria-label="Bersihkan"
+                aria-label={t("kas.clearSearchLabel")}
                 className="shrink-0 p-0.5 text-ink-soft/50"
               >
                 <X className="h-3.5 w-3.5" />
@@ -710,13 +713,13 @@ function BukuKasInner() {
         {/* Baris: filter + reset + total inline — hanya ledger */}
         {view === "ledger" && (
         <div className="flex items-center gap-1.5 mb-1">
-          {(
-            [
-              ["all", "Semua"],
-              ["IN", "Masuk"],
-              ["OUT", "Keluar"],
-            ] as const
-          ).map(([k, label]) => (
+            {(
+              [
+                ["all", t("common.all")],
+                ["IN", t("home.in")],
+                ["OUT", t("home.out")],
+              ] as const
+            ).map(([k, label]) => (
             <button
               key={k}
               type="button"
@@ -742,7 +745,7 @@ function BukuKasInner() {
                 }}
                 className="text-xs font-semibold text-forest shrink-0"
               >
-                Reset
+                {t("kas.reset")}
               </button>
             </>
           )}
@@ -765,7 +768,7 @@ function BukuKasInner() {
             {date && (
               <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-forest/10 text-forest">
                 {MONTHS_ID[parseInt(date.slice(5, 7), 10) - 1]} {date.slice(0, 4)}
-                <button type="button" onClick={() => setDate("")} aria-label="Hapus tanggal">
+                <button type="button" onClick={() => setDate("")} aria-label={t("kas.clearDate")}>
                   <X className="h-3 w-3" />
                 </button>
               </span>
@@ -773,7 +776,7 @@ function BukuKasInner() {
             {q.trim() && (
               <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-surface text-ink-soft">
                 “{q.trim()}”
-                <button type="button" onClick={() => setQ("")} aria-label="Hapus cari">
+                <button type="button" onClick={() => setQ("")} aria-label={t("kas.clearSearch")}>
                   <X className="h-3 w-3" />
                 </button>
               </span>
@@ -787,10 +790,10 @@ function BukuKasInner() {
           <div className="bg-white border border-line shadow-sm rounded-2xl overflow-hidden">
             <div className="px-3 pt-2.5 pb-2 bg-forest text-white">
               <p className="text-xs font-medium text-white/90">
-                Matriks iuran · {matriks.monthLabel}
+                {t("kas.matrixTitle", { month: matriks.monthLabel })}
               </p>
               <p className="text-[11px] text-white/50 mt-0.5">
-                {matriks.weeks.length} minggu · target 2x/minggu
+                {t("kas.matrixWeeks", { n: matriks.weeks.length })}
               </p>
             </div>
             <div className="overflow-x-auto">
@@ -798,7 +801,7 @@ function BukuKasInner() {
                 <thead>
                   <tr className="bg-page/80 border-b border-line text-ink-soft/60 font-medium">
                     <th className="px-2 py-1.5 text-left sticky left-0 bg-page/80 min-w-[90px]">
-                      Nama
+                      {t("kas.colName")}
                     </th>
                     {matriks.weeks.map((w) => (
                       <th key={w} className="px-0.5 py-1.5 text-center w-9">
@@ -841,7 +844,7 @@ function BukuKasInner() {
                         colSpan={1 + matriks.weeks.length}
                         className="p-5 text-center text-xs text-ink-soft/45"
                       >
-                        Belum ada data siswa
+                        {t("kas.noStudentData")}
                       </td>
                     </tr>
                   )}
@@ -849,19 +852,19 @@ function BukuKasInner() {
               </table>
             </div>
             <div className="px-3 py-2 bg-page/60 border-t border-line text-[11px] text-ink-soft/50 font-medium">
-              Kotak kosong = belum bayar · hijau ≥2 · kuning 1
+              {t("kas.matrixLegend")}
             </div>
           </div>
         ) : view === "siswa" ? (
           <div className="bg-white border border-line shadow-sm rounded-2xl overflow-hidden">
             <div className="px-3 pt-2.5 pb-2 bg-forest text-white">
-              <p className="text-xs font-medium text-white/90">Rekap bayar per siswa</p>
+              <p className="text-xs font-medium text-white/90">{t("kas.perStudentTitle")}</p>
               <div className="mt-2 flex gap-1">
                 {(
                   [
-                    ["week", "Minggu ini"],
-                    ["month", "Bulan ini"],
-                    ["all", "Semua"],
+                    ["week", t("kas.thisWeek")],
+                    ["month", t("kas.thisMonth")],
+                    ["all", t("common.all")],
                   ] as const
                 ).map(([k, label]) => (
                   <button
@@ -880,11 +883,11 @@ function BukuKasInner() {
               </div>
             </div>
             <div className="flex items-center gap-1 px-2.5 py-1.5 bg-page/80 border-b border-line text-[11px] font-medium uppercase text-ink-soft/55">
-              <span className="w-5 text-center shrink-0">No</span>
-              <span className="flex-1 min-w-0">Nama</span>
-              <span className="w-9 text-center shrink-0">Kali</span>
-              <span className="w-[64px] text-right shrink-0">Total</span>
-              <span className="w-[48px] text-right shrink-0">Terakhir</span>
+              <span className="w-5 text-center shrink-0">{t("kas.colNo")}</span>
+              <span className="flex-1 min-w-0">{t("kas.colName")}</span>
+              <span className="w-9 text-center shrink-0">{t("kas.timesCol")}</span>
+              <span className="w-[64px] text-right shrink-0">{t("kas.totalCol")}</span>
+              <span className="w-[48px] text-right shrink-0">{t("kas.lastCol")}</span>
             </div>
             <div className="divide-y divide-line/40">
               {perSiswa.map((s, i) => {
@@ -923,30 +926,30 @@ function BukuKasInner() {
               )}
             </div>
             <div className="px-3 py-2 bg-page/60 border-t border-line text-[11px] text-ink-soft/50 font-medium">
-              Target 8x/bulan · 0 merah · 2 cokelat · 4 kuning · 6 oranye · 8+ hijau
+              {t("kas.levelHint")}
             </div>
           </div>
         ) : error ? (
-          <EmptyState icon={<Inbox className="h-6 w-6" />} message="Gagal memuat buku kas" />
+          <EmptyState icon={<Inbox className="h-6 w-6" />} message={t("kas.bookError")} />
         ) : ledgerLines.length === 0 ? (
           <EmptyState
             icon={<BookOpen className="h-6 w-6" />}
-            message={
-              hasFilter
-                ? q.trim()
-                  ? `Tidak ada “${q.trim()}” di buku kas`
-                  : "Tidak ada data di filter ini"
-                : "Belum ada transaksi"
-            }
+              message={
+                hasFilter
+                  ? q.trim()
+                    ? t("kas.noQueryResult", { q: q.trim() })
+                    : t("kas.noFilterData")
+                  : t("kas.noTransactions")
+              }
           />
         ) : (
           <div className="bg-white border border-line shadow-sm rounded-2xl overflow-hidden">
             <div className="flex items-center gap-1.5 px-2 py-1.5 bg-forest text-white text-[11px] font-medium uppercase tracking-wide">
-              <span className="w-5 text-center shrink-0">No</span>
-              <span className="w-[64px] shrink-0">Tanggal</span>
-              <span className="flex-1 min-w-0">Uraian</span>
-              <span className="w-[72px] text-right shrink-0">Masuk</span>
-              <span className="w-[72px] text-right shrink-0">Keluar</span>
+              <span className="w-5 text-center shrink-0">{t("kas.colNo")}</span>
+              <span className="w-[64px] shrink-0">{t("kas.dateCol")}</span>
+              <span className="flex-1 min-w-0">{t("kas.descCol")}</span>
+              <span className="w-[72px] text-right shrink-0">{t("home.in")}</span>
+              <span className="w-[72px] text-right shrink-0">{t("home.out")}</span>
             </div>
 
             <div className="divide-y divide-line/40">
@@ -987,7 +990,7 @@ function BukuKasInner() {
             <div className="flex items-center gap-1.5 px-2 py-2 bg-deep text-white">
               <span className="w-5 shrink-0" />
               <span className="w-[64px] shrink-0" />
-              <span className="flex-1 text-[11px] font-semibold">TOTAL</span>
+              <span className="flex-1 text-[11px] font-semibold">{t("kas.totalRow")}</span>
               <span className="w-[72px] text-right text-[11px] font-medium text-lime tabular-nums">
                 {rp(totalIn)}
               </span>
@@ -1003,7 +1006,7 @@ function BukuKasInner() {
           onClick={() => void mutate()}
           className="mt-3 w-full text-xs font-semibold text-ink-soft py-2"
         >
-          Muat ulang
+          {t("kas.reload")}
         </button>
       </div>
 
@@ -1014,12 +1017,12 @@ function BukuKasInner() {
             <button
               type="button"
               onClick={() => setDetail(null)}
-              aria-label="Tutup detail"
+              aria-label={t("kas.closeDetail")}
               className="flex items-center justify-center text-ink"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <h2 className="text-lg font-bold text-ink flex-1">Detail transaksi</h2>
+            <h2 className="text-lg font-bold text-ink flex-1">{t("kas.txDetailTitle")}</h2>
             <span
               className={`text-xs font-bold px-2 py-1 rounded-full ${
                 detail.kind === "IN"
@@ -1027,7 +1030,7 @@ function BukuKasInner() {
                   : "bg-alert-bg text-alert"
               }`}
             >
-              {detail.kind === "IN" ? "MASUK" : "KELUAR"}
+              {detail.kind === "IN" ? t("kas.inUpper") : t("kas.outUpper")}
             </span>
           </div>
 
@@ -1039,7 +1042,7 @@ function BukuKasInner() {
               }`}
             >
               <p className="text-xs font-medium opacity-80">
-                {detail.kind === "IN" ? "Pemasukan" : "Pengeluaran"}
+                {detail.kind === "IN" ? t("kas.income") : t("kas.expense")}
               </p>
               <p className="mt-1 text-3xl font-black tabular-nums">
                 {rp(detail.amount)}
@@ -1050,12 +1053,12 @@ function BukuKasInner() {
             <div className="bg-white border border-line shadow-sm rounded-2xl overflow-hidden">
               <div className="divide-y divide-line/60">
                 {[
-                  ["Uraian", shortUraian(detail)],
-                  ["Kategori", detail.category || "—"],
-                  ["Tanggal kejadian", fullDate(detail.occurred_on)],
-                  ["Jam dicatat", formatTimeID(new Date(detail.created_at))],
-                  ["Dicatat oleh", detail.recorded_by || "—"],
-                  ["ID transaksi", detail.id],
+                  [t("kas.descCol"), shortUraian(detail)],
+                  [t("kas.categoryCol"), detail.category || "—"],
+                  [t("kas.eventDate"), fullDate(detail.occurred_on)],
+                  [t("kas.recordedTime"), formatTimeID(new Date(detail.created_at))],
+                  [t("kas.recordedBy"), detail.recorded_by || "—"],
+                  [t("kas.txId"), detail.id],
                 ].map(([label, value]) => (
                   <div
                     key={label}
@@ -1074,7 +1077,7 @@ function BukuKasInner() {
             <div className="flex items-center gap-2 text-xs text-ink-soft/60 px-1">
               <User className="h-3 w-3 shrink-0" />
               <span className="truncate">
-                Terakhir dicatat: <strong className="text-ink font-semibold">{detail.recorded_by || "—"}</strong>
+                {t("kas.lastRecorded")} <strong className="text-ink font-semibold">{detail.recorded_by || "—"}</strong>
               </span>
               <Clock className="h-3 w-3 shrink-0 ml-1" />
               <span className="shrink-0">
@@ -1087,19 +1090,19 @@ function BukuKasInner() {
             {isIuranTx(detail) && (
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold text-ink">
-                  Status siswa · {fullDate(detail.occurred_on)}
+                  {t("kas.dayStatus", { date: fullDate(detail.occurred_on) })}
                 </h3>
                 {dayStatusLoading ? (
-                  <p className="text-xs text-ink-soft/50">Memuat status…</p>
+                  <p className="text-xs text-ink-soft/50">{t("kas.loadingStatus")}</p>
                 ) : dayStatus ? (
                   <>
-                    {(
-                      [
-                        ["Bayar", dayStatus.bayar, "bg-forest text-white", "text-forest"],
-                        ["Izin", dayStatus.izin, "bg-amber text-white", "text-amber"],
-                        ["Nunggak", dayStatus.nunggak, "bg-alert text-white", "text-alert"],
-                      ] as const
-                    ).map(([label, names, chip, textCls]) => (
+                      {(
+                        [
+                          [t("kas.pay"), dayStatus.bayar, "bg-forest text-white", "text-forest"],
+                          [t("kas.leave"), dayStatus.izin, "bg-amber text-white", "text-amber"],
+                          [t("kas.overdue"), dayStatus.nunggak, "bg-alert text-white", "text-alert"],
+                        ] as const
+                      ).map(([label, names, chip, textCls]) => (
                       <div
                         key={label}
                         className="bg-white border border-line shadow-sm rounded-2xl overflow-hidden"
@@ -1109,12 +1112,12 @@ function BukuKasInner() {
                             {label}
                           </span>
                           <span className="text-xs text-ink-soft/60 tabular-nums">
-                            {names.length} siswa
+                            {t("kas.studentsCountLabel", { n: names.length })}
                           </span>
                         </div>
                         {names.length === 0 ? (
                           <p className={`px-3 py-2.5 text-xs ${textCls} opacity-70`}>
-                            Tidak ada
+                            {t("kas.none")}
                           </p>
                         ) : (
                           <div className="divide-y divide-line/40">
@@ -1136,12 +1139,11 @@ function BukuKasInner() {
                       </div>
                     ))}
                     <p className="text-[11px] text-ink-soft/50 leading-relaxed px-0.5">
-                      Izin = tidak tagih hari itu · bisa bayar lain hari lewat “Bayar Khusus”
-                      atau setoran berikutnya · tidak otomatis dihitung lunas.
+                      {t("kas.leaveNote")}
                     </p>
                   </>
                 ) : (
-                  <p className="text-xs text-ink-soft/50">Gagal memuat status siswa</p>
+                  <p className="text-xs text-ink-soft/50">{t("kas.statusLoadFailed")}</p>
                 )}
               </div>
             )}
@@ -1159,7 +1161,7 @@ function BukuKasInner() {
               onClick={() => setDetail(null)}
               className="w-full bg-forest text-white text-sm font-bold py-3 rounded-xl"
             >
-              Tutup
+              {t("common.close")}
             </button>
           </div>
         </div>

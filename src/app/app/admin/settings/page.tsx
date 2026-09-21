@@ -8,6 +8,7 @@ import { formatDisplayName } from "@/lib/format"
 import { useAppSWR } from "@/lib/fetcher"
 import SubjectTeachersAdmin from "@/components/admin/SubjectTeachersAdmin"
 import type { ClassSettings } from "@/lib/class-settings"
+import { useT } from "@/lib/i18n"
 
 /** Frame section standar (seragam Tugas / Membawa & Guru Mapel) */
 function SectionCard({
@@ -93,6 +94,7 @@ export default function AdminSettingsPage() {
   const [busyKey, setBusyKey] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
+  const t = useT()
 
   useEffect(() => {
     if (!data) return
@@ -120,12 +122,12 @@ export default function AdminSettingsPage() {
         body: JSON.stringify({ [key]: next }),
       })
       const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || `Gagal (${r.status})`)
-      flash(next ? "Fitur diaktifkan" : "Fitur dinonaktifkan untuk murid")
+      if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
+      flash(t(next ? "feature.enabled" : "feature.disabledStudents"))
       await mutate()
     } catch (e) {
       setDraft((p) => ({ ...p, [key]: !next }))
-      setErr(e instanceof Error ? e.message : "Gagal menyimpan")
+      setErr(e instanceof Error ? e.message : t("common.saveFailed"))
     } finally {
       setBusyKey(null)
     }
@@ -134,7 +136,7 @@ export default function AdminSettingsPage() {
   if (status === "loading") {
     return (
       <div className="px-4 py-3">
-        <p className="text-xs text-ink-soft/75">Memuat…</p>
+          <p className="text-xs text-ink-soft/75">{t("common.loading")}</p>
       </div>
     )
   }
@@ -144,7 +146,7 @@ export default function AdminSettingsPage() {
       <div className="px-4 py-3">
         <EmptyState
           icon={<Shield className="h-6 w-6" />}
-          message="Hanya wali kelas yang boleh membuka pengaturan kelas"
+          message={t("adminSettings.accessDenied")}
         />
       </div>
     )
@@ -153,10 +155,10 @@ export default function AdminSettingsPage() {
   return (
     <div className="px-4 py-3 space-y-3">
       <div>
-        <h1 className="text-lg font-bold text-ink">Pengaturan Kelas</h1>
-        <p className="text-xs text-ink-soft/75">
-          Aktifkan / nonaktifkan menu untuk murid (tersimpan di database)
-        </p>
+          <h1 className="text-lg font-bold text-ink">{t("nav.classSettings")}</h1>
+          <p className="text-xs text-ink-soft/75">
+            {t("adminSettings.subtitle")}
+          </p>
       </div>
 
       {err && (
@@ -166,36 +168,36 @@ export default function AdminSettingsPage() {
       )}
 
       <SectionCard
-        title="Fitur Kelas"
-        subtitle="Nonaktif = murid tidak melihat menu. Homeroom tetap bisa manage."
+        title={t("adminSettings.features")}
+        subtitle={t("adminSettings.featuresHint")}
       >
         <Toggle
-          label="Iuran / Kas"
-          hint="Menu Kas untuk murid (read-only)"
+          label={t("adminSettings.kas")}
+          hint={t("adminSettings.kasHint")}
           on={draft.kas_enabled}
           busy={busyKey === "kas_enabled"}
           onChange={(v) => void saveToggle("kas_enabled", v)}
           icon={<Wallet className="h-3.5 w-3.5 text-forest" />}
         />
         <Toggle
-          label="Agenda"
-          hint="Menu Agenda untuk murid"
+          label={t("agenda.title")}
+          hint={t("adminSettings.agendaHint")}
           on={draft.agenda_enabled}
           busy={busyKey === "agenda_enabled"}
           onChange={(v) => void saveToggle("agenda_enabled", v)}
           icon={<CalendarDays className="h-3.5 w-3.5 text-forest" />}
         />
         <Toggle
-          label="Poin"
-          hint="Arena Poin untuk murid"
+          label={t("poin.title")}
+          hint={t("adminSettings.poinHint")}
           on={draft.poin_enabled}
           busy={busyKey === "poin_enabled"}
           onChange={(v) => void saveToggle("poin_enabled", v)}
           icon={<Trophy className="h-3.5 w-3.5 text-forest" />}
         />
         <Toggle
-          label="Info / Pengumuman"
-          hint="Menu Info untuk murid (brief harian)"
+          label={t("adminSettings.info")}
+          hint={t("adminSettings.infoHint")}
           on={draft.info_enabled}
           busy={busyKey === "info_enabled"}
           onChange={(v) => void saveToggle("info_enabled", v)}
@@ -205,7 +207,7 @@ export default function AdminSettingsPage() {
 
       <SubjectTeachersAdmin />
 
-      <SectionCard title="Info Kelas" subtitle="Identitas kelas & status setting">
+      <SectionCard title={t("adminSettings.classInfo")} subtitle={t("adminSettings.classInfoHint")}>
         <div className="text-xs text-ink-soft/75 space-y-2">
           <p className="flex items-center gap-2">
             <Users className="h-3.5 w-3.5 text-forest" />
@@ -213,8 +215,7 @@ export default function AdminSettingsPage() {
           </p>
           <p>Homeroom: {formatDisplayName(session?.user?.name) || "—"}</p>
           <p className="text-xs text-ink-soft/50">
-            Toggle fitur tersimpan di tabel class_settings. Menu murid di bottom nav
-            mengikuti setting ini.
+            {t("adminSettings.toggleNote")}
           </p>
         </div>
       </SectionCard>

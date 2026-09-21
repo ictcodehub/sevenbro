@@ -30,6 +30,7 @@ import { pathForNotification } from "@/lib/notif-nav"
 import { useAppSWR } from "@/lib/fetcher"
 import type { ClassSettings } from "@/lib/class-settings"
 import { useFcmTokenRegister } from "@/lib/push-client"
+import { useT } from "@/lib/i18n"
 
 function loadRead(): Set<string> {
   return loadIdSet(READ_KEY)
@@ -39,13 +40,13 @@ function saveRead(ids: string[]) {
   saveIdSet(READ_KEY, ids)
 }
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string, justNow: string, minutesAgo: string): string {
   const t = new Date(iso).getTime()
   if (!Number.isFinite(t)) return ""
   const diff = Math.max(0, Date.now() - t)
   const m = Math.floor(diff / 60000)
-  if (m < 1) return "Baru saja"
-  if (m < 60) return `${m} menit lalu`
+  if (m < 1) return justNow
+  if (m < 60) return minutesAgo.replace("{{n}}", String(m))
   // ≥ 60 menit → jam posting (mis. 23:00)
   return new Date(t).toLocaleTimeString("id-ID", {
     hour: "2-digit",
@@ -72,29 +73,37 @@ const STUDENT_NAV_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGG
 const MANAGER_NAV = new Set(["HOMEROOM"])
 
 function getNavItems(
-  role?: string,
-  flags?: {
+  role: string | undefined,
+  flags: {
     info_enabled?: boolean
     agenda_enabled?: boolean
     kas_enabled?: boolean
     poin_enabled?: boolean
-  } | null,
+  } | null | undefined,
+  labels: {
+    home: string
+    info: string
+    agenda: string
+    kas: string
+    points: string
+    givePoints: string
+  },
 ) {
   const isManager = role ? MANAGER_NAV.has(role) : false
   const on = (key: keyof NonNullable<typeof flags>) =>
     isManager || !flags || flags[key] !== false
 
   const base = [
-    { href: "/app", label: "Beranda", icon: Home },
+    { href: "/app", label: labels.home, icon: Home },
     {
       href: "/app/pengumuman",
-      label: "Info",
+      label: labels.info,
       icon: Megaphone,
       disabled: !on("info_enabled"),
     },
     {
       href: "/app/agenda",
-      label: "Agenda",
+      label: labels.agenda,
       icon: CalendarDays,
       disabled: !on("agenda_enabled"),
     },
@@ -105,13 +114,13 @@ function getNavItems(
       ...base,
       {
         href: "/app/kas",
-        label: "Kas",
+        label: labels.kas,
         icon: Wallet,
         disabled: !on("kas_enabled"),
       },
       {
         href: "/app/poin",
-        label: "Poin",
+        label: labels.points,
         icon: Trophy,
         disabled: !on("poin_enabled"),
       },
@@ -119,29 +128,33 @@ function getNavItems(
   }
 
   if (role === "TEACHER") {
-    return [{ href: "/app/scan", label: "Beri Poin", icon: QrCode }]
+    return [{ href: "/app/scan", label: labels.givePoints, icon: QrCode }]
   }
 
   return base.map((item) => ({ ...item, disabled: true as const }))
 }
 
-function getAdminItems(role?: string) {
+function getAdminItems(
+  role: string | undefined,
+  labels: { roster: string; classSettings: string; createReport: string },
+) {
   if (role === "HOMEROOM") {
     return [
-      { href: "/app/admin/roster", label: "Roster", icon: Users },
-      { href: "/app/admin/settings", label: "Pengaturan Kelas", icon: Shield },
+      { href: "/app/admin/roster", label: labels.roster, icon: Users },
+      { href: "/app/admin/settings", label: labels.classSettings, icon: Shield },
     ]
   }
   if (role === "KETUA") {
     return [
-      { href: "/app/admin/roster", label: "Roster", icon: Users },
-      { href: "/app/report/new", label: "Buat Report", icon: Flag },
+      { href: "/app/admin/roster", label: labels.roster, icon: Users },
+      { href: "/app/report/new", label: labels.createReport, icon: Flag },
     ]
   }
   return []
 }
 
 export default function ShellLayout({ children }: { children: ReactNode }) {
+  const t = useT()
   const router = useRouter()
   const pathname = usePathname()
   const { data: session } = useSession()
@@ -181,7 +194,7 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
               title: n.title,
               body: n.body,
               kind: n.kind,
-              time: timeAgo(n.created_at),
+              time: timeAgo(n.created_at, t("common.justNow"), t("common.minutesAgo")),
               read: false,
             })),
         )
@@ -230,8 +243,19 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
 
   const role = (session?.user as { role?: string } | undefined)?.role
   const name = formatDisplayName(session?.user?.name) || "Guru"
-  const navItems = getNavItems(role, classFlags)
-  const adminItems = getAdminItems(role)
+  const navItems = getNavItems(role, classFlags, {
+    home: t("nav.home"),
+    info: t("nav.info"),
+    agenda: t("nav.agenda"),
+    kas: t("nav.kas"),
+    points: t("nav.poin"),
+    givePoints: t("nav.scan"),
+  })
+  const adminItems = getAdminItems(role, {
+    roster: t("nav.roster"),
+    classSettings: t("nav.classSettings"),
+    createReport: t("nav.report"),
+  })
 
   const [openShade, setOpenShade] = useState(false)
 
