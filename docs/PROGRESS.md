@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: **Hierarki tipografi (judul 13 bold · body `text-sm-plus` 12 · meta 11) + token `--text-sm-plus` · 2026-09-21** · sebelumnya poin arena `cd352cf` · tipografi M3 f1–f3 `a7cf598` · i18n `f83273e` · APK 1.1.0; `allowBackup` tetap `true`.
+> Status terakhir: **Hierarki tipografi (judul 13 bold · body `text-sm-plus` 12 · meta 11) + token `--text-sm-plus` · deploy `8799657` 2026-09-21** · sebelumnya poin arena `cd352cf` · tipografi M3 f1–f3 `a7cf598` · i18n `f83273e` · APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 
@@ -120,7 +120,7 @@
 **Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · **notif hard-delete + 1-baris** · **Agenda timeline + deskripsi** · **Beri Poin multi-siswa + section card** · **StudentSelect SSOT** · **i18n ID/EN + Settings Bahasa** · APK 1.1.0 build · Vercel `f83273e` · **Tipografi SSOT M3 + rollout f1–f3 seluruh app**
 
 ## Deploy
-- https://sevenbro.vercel.app — **deployed 2026-09-21** (`cd352cf` poin arena angka 14px + pts 9px lowercase · docs sync · sebelumnya `a7cf598` tipografi M3 f1–f3, `f83273e`, `0af39a4`, `aff8856`, `4fdd07f`, `bc3a379`, `90d6c0c`)
+- https://sevenbro.vercel.app — **deployed 2026-09-21** (`8799657` tipografi hierarchy text-sm-plus · sebelumnya `cd352cf` poin arena, `a7cf598` tipografi M3 f1–f3, `f83273e`, `0af39a4`, `aff8856`, `4fdd07f`, `bc3a379`, `90d6c0c`)
 - Supabase `gdmqmoigudtgknkgomeu` — migrations 003–014, **016 applied** (tidak ada migration baru run ini)
 - Redirect Google: prod `…/api/auth/callback/google` + localhost (opsional)
 - Android shell **1.1.0** (versionCode 11) — `android/dist/SevenBro-1.1.0-release.apk` (tidak di-commit)
