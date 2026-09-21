@@ -144,7 +144,7 @@ function NotifCard({
                 {n.title}
               </span>
             </div>
-            <p className="mt-0.5 truncate text-xs text-ink-soft/75">{n.body}</p>
+            <p className="mt-0.5 text-sm-plus text-ink-soft/70">{n.body}</p>
             <p className="mt-0.5 text-xs text-ink-soft/55">{n.time}</p>
           </button>
         </div>
@@ -454,14 +454,14 @@ export default function AppShell({
                 <h2 className="text-[20px] font-bold text-ink">
                   {t("notif.emptyTitle")}
                 </h2>
-                <p className="text-sm text-ink-soft/70 mt-2 leading-relaxed max-w-[250px]">
+                <p className="text-sm-plus text-ink-soft/70 mt-2 leading-relaxed max-w-[250px]">
                   {t("notif.emptyBody")}
                 </p>
               </div>
             ) : (
               <div className="px-3 pt-2">
                 <div className="flex items-center justify-between px-1 pb-2">
-                  <p className="text-sm text-ink-soft/55 font-medium">{t("notif.previous")}</p>
+                  <p className="text-sm-plus text-ink-soft/55 font-medium">{t("notif.previous")}</p>
                   {onClearAllNotifications && (
                     <button
                       type="button"
@@ -492,7 +492,7 @@ export default function AppShell({
 
           {/* Link riwayat — selalu di area bawah */}
           <div className="shrink-0 px-6 pb-10 pt-6 text-center">
-            <p className="text-sm text-ink-soft/55">{t("notif.notFound")}</p>
+            <p className="text-sm-plus text-ink-soft/55">{t("notif.notFound")}</p>
             <button
               type="button"
               onClick={() => {

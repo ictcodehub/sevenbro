@@ -66,7 +66,7 @@ export function StatCard({
       <div className="bg-white border border-line shadow-sm rounded-2xl p-3 h-full flex flex-col justify-between">
         <span className={toneClass}>{icon}</span>
         <div>
-          <p className="text-sm font-medium text-ink">{label}</p>
+          <p className="text-sm-plus font-medium text-ink">{label}</p>
           <p className="text-xs text-ink-soft/75">{value}</p>
         </div>
       </div>
@@ -108,7 +108,7 @@ export function ListRow({
         <p className={`text-sm font-semibold truncate ${accent ? "text-forest" : "text-ink"}`}>
           {title}
         </p>
-        <div className={`flex items-center gap-1 text-xs ${accent ? "text-forest/75" : "text-ink-soft/75"}`}>
+        <div className={`flex items-center gap-1 text-[11px] ${accent ? "text-forest/75" : "text-ink-soft/75"}`}>
           <MapPin className="h-3 w-3 shrink-0" />
           <span className="truncate">{subtitle}</span>
         </div>
@@ -116,12 +116,12 @@ export function ListRow({
       {(rightTop || rightBottom) && (
         <div className="text-right shrink-0">
           {rightTop && (
-            <p className={`text-sm font-bold ${accent ? "text-forest" : "text-ink"}`}>
+            <p className={`text-xs font-bold ${accent ? "text-forest" : "text-ink"}`}>
               {rightTop}
             </p>
           )}
           {rightBottom && (
-            <p className={`text-[11px] ${accent ? "text-forest/70" : "text-ink-soft/75"}`}>
+            <p className={`text-[10px] ${accent ? "text-forest/70" : "text-ink-soft/75"}`}>
               {rightBottom}
             </p>
           )}
@@ -185,7 +185,7 @@ export function TimelineItem({
           )}
         </span>
         <p
-          className={`min-w-0 flex-1 text-xs font-medium leading-snug truncate ${
+          className={`min-w-0 flex-1 text-[11px] font-medium leading-snug truncate ${
             isActive ? "text-forest" : "text-ink-soft/65"
           }`}
         >
@@ -210,7 +210,7 @@ export function TimelineItem({
         </h3>
         {plainDesc && (
           <p
-            className={`mt-1 text-xs leading-relaxed line-clamp-2 ${
+            className={`mt-1 text-sm-plus leading-relaxed line-clamp-2 ${
               isActive ? "text-forest/80" : "text-ink-soft/70"
             }`}
           >
@@ -218,7 +218,7 @@ export function TimelineItem({
           </p>
         )}
         <p
-          className={`mt-2 flex items-center gap-1 text-xs leading-snug min-w-0 ${
+          className={`mt-2 flex items-center gap-1 text-[11px] leading-snug min-w-0 ${
             isActive ? "text-forest/85" : "text-ink-soft/75"
           }`}
         >
@@ -248,7 +248,7 @@ export function EmptyState({ icon, message }: { icon: ReactNode; message: string
   return (
     <div className="bg-white border border-line shadow-sm rounded-2xl py-6 text-center">
       <div className="flex justify-center mb-1 text-ink-soft/40">{icon}</div>
-      <p className="text-xs text-ink-soft/75">{message}</p>
+      <p className="text-sm-plus text-ink-soft/75">{message}</p>
     </div>
   )
 }
@@ -285,7 +285,7 @@ export function HeroCard({
         <span className="truncate">{location}</span>
       </div>
       {description && (
-        <p className="text-xs text-white/65 leading-relaxed mt-2 pt-2 border-t border-white/10">
+        <p className="text-sm-plus text-white/65 leading-relaxed mt-2 pt-2 border-t border-white/10">
           {description}
         </p>
       )}

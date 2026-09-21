@@ -207,7 +207,7 @@ export default function SettingsPage() {
 
       <div>
         <SectionHeader title={t("settings.about")} />
-        <div className="bg-white border border-line shadow-sm rounded-2xl p-4 text-xs text-ink-soft/75 space-y-2">
+        <div className="bg-white border border-line shadow-sm rounded-2xl p-4 text-sm-plus text-ink-soft/75 space-y-2">
           <p className="flex items-center gap-2">
             <Smartphone className="h-3.5 w-3.5 text-forest" />
             Seven Bro! — Mutiara Bangsa 2 JHS

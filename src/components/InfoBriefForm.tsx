@@ -743,7 +743,7 @@ export default function InfoBriefForm({
               <p className="text-sm font-bold text-alert">
                 {t("info.holidayTitle", { day: autoUniform.dayLabel })}
               </p>
-              <p className="text-xs text-ink-soft/80 mt-0.5 leading-relaxed">
+              <p className="text-sm-plus text-ink-soft/80 mt-0.5 leading-relaxed">
                 {t("info.holidayHint")}
               </p>
             <button
@@ -1218,7 +1218,7 @@ export default function InfoBriefForm({
           </button>
         }
       >
-        <pre className="whitespace-pre-wrap text-xs text-ink-soft/85 leading-relaxed font-sans max-h-40 overflow-y-auto scroll-y-only rounded-xl bg-page border border-line px-3 py-2">
+        <pre className="whitespace-pre-wrap text-sm-plus text-ink-soft/85 leading-relaxed font-sans max-h-40 overflow-y-auto scroll-y-only rounded-xl bg-page border border-line px-3 py-2">
           {preview}
         </pre>
       </BriefSectionCard>

@@ -91,6 +91,9 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-20 | Rollout tipografi **fase 2**: Brief form + Mass Report + Buat Report + Pengumuman — body/tombol `text-sm`, meta `text-xs`, micro floor 11px | `InfoBriefForm`, `MassReport*`, `report/new`, `pengumuman` |
 | 2026-09-20 | Rollout tipografi **fase 3 (selesai seluruh app)**: Poin/Arena, Agenda, Settings, roster, scan, AppShell, login, admin — **0** sisa `text-[7–10px]` di `src/` | pages + `AppShell` + admin components |
 | 2026-09-21 | Poin: angka arena leaderboard `text-[14px]` (dari 12px), label `pts` `text-[9px]` lowercase tanpa uppercase | `poin/page.tsx` |
+| 2026-09-21 | **Tipografi M3 diturunkan ~1px** — body 13 / meta 11 / micro 10 / title 17; override `text-xs/sm/base/lg` di `@theme`; Kas: badge sejajar + anti overflow card | `globals.css` · `DESIGN_SYSTEM.md` § Tipografi · `kas/page.tsx` |
+| 2026-09-21 | **Hierarki tipografi final** — judul `text-sm` bold · body `text-sm-plus` (12) regular · meta `text-xs`/`[11px]`; diterapkan lintas app | `DESIGN_SYSTEM.md` · pages + `ui-primitives` |
+| 2026-09-21 | **Density SSOT lintas halaman** — list/preview `text-xs` (ListRow, TimelineItem, judul+WaBody pengumuman, podium nama); section heading tetap `text-sm` | `DESIGN_SYSTEM.md` § Tipografi · `ui-primitives` · `pengumuman` · `page.tsx` · `poin` |
 
 ---
 
@@ -147,5 +150,7 @@ Setelah kerja selesai: update `PROGRESS.md` Open + baris **Keputusan sinkron** d
 
 
 
+
+
 ### Automation log
-- last session-sync: `2026-09-21T02:30:09.688Z` · branch `master`
+- last session-sync: `2026-09-21T04:46:11.314Z` · branch `master`

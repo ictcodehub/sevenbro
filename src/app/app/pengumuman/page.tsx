@@ -83,7 +83,7 @@ const PAGE_LIMIT = 15
 
 function WaBody({ text }: { text: string }) {
   return (
-    <div className="mt-1.5 whitespace-pre-wrap text-sm leading-[1.45] text-ink">
+    <div className="mt-1.5 whitespace-pre-wrap text-sm-plus leading-[1.45] text-ink">
       {text.split("\n").map((line, i) => {
         if (!line.trim()) return <div key={i} className="h-1" />
         const parts = line.split(/(\*[^*]+\*)/g)

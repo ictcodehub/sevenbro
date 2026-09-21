@@ -157,7 +157,7 @@ function HistoryList({ items, showStudent }: { items: PointLog[]; showStudent?: 
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <p className="text-[11px] font-semibold text-ink leading-snug">{log.reason}</p>
+              <p className="text-sm-plus font-semibold text-ink leading-snug">{log.reason}</p>
               <DeltaBadge delta={log.delta} />
             </div>
             <p className="mt-0.5 text-[11px] text-ink-soft/60 truncate">
@@ -269,10 +269,10 @@ function PodiumCard({
       <p
         className={`mt-2 max-w-full truncate px-1 font-bold ${
           muted
-            ? "text-sm text-white/45"
+            ? "text-sm-plus text-white/45"
             : rank === 1
-              ? "text-sm text-acid"
-              : "text-[11px] text-white/90"
+              ? "text-sm-plus text-acid"
+              : "text-sm-plus text-white/90"
         }`}
       >
         {muted ? "—" : personName(student.full_name)}
@@ -703,7 +703,7 @@ function PoinInner() {
               <div className="arena-bg rounded-2xl p-6 text-center border border-white/10">
                 <Trophy className="h-10 w-10 text-amber mx-auto mb-2" />
                 <p className="text-sm font-bold text-acid">{t("poin.noData")}</p>
-                <p className="text-xs text-white/50 mt-1">
+                <p className="text-sm-plus text-white/50 mt-1">
                   {t("poin.noStudentsBoard")}
                 </p>
               </div>
@@ -1015,7 +1015,7 @@ function PoinInner() {
       {/* Form beri poin */}
       <Sheet open={open} onClose={() => setOpen(false)} title={t("poin.give")} fullHeight>
         {err && (
-          <p className="text-sm text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
+          <p className="text-sm-plus text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
             {err}
           </p>
         )}
@@ -1118,7 +1118,7 @@ function PoinInner() {
                       >
                         {active && <Check className="h-2.5 w-2.5" />}
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-sm text-ink">
+                      <span className="min-w-0 flex-1 truncate text-sm-plus text-ink">
                         {p.label}
                       </span>
                       <span className="shrink-0 text-xs font-bold tabular-nums text-ink-soft/70">

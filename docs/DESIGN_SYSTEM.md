@@ -48,40 +48,54 @@ Progress bar      →  bg-lime on bg-white/10 track
 Border divider    →  border-white/10
 ```
 
-### Tipografi (SSOT — Android / Material 3 aligned, 2026-09)
+### Tipografi (SSOT — M3 slightly tightened, 2026-09)
 
-**Acuan:** Material 3 type scale (sp ≈ CSS px @ font-scale 1.0).  
-**Larangan keras:** `text-[7px]` … `text-[9px]` untuk teks yang harus dibaca; body di bawah 14px.
+**Acuan:** Material 3 type scale, **diturunkan ~1px** agar muat di card mobile 360–480px (hindari overflow + badge wrap).  
+**Larangan keras:** `text-[7px]` … `text-[9px]` untuk teks yang harus dibaca; body di bawah 13px.
 
 ```
-Role                Class (WAJIB)              ≈ Material        Notes
+Role                Class (WAJIB)              ≈ px (override)   Notes
 ─────────────────────────────────────────────────────────────────────────
-Display / hero num  text-2xl – text-3xl        Display / Headline  angka besar saja
-Page title          text-lg font-bold          Title Large (18→22) text-xl opsional
-Section heading     text-sm font-semibold      Title Small 14sp
-Card title          text-sm font-semibold      Title Small 14sp    + truncate
-Body / value        text-sm                    Body Medium 14sp    default body
-Body long-form      text-[15px] / text-base    Body Large 16sp     brief / deskripsi panjang
-Meta / subtitle     text-xs                    Label Medium 12sp
-Micro / badge       text-[11px]                Label Small 11sp    floor — jangan <11px
-Button label        text-sm font-semibold      Label Large 14sp    pill & primary
-Input / select      text-sm                    Body Medium 14sp
-Nav label           text-[11px]                Label Small
-Table cell          text-xs – text-sm          Label / Body
+Display / hero num  text-2xl – text-3xl        22px+             angka besar saja
+Page title          text-lg font-bold          17px              text-xl opsional
+Section heading     text-sm font-semibold      13px              SectionHeader · judul blok
+Card title          text-sm font-bold         13px              list & card padat · harus ≥ body
+Body / value        text-sm                    13px              form, tombol, nilai utama
+Body preview        text-sm-plus               12px              clamp/preview di card · regular · antara xs & sm
+Body long-form      text-base                  15px              brief / deskripsi panjang (full read)
+Meta / subtitle     text-[11px] / text-xs      11px
+Micro / badge       text-[10px] / text-[11px]  10–11px           floor — jangan <10px
+Button label        text-sm font-semibold      13px              pill & primary
+Input / select      text-sm                    13px
+Nav label           text-[11px]                11px
+List row title      text-sm font-semibold      13px              ListRow · TimelineItem
+List row time       text-xs / text-[10px]      11 / 10px         rightTop · rightBottom
+Table cell          text-xs – text-sm          11–13px
 ```
+
+**Konsistensi lintas halaman (WAJIB):**
+- **List padat** (`ListRow`, `TimelineItem`, baris leaderboard, judul kartu): **`text-sm font-semibold`** · meta `text-[11px]` / `text-[10px]`
+- **Judul card pengumuman / brief** (“Info Harian”): **`text-sm font-bold`** — harus menang atas body `*bold*` markdown
+- **Preview body** di card (beranda pin, `WaBody` info harian, deskripsi `TimelineItem`): **`text-sm-plus` (12px) regular** — bukan `text-sm` (13px, hampir sama dgn judul); markdown `*…*` boleh tetap strong sebagai konten
+- **Judul section** (`SectionHeader`): `text-sm font-semibold`
+- **Form / tombol / nilai utama**: tetap `text-sm` (boleh bold sesuai peran)
+- Hierarki: **judul card (13 bold) > body preview (12 regular) > meta (11)**
 
 **Token CSS** (lihat `src/app/globals.css` `@theme`):  
-`--text-micro` · `--text-meta` · `--text-body` · `--text-title` — prefer utility Tailwind named (`text-xs` / `text-sm` / `text-lg`); arbitrary `text-[Npx]` hanya untuk 11px / 13px / 15px / 17px.
+`--text-micro` 10 · `--text-meta` 11 · `--text-body` 13 · `--text-title` 17  
+Named utilities: `text-xs`=11 · **`text-sm-plus`=12** · `text-sm`=13 · `text-base`=15 · `text-lg`=17  
+Prefer utility named; arbitrary `text-[Npx]` hanya untuk 10px / 11px / 15px / 17px.
 
-**Migrasi dari skala lama (compact 9–11px):**
+**Migrasi dari skala M3 penuh (14/12/11) → tightened (13/11/10):**
 
-| Lama | Baru |
+| M3 penuh | Tightened |
 |---|---|
-| `text-[7px]` / `text-[8px]` / `text-[9px]` | `text-[11px]` |
-| `text-[10px]` | `text-xs` (12px) meta · `text-sm` (14px) body/tombol |
-| `text-[11px]` | `text-sm` (14px) title/body · `text-xs` bila meta |
-| `text-[12px]` | `text-sm` (14px) |
-| `text-xs` section | `text-sm` |
+| `text-sm` body (14) | tetap `text-sm` → render **13px** |
+| `text-xs` meta (12) | tetap `text-xs` → render **11px** |
+| `text-[11px]` micro | `text-[10px]` di badge/card padat · `text-[11px]` bila perlu kontras |
+| `text-lg` title (18) | tetap `text-lg` → render **17px** |
+| list title `text-sm` | **`text-xs`** (ListRow · Timeline · judul card info) |
+| preview body `text-sm` | **`text-xs`** (beranda pin · WaBody) |
 
 **Rollout area:** Beranda + Kas → form Brief/Mass Report → Poin/Arena → sisanya.  
 Jangan campur skala lama di halaman yang sudah di-migrasi.

@@ -199,7 +199,7 @@ export default function MassReportPanel() {
                 {r.note && (
                   <div className="rounded-xl border border-dashed border-[#EEA34C]/50 bg-white px-2.5 py-2">
                       <p className="text-[11px] font-semibold text-[#9a6a20] mb-0.5">{t("report.noteLabel")}</p>
-                    <p className="text-[11px] text-ink leading-snug whitespace-pre-wrap">
+                    <p className="text-sm-plus text-ink leading-snug whitespace-pre-wrap">
                       {r.note}
                     </p>
                   </div>
@@ -494,7 +494,7 @@ export default function MassReportPanel() {
         {detail && (
           <div className="space-y-3 min-w-0">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-ink break-words">{detail.reason}</p>
+              <p className="text-sm-plus text-ink break-words">{detail.reason}</p>
               <p className="text-xs text-ink-soft/70 mt-0.5">
                 Target:{" "}
                 <span className="font-semibold text-forest break-words">
@@ -507,7 +507,7 @@ export default function MassReportPanel() {
             {detail.note && (
               <div className="rounded-xl border border-dashed border-[#EEA34C]/50 bg-white px-3 py-2 min-w-0">
                 <p className="text-[11px] font-semibold text-[#9a6a20] mb-0.5">{t("report.noteLabel")}</p>
-                <p className="text-[11px] text-ink leading-relaxed whitespace-pre-wrap break-words">
+                <p className="text-sm-plus text-ink leading-relaxed whitespace-pre-wrap break-words">
                   {detail.note}
                 </p>
               </div>

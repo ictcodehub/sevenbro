@@ -415,13 +415,13 @@ function KasInner() {
       <div className="flex items-start justify-between gap-2">
         <div>
           <h1 className="text-lg font-bold text-ink">{t("kas.pageTitle")}</h1>
-          <p className="text-xs text-ink-soft/75">
+          <p className="text-[11px] text-ink-soft/75">
             {canManage ? t("kas.hintManage") : t("kas.hintReadOnly")}
           </p>
         </div>
         <Link
           href="/app/kas/buku"
-          className="flex items-center gap-1.5 bg-white border border-line shadow-sm text-forest text-xs font-bold px-2.5 py-2 rounded-xl active:scale-[0.95] transition-transform shrink-0"
+          className="flex items-center gap-1.5 bg-white border border-line shadow-sm text-forest text-[11px] font-bold px-2.5 py-1.5 rounded-xl active:scale-[0.95] transition-transform shrink-0"
         >
           <BookOpen className="h-4 w-4" />
           {t("kas.book")}
@@ -443,11 +443,11 @@ function KasInner() {
                 <p className="mt-1.5 text-2xl font-bold leading-none text-acid">
                   {formatIDR(data?.balance ?? 0)}
                 </p>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-lime/15 border border-lime/30 px-2 py-0.5 text-[11px] font-semibold text-lime">
+                <div className="mt-2 flex flex-nowrap items-center gap-1 min-w-0">
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-lime/15 border border-lime/30 px-1.5 py-0.5 text-[10px] font-semibold text-lime min-w-0 truncate">
                     + {formatIDR(data?.monthIn ?? 0)} {t("home.in")}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber/15 border border-amber/30 px-2 py-0.5 text-[11px] font-semibold text-amber">
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-amber/15 border border-amber/30 px-1.5 py-0.5 text-[10px] font-semibold text-amber min-w-0 truncate">
                     − {formatIDR(data?.monthOut ?? 0)} {t("home.out")}
                   </span>
                 </div>
@@ -470,10 +470,10 @@ function KasInner() {
                     <Coins className="h-4 w-4" />
                   </span>
                   <span className="flex-1 min-w-0 text-left">
-                    <span className="block text-xs font-semibold text-ink leading-tight whitespace-nowrap">
+                    <span className="block text-sm font-semibold leading-tight truncate">
                       {t("kas.special")}
                     </span>
-                    <span className="block text-[11px] text-ink-soft/55 leading-tight mt-0.5 whitespace-nowrap">
+                    <span className="block text-[10px] text-ink-soft/55 leading-tight mt-0.5 truncate">
                       {t("kas.freeNominal")}
                     </span>
                   </span>
@@ -487,10 +487,10 @@ function KasInner() {
                     <ReceiptText className="h-4 w-4" />
                   </span>
                   <span className="flex-1 min-w-0 text-left">
-                    <span className="block text-xs font-semibold text-ink leading-tight whitespace-nowrap">
+                    <span className="block text-sm font-semibold leading-tight truncate">
                       {t("kas.expense")}
                     </span>
-                    <span className="block text-[11px] text-ink-soft/55 leading-tight mt-0.5 whitespace-nowrap">
+                    <span className="block text-[10px] text-ink-soft/55 leading-tight mt-0.5 truncate">
                       {t("kas.expenseHint")}
                     </span>
                   </span>
@@ -523,25 +523,25 @@ function KasInner() {
           {canManage && (
             <div className="bg-white border border-line shadow-sm rounded-2xl overflow-hidden">
               <div className="px-3.5 pt-3.5 pb-2 bg-page/60 border-b border-line">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-bold text-ink">{t("kas.todayDeposit")}</p>
-                    <p className="text-xs text-ink-soft/70 mt-0.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-ink truncate">{t("kas.todayDeposit")}</p>
+                    <p className="text-[11px] text-ink-soft/70 mt-0.5 truncate">
                       {todayLabel()} · {formatIDR(NOMINAL)}{t("kas.perPerson")}
                     </p>
                   </div>
                   {collectionDay && (
-                    <span className="text-[11px] font-bold uppercase tracking-wide bg-forest text-white px-2 py-1 rounded-full">
+                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide bg-forest text-white px-2 py-1 rounded-full">
                       {t("kas.depositDay")}
                     </span>
                   )}
                 </div>
-                <div className="mt-2.5 flex items-center justify-between gap-2">
-                  <div className="flex gap-1 bg-white border border-line rounded-lg p-0.5">
+                <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
+                  <div className="flex gap-1 bg-white border border-line rounded-lg p-0.5 shrink-0">
                     <button
                       type="button"
                       onClick={() => setMarkMode("bayar")}
-                      className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
+                      className={`px-2 py-1 rounded-md text-[11px] font-semibold ${
                         markMode === "bayar" ? "bg-forest text-white" : "text-ink-soft"
                       }`}
                     >
@@ -550,21 +550,21 @@ function KasInner() {
                     <button
                       type="button"
                       onClick={() => setMarkMode("izin")}
-                      className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
+                      className={`px-2 py-1 rounded-md text-[11px] font-semibold ${
                         markMode === "izin" ? "bg-amber text-white" : "text-ink-soft"
                       }`}
                     >
                       {t("kas.leave")}
                     </button>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-semibold text-forest">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1 justify-end">
+                    <p className="text-[11px] font-semibold text-forest truncate min-w-0">
                       {totalPick} · {markMode === "izin" ? t("kas.leaveLower") : formatIDR(totalRupiah)}
                     </p>
                     <button
                       type="button"
                       onClick={selectAll}
-                      className="text-xs font-semibold px-2 py-1 rounded-lg bg-white border border-line text-ink"
+                      className="shrink-0 text-[11px] font-semibold px-2 py-1 rounded-lg bg-white border border-line text-ink"
                     >
                       {t("common.all")}
                     </button>
@@ -572,7 +572,7 @@ function KasInner() {
                       type="button"
                       onClick={() => void clearAll()}
                       disabled={saving}
-                      className="text-xs font-semibold px-2 py-1 rounded-lg bg-white border border-line text-ink-soft disabled:opacity-50"
+                      className="shrink-0 text-[11px] font-semibold px-2 py-1 rounded-lg bg-white border border-line text-ink-soft disabled:opacity-50"
                     >
                       {markMode === "izin" ? t("kas.clearLeave") : t("kas.clear")}
                     </button>
@@ -764,7 +764,7 @@ function KasInner() {
                 {formatIDR(detailTx.amount)}
               </p>
             </div>
-            <div className="space-y-2 text-xs">
+            <div className="space-y-2 text-sm-plus">
               <div className="flex justify-between gap-3">
                 <span className="text-ink-soft">{t("kas.descLabel")}</span>
                 <span className="font-semibold text-ink text-right flex-1">

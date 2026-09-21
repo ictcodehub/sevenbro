@@ -243,7 +243,7 @@ export default function MassReportVoteModal() {
           {isReviewRole && (
             <div className="rounded-xl bg-page border border-line px-3 py-2.5">
               <p className="text-xs font-medium text-ink-soft/60">Vote masuk</p>
-              <p className="mt-0.5 text-sm font-semibold text-ink">
+              <p className="mt-0.5 text-sm-plus text-ink">
                 {current.voteCount ?? 0} total ·{" "}
                 <span className="text-forest">{current.yesCount ?? 0} setuju</span>
                 {" · "}

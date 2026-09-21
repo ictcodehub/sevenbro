@@ -186,7 +186,7 @@ function NewReportInner() {
 
           {customOpen && (
             <div className="mt-2 space-y-1.5 rounded-xl bg-alert/5 border border-alert/20 p-3">
-              <p className="text-xs text-ink-soft/70 leading-snug">
+              <p className="text-sm-plus text-ink-soft/70 leading-snug">
                 {t("report.new.customHint")}
               </p>
               <textarea

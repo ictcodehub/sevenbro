@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: **Poin arena angka 14px + pts 9px lowercase (visual fix) · deploy `<hash>` 2026-09-21** · sebelumnya tipografi M3 f1–f3 `a7cf598` · i18n `f83273e` · APK 1.1.0; `allowBackup` tetap `true`.
+> Status terakhir: **Hierarki tipografi (judul 13 bold · body `text-sm-plus` 12 · meta 11) + token `--text-sm-plus` · 2026-09-21** · sebelumnya poin arena `cd352cf` · tipografi M3 f1–f3 `a7cf598` · i18n `f83273e` · APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 
@@ -115,12 +115,12 @@
 - Android shell: QA login Google + foto report + dark mode + **gap bottom sheet di device** (portal Sheet + fullHeight Agenda sudah di-fix; perlu QA device)
 - Distribusi APK **1.1.0** ke siswa (sideload; Play Store closed testing = opsional hilangkan warning Play Protect)
 - Aktivasi FCM end-to-end di device (env Vercel sudah ada)
-- ~~Tipografi rollout~~ **selesai f1–f3** — SSOT M3 (body 14 / meta 12 / micro 11) di seluruh `src/`; audit: **0** `text-[7–10px]` tersisa
+- ~~Tipografi rollout~~ **selesai f1–f3 + hierarchy pass** — SSOT: judul `text-sm` bold · body `text-sm-plus` (12) · meta 11 · micro 10; token `--text-sm-plus` di `@theme`; audit: **0** `text-[7–9px]` · Kas badge sejajar + anti overflow
 
 **Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · **notif hard-delete + 1-baris** · **Agenda timeline + deskripsi** · **Beri Poin multi-siswa + section card** · **StudentSelect SSOT** · **i18n ID/EN + Settings Bahasa** · APK 1.1.0 build · Vercel `f83273e` · **Tipografi SSOT M3 + rollout f1–f3 seluruh app**
 
 ## Deploy
-- https://sevenbro.vercel.app — **deployed 2026-09-20** (`a7cf598` tipografi M3 f1–f3; sebelumnya `f83273e`, `0af39a4`, `aff8856`, `4fdd07f`, `bc3a379`, `90d6c0c`)
+- https://sevenbro.vercel.app — **deployed 2026-09-21** (`cd352cf` poin arena angka 14px + pts 9px lowercase · docs sync · sebelumnya `a7cf598` tipografi M3 f1–f3, `f83273e`, `0af39a4`, `aff8856`, `4fdd07f`, `bc3a379`, `90d6c0c`)
 - Supabase `gdmqmoigudtgknkgomeu` — migrations 003–014, **016 applied** (tidak ada migration baru run ini)
 - Redirect Google: prod `…/api/auth/callback/google` + localhost (opsional)
 - Android shell **1.1.0** (versionCode 11) — `android/dist/SevenBro-1.1.0-release.apk` (tidak di-commit)

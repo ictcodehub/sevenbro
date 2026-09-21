@@ -61,6 +61,7 @@ type PointsPayload = {
   leaderboard: { student_id: string; full_name: string; total_points: number }[]
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function medalData(t: (k: any) => string) {
   return [
     {
@@ -176,7 +177,7 @@ function HomeInner() {
             {t("home.subtitle")}
           </p>
         </div>
-        <span className="text-[11px] font-semibold text-forest bg-forest/10 px-2 py-1 rounded-full">
+        <span className="text-[10px] font-semibold text-forest bg-forest/10 px-2 py-1 rounded-full shrink-0">
           {totalSiswa > 0 ? t("home.students", { n: totalSiswa }) : "7B"}
         </span>
       </div>
@@ -192,20 +193,20 @@ function HomeInner() {
               <h3 className="text-sm font-bold leading-tight min-w-0 flex-1">
                 {homeTitle(pinned.title)}
               </h3>
-              <span className="inline-flex shrink-0 items-center gap-1 bg-amber/20 text-amber rounded-full px-2 py-0.5 text-[11px] font-bold mt-0.5">
+              <span className="inline-flex shrink-0 items-center gap-1 bg-amber/20 text-amber rounded-full px-1.5 py-0.5 text-[10px] font-bold mt-0.5">
                 <Pin className="h-3 w-3" />
                 {pinned.pinned ? t("home.pinned") : t("home.latest")}
               </span>
             </div>
             <p
               ref={bodyClip.ref}
-              className="text-sm text-white/65 leading-relaxed whitespace-pre-wrap overflow-hidden"
+              className="text-sm-plus text-white/65 leading-relaxed whitespace-pre-wrap overflow-hidden"
               style={{ maxHeight: "calc(2 * 1.45em)" }}
             >
               {homeBody(pinned.body)}
             </p>
             {bodyClip.overflow && (
-              <p className="text-sm text-white/65 leading-relaxed">....</p>
+              <p className="text-sm-plus text-white/65 leading-relaxed">....</p>
             )}
             <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between">
               <span className="text-xs text-acid font-semibold flex items-center gap-0.5">
@@ -219,7 +220,7 @@ function HomeInner() {
         <div className="bg-deep rounded-2xl p-4 text-white flex items-center justify-between">
           <div>
             <p className="text-xs text-white/55">{t("home.noAnnouncement")}</p>
-            <p className="text-sm font-bold text-acid mt-0.5">{t("home.checkInfo")}</p>
+            <p className="text-xs font-bold text-acid mt-0.5">{t("home.checkInfo")}</p>
           </div>
           <Megaphone className="h-7 w-7 text-white/30" />
         </div>
@@ -241,11 +242,11 @@ function HomeInner() {
           <p className="text-2xl font-bold leading-none text-acid">
             {formatIDR(kas?.balance ?? 0)}
           </p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            <span className="inline-flex items-center gap-1 rounded-full bg-lime/15 border border-lime/30 px-2 py-0.5 text-[11px] font-semibold text-lime">
+          <div className="mt-2 flex flex-nowrap items-center gap-1 min-w-0">
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-lime/15 border border-lime/30 px-1.5 py-0.5 text-[10px] font-semibold text-lime min-w-0 truncate">
               + {formatIDR(kas?.monthIn ?? 0)} {t("home.in")}
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber/15 border border-amber/30 px-2 py-0.5 text-[11px] font-semibold text-amber">
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-amber/15 border border-amber/30 px-1.5 py-0.5 text-[10px] font-semibold text-amber min-w-0 truncate">
               − {formatIDR(kas?.monthOut ?? 0)} {t("home.out")}
             </span>
           </div>
@@ -300,17 +301,17 @@ function HomeInner() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1">
                         <Crown className="h-3 w-3 text-amber shrink-0" />
-                        <p className="text-sm font-bold text-ink truncate">
+                        <p className="text-sm font-semibold text-ink truncate">
                           {personName(p.full_name)}
                         </p>
                       </div>
-                      <p className="text-[11px] text-ink-soft/70">{m.label} · {m.note}</p>
+                      <p className="text-[10px] text-ink-soft/70">{m.label} · {m.note}</p>
                     </div>
                     <div className="text-right shrink-0">
                       <p className="text-sm font-bold text-forest leading-none">
                         {p.total_points}
                       </p>
-                      <p className="text-[11px] text-ink-soft/60">{t("home.points")}</p>
+                      <p className="text-[10px] text-ink-soft/60">{t("home.points")}</p>
                     </div>
                   </div>
                 )
@@ -336,7 +337,7 @@ function HomeInner() {
                         <p className="text-sm font-semibold text-ink truncate">
                           {personName(p.full_name)}
                         </p>
-                        <p className="text-[11px] text-ink-soft/60">{m.label}</p>
+                        <p className="text-[10px] text-ink-soft/60">{m.label}</p>
                       </div>
                       <p className="text-sm font-bold text-forest">
                         {p.total_points} <span className="font-medium text-ink-soft/60">{t("home.points")}</span>

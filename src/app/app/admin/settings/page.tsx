@@ -208,13 +208,13 @@ export default function AdminSettingsPage() {
       <SubjectTeachersAdmin />
 
       <SectionCard title={t("adminSettings.classInfo")} subtitle={t("adminSettings.classInfoHint")}>
-        <div className="text-xs text-ink-soft/75 space-y-2">
+        <div className="text-sm-plus text-ink-soft/75 space-y-2">
           <p className="flex items-center gap-2">
             <Users className="h-3.5 w-3.5 text-forest" />
             Kelas 7B — Mutiara Bangsa 2 JHS
           </p>
           <p>Homeroom: {formatDisplayName(session?.user?.name) || "—"}</p>
-          <p className="text-xs text-ink-soft/50">
+          <p className="text-[11px] text-ink-soft/50">
             {t("adminSettings.toggleNote")}
           </p>
         </div>
