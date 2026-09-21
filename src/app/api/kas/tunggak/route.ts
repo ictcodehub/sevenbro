@@ -46,7 +46,7 @@ export async function GET(req: Request) {
     const ctx = await requireApi(canManageKas)
     const db = createAdminClient()
     const url = new URL(req.url)
-    const amountPer = Number(url.searchParams.get("amountPer")) || 2000
+    const amountPer = Number(url.searchParams.get("amountPer")) || 1000
     const classId = ctx.classId ?? ""
     const from = url.searchParams.get("from") || semesterStart()
 

@@ -582,7 +582,7 @@ export const STRINGS = {
   "kas.matrixTitle": { id: "Matriks iuran · {{month}}", en: "Dues matrix · {{month}}" },
   "kas.matrixWeeks": { id: "{{n}} minggu · target 2x/minggu", en: "{{n}} weeks · 2x/week target" },
   "kas.noStudentData": { id: "Belum ada data siswa", en: "No student data yet" },
-  "kas.matrixLegend": { id: "Kotak kosong = belum bayar · hijau ≥2 · kuning 1", en: "Empty box = unpaid · green ≥2 · yellow 1" },
+  "kas.matrixLegend": { id: "Kotak kosong = belum bayar · hijau ≥2 · kuning 1 · Bayar Khusus disebar ke minggu kosong", en: "Empty box = unpaid · green ≥2 · yellow 1 · Special Payment spread across empty weeks" },
   "kas.perStudentTitle": { id: "Rekap bayar per siswa", en: "Per-student payment recap" },
   "kas.timesCol": { id: "Kali", en: "Times" },
   "kas.totalCol": { id: "Total", en: "Total" },

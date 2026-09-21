@@ -435,7 +435,10 @@ function BukuKasInner() {
   const dateMonth = date ? date.slice(0, 7) : ""
 
   // Matriks: siswa × minggu bulan terpilih (filter tanggal) atau bulan berjalan
+  // Hitung slot bayar (≈ NOMINAL), bukan jumlah transaksi — Bayar Khusus 17rb = 17 slot
+  // yang disebar ke minggu kosong dulu (target 2×/minggu).
   const matriks = useMemo(() => {
+    const NOMINAL = 1000
     const now = new Date()
     let y = now.getFullYear()
     let m = now.getMonth()
@@ -465,17 +468,48 @@ function BukuKasInner() {
       })
     }
 
-    const inc = (rows ?? []).filter((t) => t.kind === "IN")
+    const isIuran = (t: Tx) =>
+      t.category === "Iuran" ||
+      t.category === "Iuran harian" ||
+      t.category === "Iuran khusus"
+
+    const inc = (rows ?? []).filter((t) => t.kind === "IN" && isIuran(t))
     const rowsOut = (students ?? []).map((s) => {
       const name = s.full_name.toLowerCase()
-      const perWeek = weekRanges.map(({ from, to }) => {
-        return inc.filter((t) => {
-          const d = t.description.toLowerCase()
-          const match =
-            d === name || d.startsWith(name + " ·") || d.includes(name)
-          return match && t.occurred_on >= from && t.occurred_on <= to
-        }).length
+      const perWeek = weekRanges.map(() => 0)
+      const pays = inc.filter((t) => {
+        const d = t.description.toLowerCase()
+        return d === name || d.startsWith(name + " ·") || d.includes(name)
       })
+
+      let specialSlots = 0
+      for (const t of pays) {
+        const wi = weekRanges.findIndex(
+          ({ from, to }) => t.occurred_on >= from && t.occurred_on <= to,
+        )
+        if (wi < 0) continue
+        const isSpecial = t.category === "Iuran khusus" || t.amount > NOMINAL
+        if (isSpecial) {
+          specialSlots += Math.max(1, Math.round(t.amount / NOMINAL))
+        } else {
+          perWeek[wi] += 1
+        }
+      }
+
+      // Sebar slot Bayar Khusus: minggu paling kosong dulu (0 → 1 → 2 → …)
+      while (specialSlots > 0) {
+        let target = 0
+        let min = perWeek[0] ?? 0
+        for (let i = 1; i < perWeek.length; i++) {
+          if (perWeek[i] < min) {
+            min = perWeek[i]
+            target = i
+          }
+        }
+        perWeek[target] += 1
+        specialSlots -= 1
+      }
+
       return { id: s.id, name: formatDisplayName(s.full_name), perWeek }
     })
     return {

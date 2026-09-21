@@ -88,7 +88,7 @@ export const NOTIFICATIONS: AppNotification[] = [
   {
     id: "n4",
     title: "Setoran hari ini",
-    body: "Jangan lupa setoran Rp 2.000 untuk siswa yang belum bayar.",
+    body: "Jangan lupa setoran Rp 1.000 untuk siswa yang belum bayar.",
     time: "30 menit lalu",
     read: false,
   },

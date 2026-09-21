@@ -28,7 +28,7 @@ import { useT } from "@/lib/i18n"
 
 /** Kas: manage = HOMEROOM & BENDAHARA; siswa lain read-only */
 const PAGE_ROLES = ["HOMEROOM", "BENDAHARA", "KETUA", "SEKRETARIS", "ANGGOTA"]
-const NOMINAL = 2000
+const NOMINAL = 1000
 
 type Tx = {
   id: string
@@ -906,7 +906,7 @@ function KasInner() {
         <div className="space-y-1">
           <span className="text-sm font-semibold text-ink">{t("kas.nominal")}</span>
           <div className="grid grid-cols-4 gap-1.5">
-            {[2000, 10000, 20000, 50000].map((n) => (
+            {[1000, 10000, 20000, 50000].map((n) => (
               <button
                 key={n}
                 type="button"
@@ -926,7 +926,7 @@ function KasInner() {
           <input
             type="number"
             inputMode="numeric"
-            min={2000}
+            min={1000}
             step={1000}
             value={spAmount}
             onChange={(e) => setSpAmount(e.target.value)}

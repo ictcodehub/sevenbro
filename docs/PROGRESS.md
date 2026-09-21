@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: **Hierarki tipografi (judul 13 bold · body `text-sm-plus` 12 · meta 11) + token `--text-sm-plus` · deploy `8799657` 2026-09-21** · sebelumnya poin arena `cd352cf` · tipografi M3 f1–f3 `a7cf598` · i18n `f83273e` · APK 1.1.0; `allowBackup` tetap `true`.
+> Status terakhir: **Nominal kas Rp 1.000 + matriks slot Bayar Khusus · 2026-09-21** · sebelumnya tipografi hierarchy `8799657` · poin arena `cd352cf` · tipografi M3 f1–f3 `a7cf598` · i18n `f83273e` · APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 
@@ -11,7 +11,7 @@
 - Session JWT 30 hari · **`allowBackup=true` tetap ON** (session selamat uninstall→install; user decision 2026-09-19)
 
 ### Kas
-- Setoran Sel/Kam Rp 2.000; Bayar Khusus; Pengeluaran; Izin
+- Setoran Sel/Kam Rp 1.000 (2×/minggu = Rp 2.000); Bayar Khusus; Pengeluaran; Izin
 - Tunggak kumulatif semester; Buku Kas (Transaksi / Per Siswa / Matriks, filter bulan)
 - Tunggak tetap dihitung walau data kas kosong (kalender semester)
 

@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic"
 /**
  * Setoran harian — SATU baris transaksi per siswa
  * supaya Buku Kas bisa ditelusuri per nama.
- * Body: { studentIds: string[], amountPer?: number (default 2000) }
+ * Body: { studentIds: string[], amountPer?: number (default 1000) }
  */
 export async function POST(req: Request) {
   ensureContextReader()
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     const ids = Array.isArray(body?.studentIds)
       ? body.studentIds.map((s: unknown) => String(s).trim()).filter(Boolean)
       : []
-    const amountPer = Number(body?.amountPer) || 2000
+    const amountPer = Number(body?.amountPer) || 1000
 
     if (ids.length === 0) {
       return NextResponse.json({ error: "Pilih minimal satu siswa" }, { status: 400 })

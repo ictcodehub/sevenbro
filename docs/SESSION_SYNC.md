@@ -93,6 +93,8 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-21 | Poin: angka arena leaderboard `text-[14px]` (dari 12px), label `pts` `text-[9px]` lowercase tanpa uppercase | `poin/page.tsx` |
 | 2026-09-21 | **Tipografi M3 diturunkan ~1px** — body 13 / meta 11 / micro 10 / title 17; override `text-xs/sm/base/lg` di `@theme`; Kas: badge sejajar + anti overflow card | `globals.css` · `DESIGN_SYSTEM.md` § Tipografi · `kas/page.tsx` |
 | 2026-09-21 | **Hierarki tipografi final** — judul `text-sm` bold · body `text-sm-plus` (12) regular · meta `text-xs`/`[11px]`; diterapkan lintas app | `DESIGN_SYSTEM.md` · pages + `ui-primitives` |
+| 2026-09-21 | **Nominal kas = Rp 1.000** per setoran (Sel/Kam) · 2×/minggu = Rp 2.000 · default API + UI `NOMINAL` | `kas/page.tsx` · `/api/kas/collect` · `/api/kas/tunggak` · PROGRESS |
+| 2026-09-21 | **Matriks = slot bayar (amount/NOMINAL)**, bukan jumlah transaksi · Bayar Khusus disebar ke minggu kosong dulu · filter hanya kategori Iuran* | `kas/buku/page.tsx` § matriks |
 | 2026-09-21 | **Density SSOT lintas halaman** — list/preview `text-xs` (ListRow, TimelineItem, judul+WaBody pengumuman, podium nama); section heading tetap `text-sm` | `DESIGN_SYSTEM.md` § Tipografi · `ui-primitives` · `pengumuman` · `page.tsx` · `poin` |
 
 ---
@@ -153,5 +155,6 @@ Setelah kerja selesai: update `PROGRESS.md` Open + baris **Keputusan sinkron** d
 
 
 
+
 ### Automation log
-- last session-sync: `2026-09-21T04:49:54.271Z` · branch `master`
+- last session-sync: `2026-09-21T05:43:26.395Z` · branch `master`
