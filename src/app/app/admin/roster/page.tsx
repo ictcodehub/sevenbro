@@ -47,6 +47,14 @@ type Teacher = {
   name: string | null
 }
 
+type AllowlistRow = {
+  id: string
+  email: string
+  note: string | null
+  created_by: string | null
+  created_at: string
+}
+
 type RosterProposal = {
   id: string
   action: "ADD" | "UPDATE" | "DELETE"
@@ -151,6 +159,9 @@ export default function AdminRosterPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [pending, setPending] = useState<PendingUser[]>([])
   const [teachers, setTeachers] = useState<Teacher[]>([])
+  const [allowlist, setAllowlist] = useState<AllowlistRow[]>([])
+  const [allowEmail, setAllowEmail] = useState("")
+  const [allowNote, setAllowNote] = useState("")
   const [proposals, setProposals] = useState<RosterProposal[]>([])
   const [teacherEmail, setTeacherEmail] = useState("")
   const [teacherName, setTeacherName] = useState("")
@@ -201,7 +212,7 @@ export default function AdminRosterPage() {
     setLoading(true)
     setError(null)
     try {
-      const [sr, pr, tr, rr] = await Promise.all([
+      const [sr, pr, tr, rr, ar] = await Promise.all([
         fetch("/api/admin/students", { headers: { Accept: "application/json" } }),
         isHomeroom
           ? fetch("/api/admin/pending-users", { headers: { Accept: "application/json" } })
@@ -210,6 +221,9 @@ export default function AdminRosterPage() {
           ? fetch("/api/admin/teachers", { headers: { Accept: "application/json" } })
           : Promise.resolve(null),
         fetch("/api/admin/roster-proposals", { headers: { Accept: "application/json" } }),
+        isHomeroom
+          ? fetch("/api/admin/login-allowlist", { headers: { Accept: "application/json" } })
+          : Promise.resolve(null),
       ])
       const sb = await sr.json().catch(() => null)
       if (!sr.ok) throw new Error(sb?.error || `Gagal (${sr.status})`)
@@ -241,6 +255,10 @@ export default function AdminRosterPage() {
       if (tr) {
         const tb = await tr.json().catch(() => null)
         if (tr.ok) setTeachers(tb as Teacher[])
+      }
+      if (ar?.ok) {
+        const ab = await ar.json().catch(() => null)
+        if (Array.isArray(ab)) setAllowlist(ab as AllowlistRow[])
       }
       if (rr?.ok) {
         const rb = await rr.json().catch(() => null)
@@ -551,6 +569,48 @@ export default function AdminRosterPage() {
     }
   }
 
+  const addAllowlist = async () => {
+    const email = allowEmail.trim().toLowerCase()
+    if (!email) {
+      flash(t("roster.emailRequired"))
+      return
+    }
+    setSaving(true)
+    try {
+      const r = await fetch("/api/admin/login-allowlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, note: allowNote.trim() || null }),
+      })
+      const b = await r.json().catch(() => null)
+      if (!r.ok) throw new Error(b?.error || t("roster.allowlistAddFailed"))
+      setAllowEmail("")
+      setAllowNote("")
+      flash(t("roster.allowlistAdded"))
+      await load()
+    } catch (e) {
+      flash(e instanceof Error ? e.message : t("common.failed"))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const removeAllowlist = async (id: string) => {
+    try {
+      const r = await fetch(`/api/admin/login-allowlist?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      })
+      if (!r.ok) {
+        const b = await r.json().catch(() => null)
+        throw new Error(b?.error || t("common.failed"))
+      }
+      setAllowlist((prev) => prev.filter((x) => x.id !== id))
+      flash(t("roster.allowlistDeleted"))
+    } catch (e) {
+      flash(e instanceof Error ? e.message : t("common.failed"))
+    }
+  }
+
   const pendingProposals = proposals.filter((p) => p.status === "PENDING")
   const myProposals = proposals.filter((p) => p.status !== "PENDING" || isKetua)
 
@@ -714,6 +774,71 @@ export default function AdminRosterPage() {
                     type="button"
                     onClick={() => void removeTeacher(tc.id)}
                     aria-label={t("roster.deleteTeacherAria")}
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-alert hover:bg-alert-bg shrink-0"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Whitelist login — Homeroom only */}
+      {isHomeroom && (
+        <div>
+          <SectionHeader
+            title={t("roster.allowlistTitle")}
+            count={String(allowlist.length)}
+          />
+          <div className="bg-white border border-line shadow-sm rounded-2xl p-3 space-y-2 mb-2">
+            <p className="text-xs text-ink-soft/70 leading-snug">{t("roster.allowlistHint")}</p>
+            <input
+              value={allowEmail}
+              onChange={(e) => setAllowEmail(e.target.value)}
+              placeholder="guru.mapel@mutiarabangsa.sch.id"
+              className={inputClass}
+              type="email"
+            />
+            <input
+              value={allowNote}
+              onChange={(e) => setAllowNote(e.target.value)}
+              placeholder={t("roster.allowlistNote")}
+              className={inputClass}
+            />
+            <button
+              type="button"
+              disabled={saving || !allowEmail.trim()}
+              onClick={() => void addAllowlist()}
+              className="w-full bg-forest text-white text-[11px] font-semibold py-2 rounded-xl flex items-center justify-center gap-1.5 disabled:opacity-50"
+            >
+              <Shield className="h-3.5 w-3.5" />
+              {saving ? t("kas.saving") : t("roster.allowlistAdd")}
+            </button>
+          </div>
+          {allowlist.length === 0 ? (
+            <EmptyState
+              icon={<Shield className="h-6 w-6" />}
+              message={t("roster.allowlistEmpty")}
+            />
+          ) : (
+            <div className="bg-white border border-line shadow-sm rounded-2xl divide-y divide-line/60">
+              {allowlist.map((row) => (
+                <div key={row.id} className="p-2.5 flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-forest/10 shrink-0">
+                    <Shield className="h-3.5 w-3.5 text-forest" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-semibold text-ink truncate">{row.email}</p>
+                    {row.note && (
+                      <p className="text-xs text-ink-soft/70 truncate">{row.note}</p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void removeAllowlist(row.id)}
+                    aria-label={t("roster.allowlistDeleteAria")}
                     className="flex h-7 w-7 items-center justify-center rounded-lg text-alert hover:bg-alert-bg shrink-0"
                   >
                     <Trash2 className="h-3.5 w-3.5" />

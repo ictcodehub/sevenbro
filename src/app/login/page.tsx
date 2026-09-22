@@ -12,7 +12,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   OAuthAccountNotLinked:
     "Email Google ini sudah terpakai. Login dengan akun sekolah yang sama.",
   AccessDenied:
-    "Akses ditolak. Hanya akun @mutiarabangsa.sch.id yang diizinkan.",
+    "Akses ditolak. Hanya email terdaftar (siswa / guru / whitelist) di @mutiarabangsa.sch.id yang diizinkan.",
   Configuration: "Konfigurasi auth bermasalah. Hubungi admin kelas.",
   default: "Login gagal. Coba lagi atau hubungi homeroom.",
 }

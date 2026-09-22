@@ -2,6 +2,8 @@ import type { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import { createAdminClient } from "@/lib/db"
 import { resolveEffectiveRole } from "@/lib/roles"
+import { normalizeEmail } from "@/lib/login-allowlist"
+import { canSignInEmail } from "@/lib/sign-in-guard"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -21,12 +23,13 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   callbacks: {
     async signIn({ user }) {
-      return user.email?.endsWith("@mutiarabangsa.sch.id") ?? false
+      // Advanced security: domain sekolah + siswa/guru/homeroom/allowlist
+      return canSignInEmail(user.email)
     },
     async jwt({ token, account, user }) {
       if (account && user?.email) {
         try {
-          const email = user.email
+          const email = normalizeEmail(user.email)
           const db = createAdminClient()
           const { data: upserted } = await db
             .from("users")

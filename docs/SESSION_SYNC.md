@@ -103,6 +103,7 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-22 | **Lunas matriks dinamis** = jumlah hari Sel/Kam sejak anchor s.d. hari ini (tidak lagi hardcoded 23) | `kas/buku/page.tsx` § matriks |
 | 2026-09-22 | **Backdate semua input kas** — `/api/kas/collect` terima `occurred_on` (validasi format + tolak masa depan) · UI Kas: date picker di header + sheet Khusus/Pengeluaran · izin POST/DELETE ikut tanggal terpilih | `api/kas/collect` · `kas/page.tsx` (`BackdateInput`) |
 | 2026-09-22 | **Buku Kas UI batch** — Matriks: kolom No + sel 0/1/2 square · Per Siswa: table-fixed proporsional · Transaksi: frame card hijau + date `DD Mon` + tanpa search · filter bar card seragam `py-3` · StudentMultiSelect: i18n EN + select-all default · `formatDateCompactID` | `kas/buku/page.tsx` · `StudentSelect.tsx` · `format.ts` · `locales.ts` |
+| 2026-09-22 | **Login allowlist (advanced security)** — sign-in wajib domain + siswa/teachers/homeroom/`login_allowlist` · UI Roster Homeroom · migration **017** · PENDING→TEACHER saat add | `auth.ts` · `sign-in-guard.ts` · `api/admin/login-allowlist` · `roster/page.tsx` · migration 017 |
 
 ---
 
@@ -165,5 +166,6 @@ Setelah kerja selesai: update `PROGRESS.md` Open + baris **Keputusan sinkron** d
 
 
 
+
 ### Automation log
-- last session-sync: `2026-09-22T14:44:50.002Z` · branch `master`
+- last session-sync: `2026-09-22T15:23:52.919Z` · branch `master`

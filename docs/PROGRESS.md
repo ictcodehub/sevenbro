@@ -1,11 +1,12 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: **Kas backlog+backdate + Buku Kas UI (matriks/tabel/filter) + StudentSelect i18n · 2026-09-22** · sebelumnya nominal Rp 1.000 `c3e92e2` · tipografi hierarchy `8799657` · APK 1.1.0; `allowBackup` tetap `true`.
+> Status terakhir: **Login allowlist (advanced security) + Roster whitelist UI · migration 017 · 2026-09-22** · sebelumnya kas backlog+backdate + Buku Kas UI `7f5a536` · tipografi hierarchy `8799657` · APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 
 ### Auth & Role
 - Login Google `@mutiarabangsa.sch.id`
+- **Login allowlist:** selain siswa aktif / teachers / homeroom, hanya email di `login_allowlist` yang boleh sign-in · kelola di **Roster → Whitelist Akses Login** (Homeroom) · migration **017**
 - Role: Homeroom, Teacher, Ketua, Bendahara, Sekretaris, Anggota, Pending
 - RoleGate + `policies.ts`; TEACHER hanya `/app/scan`
 - Session JWT 30 hari · **`allowBackup=true` tetap ON** (session selamat uninstall→install; user decision 2026-09-19)
@@ -102,7 +103,7 @@
 - Logout bersihkan cache
 
 ### Migrations
-005 roster_proposals · 006 notifications · 007 mass_reports · 008 custom+photo · 009 vote YES/NO · 010 info_brief · 011 subject_teachers · 012 subject_name_ict · 013 class_settings · 014 push_tokens · **016 notif soft-delete + ref_id cascade**
+005 roster_proposals · 006 notifications · 007 mass_reports · 008 custom+photo · 009 vote YES/NO · 010 info_brief · 011 subject_teachers · 012 subject_name_ict · 013 class_settings · 014 push_tokens · **016 notif soft-delete + ref_id cascade** · **017 login_allowlist** (belum tentu di-push ke Supabase sampai `supabase db push`)
 
 ### Push Notification (FCM)
 - Spec: `docs/PUSH_NOTIFICATIONS.md`
@@ -121,6 +122,7 @@
 - Distribusi APK **1.1.0** ke siswa (sideload; Play Store closed testing = opsional hilangkan warning Play Protect)
 - Aktivasi FCM end-to-end di device (env Vercel sudah ada)
 - ~~Tipografi rollout~~ **selesai f1–f3 + hierarchy pass** — SSOT: judul `text-sm` bold · body `text-sm-plus` (12) · meta 11 · micro 10; token `--text-sm-plus` di `@theme`; audit: **0** `text-[7–9px]` · Kas badge sejajar + anti overflow
+- **Login allowlist live** (migration 017 applied + deploy) — jangan diulang
 
 **Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · **notif hard-delete + 1-baris** · **Agenda timeline + deskripsi** · **Beri Poin multi-siswa + section card** · **StudentSelect SSOT** · **i18n ID/EN + Settings Bahasa** · APK 1.1.0 build · Vercel `f83273e` · **Tipografi SSOT M3 + rollout f1–f3 seluruh app**
 
