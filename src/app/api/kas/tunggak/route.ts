@@ -12,15 +12,11 @@ function ymd(y: number, m: number, d: number) {
 }
 
 /**
- * Awal semester akademik (utang kumulatif lintas bulan):
- * Jul–Des → 1 Juli tahun itu · Jan–Jun → 1 Januari tahun itu
+ * Anchor periode kas: keputusan user — hitungan mulai awal Agustus 2026
+ * (hari setoran pertama Selasa, 4 Agu 2026; 1 checklist Rp 1.000 tiap Sel/Kam).
+ * Data sebelum tanggal ini tidak dihitung sebagai hari setoran.
  */
-function semesterStart(today = new Date()): string {
-  const y = today.getFullYear()
-  const m = today.getMonth() // 0-based
-  if (m >= 6) return ymd(y, 6, 1) // Juli–Desember
-  return ymd(y, 0, 1) // Januari–Juni
-}
+const TERM_START = "2026-08-04"
 
 /** Semua Selasa & Kamis dari `from` sampai hari ini */
 function collectionDays(from: string): string[] {
@@ -48,7 +44,7 @@ export async function GET(req: Request) {
     const url = new URL(req.url)
     const amountPer = Number(url.searchParams.get("amountPer")) || 1000
     const classId = ctx.classId ?? ""
-    const from = url.searchParams.get("from") || semesterStart()
+    const from = url.searchParams.get("from") || TERM_START
 
     const days = collectionDays(from)
 

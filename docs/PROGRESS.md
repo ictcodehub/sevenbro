@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: **Nominal kas Rp 1.000 + matriks slot Bayar Khusus · deploy `c3e92e2` 2026-09-21** · sebelumnya tipografi hierarchy `8799657` · poin arena `cd352cf` · tipografi M3 f1–f3 `a7cf598` · i18n `f83273e` · APK 1.1.0; `allowBackup` tetap `true`.
+> Status terakhir: **Kas backlog+backdate + Buku Kas UI (matriks/tabel/filter) + StudentSelect i18n · 2026-09-22** · sebelumnya nominal Rp 1.000 `c3e92e2` · tipografi hierarchy `8799657` · APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 
@@ -12,8 +12,13 @@
 
 ### Kas
 - Setoran Sel/Kam Rp 1.000 (2×/minggu = Rp 2.000); Bayar Khusus; Pengeluaran; Izin
-- Tunggak kumulatif semester; Buku Kas (Transaksi / Per Siswa / Matriks, filter bulan)
-- Tunggak tetap dihitung walau data kas kosong (kalender semester)
+- **Anchor periode = Selasa 4 Agu 2026** (keputusan user; `TERM_START` di `/api/kas/tunggak`) — checklist bendahara sumber kebenaran
+- **Backlog checklist dikoreksi** (2026-09-22): 19 tx "Iuran khusus" 21 Sep → 291 baris Rp 1.000/hari Sel/Kam sesuai checklist; kelebihan = bayar di muka mengalir ke Sel/Kam berikutnya (`scripts/fix-kas-backlog.mjs`, backup `scripts/backup-kas-2026-09-21.json`)
+- **Backdate**: semua input kas bisa pilih tanggal (header checklist + sheet Khusus/Pengeluaran; izin ikut tanggal); `/api/kas/collect` terima `occurred_on` (tolak masa depan)
+- Matriks: lunas = jumlah hari Sel/Kam sejak anchor (dinamis); sel 0/1/2 per minggu; filter bulan dihormati; kolom **No**
+- Buku Kas UI: Per Siswa table proporsional · Transaksi card hijau + date `DD Mon` + frame kolom · filter bar card seragam · tanpa search ledger
+- StudentMultiSelect: label i18n (EN “All students”) + default **select all**
+- Tunggak kumulatif dari anchor; tetap dihitung walau data kas kosong (kalender setoran)
 
 ### Poin
 - Arena: Leaderboard · Battle Log · **Report**

@@ -244,10 +244,10 @@ function HomeInner() {
           </p>
           <div className="mt-2 flex flex-nowrap items-center gap-1 min-w-0">
             <span className="inline-flex items-center gap-0.5 rounded-full bg-lime/15 border border-lime/30 px-1.5 py-0.5 text-[10px] font-semibold text-lime min-w-0 truncate">
-              + {formatIDR(kas?.monthIn ?? 0)} {t("home.in")}
+              ↑ {formatIDR(kas?.monthIn ?? 0)}
             </span>
             <span className="inline-flex items-center gap-0.5 rounded-full bg-amber/15 border border-amber/30 px-1.5 py-0.5 text-[10px] font-semibold text-amber min-w-0 truncate">
-              − {formatIDR(kas?.monthOut ?? 0)} {t("home.out")}
+              ↓ {formatIDR(kas?.monthOut ?? 0)}
             </span>
           </div>
         </div>

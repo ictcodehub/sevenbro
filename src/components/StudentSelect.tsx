@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react"
 import { Check, ChevronDown, User } from "lucide-react"
 import { formatDisplayName } from "@/lib/format"
+import { useT } from "@/lib/i18n"
 
 export type StudentLite = {
   id: string
@@ -98,16 +99,19 @@ export function StudentSelect({
   students,
   value,
   onChange,
-  placeholder = "Pilih Nama Siswa",
+  placeholder,
 }: {
   students: StudentLite[]
   value: string
   onChange: (id: string) => void
   placeholder?: string
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const selected = students.find((s) => s.id === value)
-  const display = selected ? formatDisplayName(selected.full_name) : placeholder
+  const display = selected
+    ? formatDisplayName(selected.full_name)
+    : (placeholder ?? t("poin.pickStudents"))
 
   return (
     <div className="relative w-full min-w-0">
@@ -144,9 +148,9 @@ export function StudentMultiSelect({
   selectedIds,
   selectedNames,
   onChange,
-  placeholder = "Pilih Nama Siswa",
-  selectAllLabel = "Semua siswa",
-  selectAllMode = "clear",
+  placeholder,
+  selectAllLabel,
+  selectAllMode = "all",
 }: {
   students: StudentLite[]
   selectedIds: string[]
@@ -155,12 +159,15 @@ export function StudentMultiSelect({
   placeholder?: string
   /** Label baris atas daftar */
   selectAllLabel?: string
-  /** clear = kosongkan (brief) · all = centang semua id (Beri Poin) */
+  /** all = centang semua / toggle · clear = kosongkan */
   selectAllMode?: "clear" | "all"
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const display =
-    selectedNames.length > 0 ? selectedNames.join(", ") : placeholder
+    selectedNames.length > 0
+      ? selectedNames.join(", ")
+      : (placeholder ?? t("poin.pickStudents"))
 
   const toggleStudent = (id: string, name: string) => {
     const idx = selectedIds.indexOf(id)
@@ -175,27 +182,27 @@ export function StudentMultiSelect({
   }
 
   const handleSelectAll = () => {
-    if (selectAllMode === "all") {
-      // Sudah ada terpilih → kosongkan; masih kosong → pilih semua
-      if (selectedIds.length > 0) {
-        onChange([], [])
-        return
-      }
-      onChange(
-        students.map((s) => s.id),
-        students.map((s) => formatDisplayName(s.full_name)),
-      )
+    if (selectAllMode === "clear") {
+      onChange([], [])
       return
     }
-    onChange([], [])
+    // all: sudah ada terpilih → kosongkan; masih kosong → pilih semua
+    if (selectedIds.length > 0) {
+      onChange([], [])
+      return
+    }
+    onChange(
+      students.map((s) => s.id),
+      students.map((s) => formatDisplayName(s.full_name)),
+    )
   }
 
   const selectAllText =
-    selectAllMode === "all" && selectedIds.length > 0
-      ? "Hapus Semua"
-      : selectAllMode === "all"
-        ? "Pilih Semua"
-        : selectAllLabel
+    selectAllMode === "all"
+      ? selectedIds.length > 0
+        ? t("poin.clearAll")
+        : (selectAllLabel ?? t("common.allStudents"))
+      : (selectAllLabel ?? t("poin.clearAll"))
 
   return (
     <div className="relative w-full min-w-0">

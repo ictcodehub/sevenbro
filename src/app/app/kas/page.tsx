@@ -131,6 +131,34 @@ function isCollectionDay() {
   return day === 2 || day === 4 // Selasa / Kamis
 }
 
+/** Input tanggal kejadian (backdate) — kosong = hari ini */
+function BackdateInput({
+  value,
+  onChange,
+  max,
+  compact = false,
+}: {
+  value: string
+  onChange: (v: string) => void
+  max: string
+  compact?: boolean
+}) {
+  return (
+    <input
+      type="date"
+      value={value}
+      max={max}
+      onChange={(e) => onChange(e.target.value)}
+      aria-label="Tanggal kejadian"
+      className={
+        compact
+          ? "shrink-0 h-7 text-[11px] text-ink bg-white border border-line rounded-lg px-1.5"
+          : inputClass
+      }
+    />
+  )
+}
+
 export default function KasPage() {
   const t = useT()
   return (
@@ -147,6 +175,8 @@ function KasInner() {
   const role = (session?.user as { role?: string } | undefined)?.role
   const canManage = canManageKas(role ?? "")
   const canView = canViewKas(role ?? "")
+  // Backdate: tanggal kejadian untuk input manual (kosong = hari ini)
+  const [backdate, setBackdate] = useState("")
 
   const { data, error, mutate } = useAppSWR<Summary>("/api/kas/summary", undefined, {
     refreshInterval: 10000,
@@ -157,7 +187,7 @@ function KasInner() {
   const today = new Date().toISOString().slice(0, 10)
   const { data: izinRows, mutate: mutateIzin } = useAppSWR<
     { id: string; student_id: string; occurred_on: string }[]
-  >(canManage ? `/api/kas/izin?date=${today}` : null)
+  >(canManage ? `/api/kas/izin?date=${backdate || today}` : null)
   const { data: tunggak, mutate: mutateTunggak } = useAppSWR<TunggakPayload>(
     canManage ? `/api/kas/tunggak?amountPer=${NOMINAL}` : null,
     undefined,
@@ -222,7 +252,7 @@ function KasInner() {
           const r = await fetch("/api/kas/izin", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ studentIds: ids, date: today }),
+            body: JSON.stringify({ studentIds: ids, date: backdate || today }),
           })
           const b = await r.json().catch(() => null)
           if (!r.ok) throw new Error(b?.error || t("common.failed"))
@@ -251,7 +281,7 @@ function KasInner() {
       setSaving(true)
       try {
         for (const id of ids) {
-          await fetch(`/api/kas/izin?studentId=${id}&date=${today}`, {
+          await fetch(`/api/kas/izin?studentId=${id}&date=${backdate || today}`, {
             method: "DELETE",
           })
         }
@@ -275,8 +305,10 @@ function KasInner() {
       if (markMode === "izin") {
         const r = await fetch("/api/kas/izin", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ studentIds: [...picked], date: today }),
+          headers: { "Content-Type": "application/json" },            body: JSON.stringify({
+              studentIds: [...picked],
+              date: backdate || today,
+            }),
         })
         const b = await r.json().catch(() => null)
         if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
@@ -291,11 +323,16 @@ function KasInner() {
         const r = await fetch("/api/kas/collect", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ studentIds: bayarIds, amountPer: NOMINAL }),
+          body: JSON.stringify({
+            studentIds: bayarIds,
+            amountPer: NOMINAL,
+            ...(backdate ? { occurred_on: backdate } : {}),
+          }),
         })
         const b = await r.json().catch(() => null)
         if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
         flash(b?.message || t("kas.depositSaved"))
+        setBackdate("")
       }
       setPicked(new Set())
       await Promise.all([mutate(), mutateIzin(), mutateTunggak()])
@@ -310,7 +347,7 @@ function KasInner() {
     try {
       if (izinIds.has(id)) {
         const r = await fetch(
-          `/api/kas/izin?studentId=${id}&date=${today}`,
+          `/api/kas/izin?studentId=${id}&date=${backdate || today}`,
           { method: "DELETE" },
         )
         if (!r.ok) {
@@ -328,7 +365,7 @@ function KasInner() {
         const r = await fetch("/api/kas/izin", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ studentIds: [id], date: today }),
+          body: JSON.stringify({ studentIds: [id], date: backdate || today }),
         })
         const b = await r.json().catch(() => null)
         if (!r.ok) throw new Error(b?.error || t("common.failed"))
@@ -360,6 +397,7 @@ function KasInner() {
           category: "Iuran khusus",
           description: `${name} · ${note}`,
           amount: n,
+          ...(backdate ? { occurred_on: backdate } : {}),
         }),
       })
       const b = await r.json().catch(() => null)
@@ -368,6 +406,7 @@ function KasInner() {
       setSpStudent("")
       setSpNote("")
       setSpAmount("20000")
+      setBackdate("")
       flash(t("kas.recordedFor", { name: name ?? "", amount: formatIDR(n) }))
       await mutate()
     } catch (e) {
@@ -394,6 +433,7 @@ function KasInner() {
           category: "Pengeluaran",
           description: outNote.trim(),
           amount: n,
+          ...(backdate ? { occurred_on: backdate } : {}),
         }),
       })
       const b = await r.json().catch(() => null)
@@ -401,6 +441,7 @@ function KasInner() {
       setOpenOut(false)
       setOutAmount("")
       setOutNote("")
+      setBackdate("")
       flash(t("kas.expenseRecorded"))
       await mutate()
     } catch (e) {
@@ -445,10 +486,10 @@ function KasInner() {
                 </p>
                 <div className="mt-2 flex flex-nowrap items-center gap-1 min-w-0">
                   <span className="inline-flex items-center gap-0.5 rounded-full bg-lime/15 border border-lime/30 px-1.5 py-0.5 text-[10px] font-semibold text-lime min-w-0 truncate">
-                    + {formatIDR(data?.monthIn ?? 0)} {t("home.in")}
+                    ↑ {formatIDR(data?.monthIn ?? 0)}
                   </span>
                   <span className="inline-flex items-center gap-0.5 rounded-full bg-amber/15 border border-amber/30 px-1.5 py-0.5 text-[10px] font-semibold text-amber min-w-0 truncate">
-                    − {formatIDR(data?.monthOut ?? 0)} {t("home.out")}
+                    ↓ {formatIDR(data?.monthOut ?? 0)}
                   </span>
                 </div>
               </div>
@@ -527,7 +568,10 @@ function KasInner() {
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-ink truncate">{t("kas.todayDeposit")}</p>
                     <p className="text-[11px] text-ink-soft/70 mt-0.5 truncate">
-                      {todayLabel()} · {formatIDR(NOMINAL)}{t("kas.perPerson")}
+                      {backdate
+                        ? `${formatDateID(new Date(backdate + "T12:00:00"))} · backdate`
+                        : todayLabel()}{" "}
+                      · {formatIDR(NOMINAL)}{t("kas.perPerson")}
                     </p>
                   </div>
                   {collectionDay && (
@@ -576,6 +620,12 @@ function KasInner() {
                     >
                       {markMode === "izin" ? t("kas.clearLeave") : t("kas.clear")}
                     </button>
+                    <BackdateInput
+                      value={backdate}
+                      onChange={setBackdate}
+                      max={today}
+                      compact
+                    />
                   </div>
                 </div>
               </div>
@@ -933,6 +983,9 @@ function KasInner() {
             className={inputClass}
           />
         </Field>
+        <Field label={t("kas.eventDate")}>
+          <BackdateInput value={backdate} onChange={setBackdate} max={today} />
+        </Field>
         <Field label={t("kas.noteOptional")} hint={t("kas.noteHint")}>
           <input
             value={spNote}
@@ -981,6 +1034,9 @@ function KasInner() {
             className={inputClass}
             placeholder="5000"
           />
+        </Field>
+        <Field label={t("kas.eventDate")}>
+          <BackdateInput value={backdate} onChange={setBackdate} max={today} />
         </Field>
         <button
           type="button"

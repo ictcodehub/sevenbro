@@ -61,6 +61,15 @@ export function formatDateID(d: Date): string {
   return `${day}, ${date} ${month}`
 }
 
+/** "06 Sep" — DD + spasi + bulan 3 huruf (WIB), tanpa hari/tahun */
+export function formatDateCompactID(d: Date): string {
+  if (!Number.isFinite(d.getTime())) return ""
+  const wib = new Date(d.getTime() + WIB_OFFSET_MS)
+  const dd = String(wib.getUTCDate()).padStart(2, "0")
+  const month = INDONESIAN_MONTH_LABELS[String(wib.getUTCMonth() + 1)] || ""
+  return `${dd} ${month}`
+}
+
 export function formatTimeID(d: Date): string {
   if (!Number.isFinite(d.getTime())) return ""
   const wib = new Date(d.getTime() + WIB_OFFSET_MS)

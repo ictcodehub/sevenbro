@@ -1,0 +1,211 @@
+[
+  {
+    "id": "15c66f2e-754c-449e-bac1-2cc419b8f538",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 17000,
+    "description": "Edmund Gracio Wirjo · Bayar 9x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:04:13.541672+00:00"
+  },
+  {
+    "id": "b29e317c-d705-4af6-981a-6ca30a980496",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 16000,
+    "description": "Edmund Gracio Wirjo · Bayar 8x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:05:36.407762+00:00"
+  },
+  {
+    "id": "d26b9966-7161-4cbb-915a-3916f2a885e8",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 24000,
+    "description": "Evander Tristan Lee · Lunas tunggak semester",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:06:18.281886+00:00"
+  },
+  {
+    "id": "59dae3f2-1e8b-497a-8f67-d53840bef94d",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 18000,
+    "description": "Freissy Celestyn Lien · Bayar 9x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:06:47.834426+00:00"
+  },
+  {
+    "id": "9320388a-644b-4a67-80ef-3eebe062a1b3",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 17000,
+    "description": "Gavriella Mulia Sitorus · Bayar 9x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:07:21.598261+00:00"
+  },
+  {
+    "id": "85d3fb1a-a614-4b18-acc5-d79e427aa246",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 17000,
+    "description": "Jesslyn Aurelia Hamsidi · Bayar 9x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:08:02.274669+00:00"
+  },
+  {
+    "id": "17a6980c-64e5-4c1f-afa7-66e0603d336f",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 19000,
+    "description": "Jivin Wellington Priyanto · Bayar 10x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:08:40.411193+00:00"
+  },
+  {
+    "id": "8a97336c-d413-4970-9b35-0f29869ae90d",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 18000,
+    "description": "Jolin Khojaya · Bayar 9x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:09:20.519276+00:00"
+  },
+  {
+    "id": "d2a2583d-2961-44c1-895b-21171ff1f9a9",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 19000,
+    "description": "Keiko Kholis · Bayar 10x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:09:53.889888+00:00"
+  },
+  {
+    "id": "f7f0b2ca-e356-4747-835a-7adba3f9b866",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 14000,
+    "description": "Li Ming Xin · Bayar 7x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:10:54.579898+00:00"
+  },
+  {
+    "id": "62880f1d-18d7-48f1-97ef-729ef65acb65",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 25000,
+    "description": "Madeline Mellow Andrea · Bayar 13x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:11:27.918693+00:00"
+  },
+  {
+    "id": "b8919dc6-6478-4670-b812-d3f67bee3f2b",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 19000,
+    "description": "Mishella Tjung · Bayar 10x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:11:58.880104+00:00"
+  },
+  {
+    "id": "da649e2f-ef19-433f-8502-ad24e1304c35",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 21000,
+    "description": "Muhamad Dwi Andra Shakti · Bayar 11x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:12:33.384966+00:00"
+  },
+  {
+    "id": "827dab08-7181-4487-a223-84e624d8aae8",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 20000,
+    "description": "Pauline Joice Widjadja · Bayar 10x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:13:15.199537+00:00"
+  },
+  {
+    "id": "988bac8c-a419-457c-a5df-956333b488dd",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 15000,
+    "description": "Rebecca Christa P · Bayar 8x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:14:09.020881+00:00"
+  },
+  {
+    "id": "ba6c14f0-af7b-48d7-98a8-8f023241225e",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 20000,
+    "description": "Wilbert Bryan · Bayar 10x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:14:36.543854+00:00"
+  },
+  {
+    "id": "ac3a7cfa-6a0d-46c8-9bb9-b6e7954a0a5b",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 2000,
+    "description": "Madeline Mellow Andrea · Bayar Khusus",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:15:48.068518+00:00"
+  },
+  {
+    "id": "05d6cc8b-e91c-4117-94bf-acd2923550be",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 2000,
+    "description": "Rebecca Christa P · Lunas tunggak semester",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "rebecca@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:17:46.908054+00:00"
+  },
+  {
+    "id": "2467c7bf-9c77-4ce9-89de-614beec9c4fe",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran khusus",
+    "amount": 16000,
+    "description": "Erica Aurie · Bayar 8x",
+    "occurred_on": "2026-09-21",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-21T05:18:00.145925+00:00"
+  }
+]

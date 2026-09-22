@@ -13,12 +13,12 @@ export async function GET() {
   ensureContextReader()
   try {
     const ctx = await requireApi()
+    // Tanpa limit: backlog 291+ baris harus kebaca penuh (matriks per bulan butuh riwayat lengkap)
     const { data, error } = await createAdminClient()
       .from("transactions")
       .select("*")
       .eq("class_id", ctx.classId ?? "")
       .order("created_at", { ascending: false })
-      .limit(200)
     if (error) throw new Error(error.message)
     return NextResponse.json(data ?? [])
   } catch (e) {

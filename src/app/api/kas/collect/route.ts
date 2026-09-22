@@ -37,7 +37,19 @@ export async function POST(req: Request) {
       .select("id, full_name")
       .in("id", ids)
 
-    const today = new Date().toISOString().slice(0, 10)
+    // Backdate opsional: body.occurred_on "YYYY-MM-DD" (tidak boleh masa depan)
+    const nowYmd = new Date().toISOString().slice(0, 10)
+    const reqDate = typeof body?.occurred_on === "string" ? body.occurred_on.trim() : ""
+    let occurred_on = nowYmd
+    if (reqDate) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(reqDate)) {
+        return NextResponse.json({ error: "Format tanggal tidak valid" }, { status: 400 })
+      }
+      if (reqDate > nowYmd) {
+        return NextResponse.json({ error: "Tanggal tidak boleh di masa depan" }, { status: 400 })
+      }
+      occurred_on = reqDate
+    }
     const recorded_by = ctx.email ?? ctx.name
 
     const rows = (students ?? []).map((s) => ({
@@ -46,7 +58,7 @@ export async function POST(req: Request) {
       category: "Iuran",
       description: s.full_name,
       amount: amountPer,
-      occurred_on: today,
+      occurred_on,
       recorded_by,
     }))
 
@@ -68,7 +80,7 @@ export async function POST(req: Request) {
       .select("student_id, created_at")
       .in("student_id", paidIds)
       .eq("reason", "Bayar Uang Kas")
-    const todayStart = new Date(today + "T00:00:00Z").toISOString()
+    const todayStart = new Date(nowYmd + "T00:00:00Z").toISOString()
     const gotToday = new Set(
       (already ?? [])
         .filter((p) => p.created_at >= todayStart)
@@ -91,7 +103,7 @@ export async function POST(req: Request) {
     const total = amountPer * rows.length
     await notifyHomeroom(ctx, {
       title: "Setoran kas dicatat",
-      body: `${formatDisplayName(ctx.name) || "Bendahara"} mencatat setoran ${rows.length} siswa · ${formatIDR(total)}${toPoint.length > 0 ? ` · +1 poin ${toPoint.length} siswa` : ""}.`,
+      body: `${formatDisplayName(ctx.name) || "Bendahara"} mencatat setoran ${rows.length} siswa · ${formatIDR(total)}${occurred_on !== nowYmd ? ` · tgl ${occurred_on}` : ""}${toPoint.length > 0 ? ` · +1 poin ${toPoint.length} siswa` : ""}.`,
       kind: "kas",
     })
     return NextResponse.json(

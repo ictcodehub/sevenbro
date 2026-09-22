@@ -94,8 +94,15 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-21 | **Tipografi M3 diturunkan ~1px** — body 13 / meta 11 / micro 10 / title 17; override `text-xs/sm/base/lg` di `@theme`; Kas: badge sejajar + anti overflow card | `globals.css` · `DESIGN_SYSTEM.md` § Tipografi · `kas/page.tsx` |
 | 2026-09-21 | **Hierarki tipografi final** — judul `text-sm` bold · body `text-sm-plus` (12) regular · meta `text-xs`/`[11px]`; diterapkan lintas app | `DESIGN_SYSTEM.md` · pages + `ui-primitives` |
 | 2026-09-21 | **Nominal kas = Rp 1.000** per setoran (Sel/Kam) · 2×/minggu = Rp 2.000 · default API + UI `NOMINAL` | `kas/page.tsx` · `/api/kas/collect` · `/api/kas/tunggak` · PROGRESS |
+| 2026-09-21 | **Matriks hormati selector bulan** — hanya minggu bulan terpilih (default bulan berjalan) · lunas ≥ Rp 23.000 (total sepanjang waktu) · Bayar Khusus diisi dari awal bulan · label kolom `d/m` | `kas/buku/page.tsx` § matriks · `locales` `kas.matrixLegend` |
+| 2026-09-21 | **Matriks: match bayar per nama aman** — batch `· N siswa ·` dihitung share amount/N (bukan full amount ke semua nama) · slot Bayar Khusus hanya transaksi bulan berjalan · sel grid 0/1/2 | `kas/buku/page.tsx` § matriks |
 | 2026-09-21 | **Matriks = slot bayar (amount/NOMINAL)**, bukan jumlah transaksi · Bayar Khusus disebar ke minggu kosong dulu · filter hanya kategori Iuran* | `kas/buku/page.tsx` § matriks |
 | 2026-09-21 | **Density SSOT lintas halaman** — list/preview `text-xs` (ListRow, TimelineItem, judul+WaBody pengumuman, podium nama); section heading tetap `text-sm` | `DESIGN_SYSTEM.md` § Tipografi · `ui-primitives` · `pengumuman` · `page.tsx` · `poin` |
+| 2026-09-22 | **Anchor kas = Selasa 4 Agu 2026** (awal penarikan bendahara; bukan 1 Jul) — 1 checklist Rp 1.000 tiap Sel/Kam · checklist bendahara = sumber kebenaran | `api/kas/tunggak` `TERM_START` · matriks lunas dinamis · `scripts/fix-kas-backlog.mjs` |
+| 2026-09-22 | **Koreksi data manual bendahara**: 19 tx "Iuran khusus" 21 Sep (Rp 319.000, tanggal salah) → **291 baris kanonikal Rp 1.000/hari** Sel/Kam sejak 4 Agu sesuai checklist · kelebihan slot = **bayar di muka** mengalir ke Sel/Kam berikutnya · backup `scripts/backup-kas-2026-09-21.json` | DB `transactions` (sudah applied) · `scripts/fix-kas-backlog.mjs` (dry-run default, `--apply` untuk tulis) |
+| 2026-09-22 | **Lunas matriks dinamis** = jumlah hari Sel/Kam sejak anchor s.d. hari ini (tidak lagi hardcoded 23) | `kas/buku/page.tsx` § matriks |
+| 2026-09-22 | **Backdate semua input kas** — `/api/kas/collect` terima `occurred_on` (validasi format + tolak masa depan) · UI Kas: date picker di header + sheet Khusus/Pengeluaran · izin POST/DELETE ikut tanggal terpilih | `api/kas/collect` · `kas/page.tsx` (`BackdateInput`) |
+| 2026-09-22 | **Buku Kas UI batch** — Matriks: kolom No + sel 0/1/2 square · Per Siswa: table-fixed proporsional · Transaksi: frame card hijau + date `DD Mon` + tanpa search · filter bar card seragam `py-3` · StudentMultiSelect: i18n EN + select-all default · `formatDateCompactID` | `kas/buku/page.tsx` · `StudentSelect.tsx` · `format.ts` · `locales.ts` |
 
 ---
 
@@ -157,5 +164,6 @@ Setelah kerja selesai: update `PROGRESS.md` Open + baris **Keputusan sinkron** d
 
 
 
+
 ### Automation log
-- last session-sync: `2026-09-21T05:46:28.802Z` · branch `master`
+- last session-sync: `2026-09-22T14:44:50.002Z` · branch `master`
