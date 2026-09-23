@@ -32,6 +32,7 @@ import { useT } from "@/lib/i18n"
 import QRCode from "qrcode"
 import { formatDateID, formatTimeID, formatDisplayName } from "@/lib/format"
 import MassReportPanel from "@/components/MassReportPanel"
+import { VerifiedBadge, usePositions, type PositionIndex } from "@/components/VerifiedBadge"
 
 type LeaderRow = {
   student_id: string
@@ -59,6 +60,17 @@ type PointsPayload = {
 
 type StudentOpt = { id: string; full_name: string; position: string }
 type StudentDetail = { student: LeaderRow | null; history: PointLog[] }
+
+/** Nama siswa di baris histori — dengan badge verified via lookup nama */
+function HistoryStudentName({ index, name }: { index: PositionIndex; name: string }) {
+  const position = index.byName.get(name.toLowerCase()) ?? null
+  return (
+    <span className="inline-flex items-center gap-0.5 align-baseline">
+      <span className="truncate">{formatDisplayName(name)}</span>
+      <VerifiedBadge position={position} className="h-3 w-3" />
+    </span>
+  )
+}
 
 /** Preset alasan manual — SSOT docs/POINT_SYSTEM.md (A1 kas = auto; delta = saran; skor manual) */
 const POINT_PRESETS = {
@@ -134,6 +146,7 @@ function DeltaBadge({ delta }: { delta: number }) {
 
 function HistoryList({ items, showStudent }: { items: PointLog[]; showStudent?: boolean }) {
   const t = useT()
+  const posIndex = usePositions("history")
   if (items.length === 0) {
     return <EmptyState icon={<History className="h-6 w-6" />} message={t("poin.noHistory")} />
   }
@@ -161,7 +174,10 @@ function HistoryList({ items, showStudent }: { items: PointLog[]; showStudent?: 
               <DeltaBadge delta={log.delta} />
             </div>
             <p className="mt-0.5 text-[11px] text-ink-soft/60 truncate">
-              {showStudent && log.student?.full_name ? `${formatDisplayName(log.student.full_name)} · ` : ""}
+              {showStudent && log.student?.full_name ? (
+                <HistoryStudentName index={posIndex} name={log.student.full_name} />
+              ) : null}
+              {showStudent && log.student?.full_name ? " · " : ""}
               {log.kind === "PELANGGARAN" ? t("poin.pelanggaran") : t("poin.prestasi")}
               {" · "}
               {log.created_by || "—"}
@@ -193,6 +209,7 @@ function PodiumCard({
   const t = useT()
   const pct = maxPts > 0 ? Math.min(100, (student.total_points / maxPts) * 100) : 0
   const podiumClass = rank === 1 ? "podium-1" : rank === 2 ? "podium-2" : "podium-3"
+  const posIndex = usePositions("podium")
 
   return (
     <button
@@ -275,7 +292,7 @@ function PodiumCard({
               : "text-sm-plus text-white/90"
         }`}
       >
-        {muted ? "—" : personName(student.full_name)}
+        {muted ? "—" : <span className="inline-flex items-center gap-0.5 max-w-full">{personName(student.full_name)}<VerifiedBadge position={posIndex.byId.get(student.student_id)} className="h-3 w-3" /></span>}
       </p>
       <p className="text-[11px] font-semibold text-white/55 mt-0.5">
         {muted ? t("poin.waitingPts") : t("poin.rank", { n: rank })}
@@ -335,6 +352,8 @@ function PoinInner() {
   const { data: meCtx } = useAppSWR<{ classId?: string }>(isAdmin ? "/api/me" : null)
   const { data, error, mutate } = useAppSWR<PointsPayload>("/api/points")
   const { data: students } = useAppSWR<StudentOpt[]>(canGive ? "/api/admin/students" : null)
+  // Index posisi untuk badge verified — sumber sama dengan students (hemat request)
+  const posIndex = usePositions(canGive ? "poin" : "poin-ro")
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
   const [showQr, setShowQr] = useState(false)
 
@@ -863,9 +882,13 @@ function PoinInner() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 min-w-0">
-                                <p className="text-sm font-semibold text-ink truncate">
-                                  {personName(p.full_name)}
-                                </p>
+                              <p className="text-sm font-semibold text-ink truncate">
+                                {personName(p.full_name)}
+                                <VerifiedBadge
+                                  position={posIndex.byId.get(p.student_id)}
+                                  className="ml-0.5 h-3 w-3"
+                                />
+                              </p>
                                 {isMe && (
                                   <span className="text-[11px] font-bold uppercase tracking-wide bg-forest text-white px-1 py-0 rounded shrink-0">
                                     Anda
@@ -993,8 +1016,12 @@ function PoinInner() {
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-amber font-bold">
+              <p className="text-xs text-amber font-bold flex items-center justify-end gap-1">
                 #{(rows.findIndex((r) => r.student_id === detail.student!.student_id) + 1) || "?"}
+                <VerifiedBadge
+                  position={posIndex.byId.get(detail.student.student_id)}
+                  className="h-3.5 w-3.5"
+                />
               </p>
               <p className="text-[11px] text-white/50">
                 {detail.student.position !== "ANGGOTA"

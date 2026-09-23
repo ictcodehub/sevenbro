@@ -10,7 +10,6 @@ import { formatDisplayName } from "@/lib/format"
 export const dynamic = "force-dynamic"
 
 const ACTIONS = ["ADD", "UPDATE", "DELETE"] as const
-const POSITIONS = ["KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
 
 export async function GET() {
   ensureContextReader()
@@ -66,10 +65,14 @@ export async function POST(req: Request) {
         patch.full_name = body.full_name.trim()
       }
       if (typeof body?.position === "string") {
-        if (!POSITIONS.includes(body.position)) {
-          return NextResponse.json({ error: "Posisi tidak valid" }, { status: 400 })
+        // Posisi bebas (bisa berubah tiap rotasi roster) — validasi format saja
+        const position = body.position.trim().toUpperCase()
+        if (position) {
+          if (position.length > 32 || !/^[A-Z0-9 _-]+$/.test(position)) {
+            return NextResponse.json({ error: "Posisi tidak valid" }, { status: 400 })
+          }
+          patch.position = position
         }
-        patch.position = body.position
       }
       if (typeof body?.email === "string") patch.email = body.email.trim() || null
       if (typeof body?.nis === "string") patch.nis = body.nis.trim() || null

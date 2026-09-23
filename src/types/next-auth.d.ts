@@ -13,6 +13,7 @@ declare module "next-auth/jwt" {
     effectiveRole?: string
     studentId?: string | null
     classId?: string | null
+    roleCheckedAt?: number
     email?: string | null
   }
 }

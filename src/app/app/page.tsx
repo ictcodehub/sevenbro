@@ -23,6 +23,7 @@ import { useAppSWR } from "@/lib/fetcher"
 import { formatIDR, formatDateID, formatTimeID, formatDisplayName } from "@/lib/format"
 import { RoleGate } from "@/components/RoleGate"
 import { useT } from "@/lib/i18n"
+import { VerifiedBadge, usePositions } from "@/components/VerifiedBadge"
 
 type Announcement = {
   id: string
@@ -152,6 +153,7 @@ function HomeInner() {
   const { data: events } = useAppSWR<EventRow[]>("/api/events")
   const { data: kas } = useAppSWR<Summary>("/api/kas/summary")
   const { data: points } = useAppSWR<PointsPayload>("/api/points")
+  const posIndex = usePositions("home")
   const bodyClip = useOverflow2Lines()
 
   const pinned =
@@ -303,6 +305,10 @@ function HomeInner() {
                         <Crown className="h-3 w-3 text-amber shrink-0" />
                         <p className="text-sm font-semibold text-ink truncate">
                           {personName(p.full_name)}
+                          <VerifiedBadge
+                            position={posIndex.byId.get(p.student_id)}
+                            className="ml-0.5 h-3 w-3"
+                          />
                         </p>
                       </div>
                       <p className="text-[10px] text-ink-soft/70">{m.label} · {m.note}</p>
@@ -336,6 +342,10 @@ function HomeInner() {
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-ink truncate">
                           {personName(p.full_name)}
+                          <VerifiedBadge
+                            position={posIndex.byId.get(p.student_id)}
+                            className="ml-0.5 h-3 w-3"
+                          />
                         </p>
                         <p className="text-[10px] text-ink-soft/60">{m.label}</p>
                       </div>

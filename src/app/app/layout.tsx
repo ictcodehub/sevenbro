@@ -13,6 +13,7 @@ import {
   Shield,
   QrCode,
   Flag,
+  Settings,
 } from "lucide-react"
 import AppShell from "@/components/AppShell"
 import type { AppShellNotification } from "@/components/AppShell"
@@ -136,12 +137,13 @@ function getNavItems(
 
 function getAdminItems(
   role: string | undefined,
-  labels: { roster: string; classSettings: string; createReport: string },
+  labels: { roster: string; whitelist: string; classSettings: string; createReport: string },
 ) {
   if (role === "HOMEROOM") {
     return [
       { href: "/app/admin/roster", label: labels.roster, icon: Users },
-      { href: "/app/admin/settings", label: labels.classSettings, icon: Shield },
+      { href: "/app/admin/whitelist", label: labels.whitelist, icon: Shield },
+      { href: "/app/admin/settings", label: labels.classSettings, icon: Settings },
     ]
   }
   if (role === "KETUA") {
@@ -253,6 +255,7 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
   })
   const adminItems = getAdminItems(role, {
     roster: t("nav.roster"),
+    whitelist: t("nav.whitelist"),
     classSettings: t("nav.classSettings"),
     createReport: t("nav.report"),
   })

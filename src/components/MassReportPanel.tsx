@@ -10,6 +10,7 @@ import { formatDisplayName } from "@/lib/format"
 import { canReviewMassReport, canCreateMassReport } from "@/lib/policies"
 import { useAppSWR } from "@/lib/fetcher"
 import { useT } from "@/lib/i18n"
+import { VerifiedBadge, usePositions, type PositionIndex } from "@/components/VerifiedBadge"
 
 type ReportRow = {
   id: string
@@ -40,11 +41,27 @@ type ListPayload = {
   reports: ReportRow[]
 }
 
+/** Daftar nama target + badge verified via lookup nama */
+function TargetNames({ names, index }: { names: string[]; index: PositionIndex }) {
+  return (
+    <span className="font-semibold text-forest break-words">
+      {names.map((n, i) => (
+        <span key={`${n}-${i}`} className="inline-flex items-center gap-0.5">
+          {formatDisplayName(n)}
+          <VerifiedBadge position={index.byName.get(n.toLowerCase())} className="h-3 w-3" />
+          {i < names.length - 1 ? ", " : ""}
+        </span>
+      ))}
+    </span>
+  )
+}
+
 export default function MassReportPanel() {
   const { data: session } = useSession()
   const role = (session?.user as { role?: string } | undefined)?.role
   const canReview = canReviewMassReport(role ?? "")
   const canCreate = canCreateMassReport(role ?? "")
+  const posIndex = usePositions("mass-report")
 
   const { data, mutate, error } = useAppSWR<ListPayload>("/api/mass-reports")
   const reports = data?.reports ?? []
@@ -405,7 +422,10 @@ export default function MassReportPanel() {
                         {r.reason}
                       </p>
                       <p className="text-xs text-ink-soft/60 truncate mt-0.5">
-                        {t("report.targetLine", { names: r.target_names.join(", "), amount: r.delta })}
+                        {t("report.targetLine", {
+                          names: r.target_names.map((n) => formatDisplayName(n)).join(", "),
+                          amount: r.delta,
+                        })}
                       </p>
                     </div>
                     <p className="text-center text-xs text-ink-soft/70 tabular-nums whitespace-nowrap">
@@ -494,13 +514,10 @@ export default function MassReportPanel() {
         {detail && (
           <div className="space-y-3 min-w-0">
             <div className="min-w-0">
-              <p className="text-sm-plus text-ink break-words">{detail.reason}</p>
-              <p className="text-xs text-ink-soft/70 mt-0.5">
+              <p className="text-sm-plus text-ink break-words">{detail.reason}</p>              <p className="text-xs text-ink-soft/70 mt-0.5">
                 Target:{" "}
-                <span className="font-semibold text-forest break-words">
-                  {detail.target_names.join(", ")}
-                </span>{" "}
-                ·{" "}
+                <TargetNames names={detail.target_names} index={posIndex} />
+                {" "}·{" "}
                 <span className="font-bold text-[#EEA34C] whitespace-nowrap">−{detail.delta} poin</span>
               </p>
             </div>

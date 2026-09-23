@@ -46,12 +46,14 @@ describe("resolveEffectiveRole", () => {
     expect(resolveEffectiveRole("ADMIN", null)).toBe("PENDING")
   })
 
-  it("position tidak dikenal → PENDING", () => {
-    expect(resolveEffectiveRole("STUDENT", "WAKIL")).toBe("PENDING")
+  it("position bebas di luar daftar lama → role itu sendiri (bukan PENDING)", () => {
+    expect(resolveEffectiveRole("STUDENT", "WAKIL")).toBe("WAKIL")
+    expect(resolveEffectiveRole("STUDENT", "WAKIL KETUA")).toBe("WAKIL KETUA")
+    expect(resolveEffectiveRole("STUDENT", " KETUA ")).toBe("KETUA")
   })
 
-  it("case-sensitive: ketua huruf kecil tidak diizinkan", () => {
-    expect(resolveEffectiveRole("STUDENT", "ketua")).toBe("PENDING")
+  it("case-sensitive: position beda case = role berbeda", () => {
+    expect(resolveEffectiveRole("STUDENT", "ketua")).toBe("ketua")
   })
 })
 
@@ -66,9 +68,10 @@ describe("formatRoleLabel", () => {
     expect(formatRoleLabel("PENDING")).toBe("Menunggu")
   })
 
-  it("fallback Siswa untuk role kosong / tak dikenal", () => {
+  it("fallback: null → Siswa, role tak dikenal → Title Case", () => {
     expect(formatRoleLabel(null)).toBe("Siswa")
     expect(formatRoleLabel(undefined)).toBe("Siswa")
-    expect(formatRoleLabel("ADMIN")).toBe("Siswa")
+    expect(formatRoleLabel("ADMIN")).toBe("Admin")
+    expect(formatRoleLabel("WAKIL KETUA")).toBe("Wakil Ketua")
   })
 })

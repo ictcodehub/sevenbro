@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react"
 import { Check, ChevronDown, User } from "lucide-react"
 import { formatDisplayName } from "@/lib/format"
 import { useT } from "@/lib/i18n"
+import { VerifiedBadge, usePositions } from "@/components/VerifiedBadge"
 
 export type StudentLite = {
   id: string
@@ -56,10 +57,12 @@ function Trigger({
 function OptionRow({
   on,
   name,
+  position,
   onClick,
 }: {
   on: boolean
   name: string
+  position?: string | null
   onClick: () => void
 }) {
   return (
@@ -75,7 +78,10 @@ function OptionRow({
       >
         {on && <Check className="h-2.5 w-2.5" />}
       </span>
-      <span className="min-w-0 flex-1 truncate text-[12px] text-ink">{name}</span>
+      <span className="min-w-0 flex-1 truncate text-[12px] text-ink inline-flex items-center gap-0.5">
+        {name}
+        <VerifiedBadge position={position} className="h-3 w-3" />
+      </span>
     </button>
   )
 }
@@ -130,6 +136,7 @@ export function StudentSelect({
               key={s.id}
               on={s.id === value}
               name={formatDisplayName(s.full_name)}
+              position={s.position}
               onClick={() => {
                 onChange(s.id)
                 setOpen(false)
@@ -237,6 +244,7 @@ export function StudentMultiSelect({
               key={s.id}
               on={selectedIds.includes(s.id)}
               name={formatDisplayName(s.full_name)}
+              position={s.position}
               onClick={() => toggleStudent(s.id, formatDisplayName(s.full_name))}
             />
           ))}

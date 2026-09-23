@@ -40,6 +40,35 @@ export function SectionHeader({
   )
 }
 
+// ── Section Card (frame Info — header bar bg-page + body putih) ──
+export function SectionCard({
+  title,
+  count,
+  children,
+}: {
+  title: string
+  count?: number | string
+  children: ReactNode
+}) {
+  return (
+    <div className="rounded-2xl border border-line bg-white shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between gap-2 border-b border-line bg-page px-3 py-2.5">
+        <p className="text-sm font-bold text-ink truncate">{title}</p>
+        {count !== undefined && (
+          <span
+            className="inline-flex items-center gap-1 rounded-full bg-forest text-white text-[11px] font-bold px-2 py-0.5 tabular-nums shrink-0"
+            title={`${count}`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-lime" />
+            {count}
+          </span>
+        )}
+      </div>
+      <div className="p-3 space-y-2">{children}</div>
+    </div>
+  )
+}
+
 // ── Stat Card ──
 export function StatCard({
   href,

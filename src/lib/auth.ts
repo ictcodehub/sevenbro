@@ -27,6 +27,12 @@ export const authOptions: NextAuthOptions = {
       return canSignInEmail(user.email)
     },
     async jwt({ token, account, user }) {
+      // Refresh role hemat resource (free tier):
+      // DB cuma dicek max 1x/24 jam per user — dan hanya saat session di-refetch
+      // (buka app lagi / navigasi). Ganti pengurus berlaku paling telat sehari.
+      // Server-side requireApi tetap fresh per-request, jadi keamanan tidak terganggu.
+      const ROLE_REFRESH_MS = 24 * 60 * 60 * 1000
+
       if (account && user?.email) {
         try {
           const email = normalizeEmail(user.email)
@@ -74,10 +80,63 @@ export const authOptions: NextAuthOptions = {
           token.studentId = studentId
           token.classId = classId
           token.effectiveRole = resolveEffectiveRole(upserted?.role, studentPosition)
+          token.roleCheckedAt = Date.now()
         } catch {
           token.userId = token.userId ?? null
           token.dbRole = token.dbRole ?? "PENDING"
           token.effectiveRole = token.effectiveRole ?? "PENDING"
+        }
+      } else if (token.email) {
+        // Bukan login — session di-refetch client. Cek topi baru di DB kalau sudah waktunya.
+        const last = (token.roleCheckedAt as number | undefined) ?? 0
+        if (Date.now() - last > ROLE_REFRESH_MS) {
+          token.roleCheckedAt = Date.now()
+          try {
+            const email = normalizeEmail(token.email)
+            const db = createAdminClient()
+            const { data: userRow } = await db
+              .from("users")
+              .select("id, role")
+              .eq("email", email)
+              .maybeSingle()
+            if (userRow) {
+              token.userId = userRow.id
+              token.dbRole = userRow.role
+              let studentId: string | null = null
+              let classId: string | null = null
+              let studentPosition: string | null = null
+              if (userRow.role === "STUDENT") {
+                const { data: student } = await db
+                  .from("students")
+                  .select("id, class_id, position")
+                  .eq("email", email)
+                  .eq("active", true)
+                  .maybeSingle()
+                studentId = student?.id ?? null
+                classId = student?.class_id ?? null
+                studentPosition = student?.position ?? null
+              } else if (userRow.role === "HOMEROOM") {
+                const { data: cls } = await db
+                  .from("classes")
+                  .select("id")
+                  .eq("homeroom_email", email)
+                  .maybeSingle()
+                classId = cls?.id ?? null
+              } else if (userRow.role === "TEACHER") {
+                const { data: t } = await db
+                  .from("teachers")
+                  .select("class_id")
+                  .eq("email", email)
+                  .maybeSingle()
+                classId = t?.class_id ?? null
+              }
+              token.studentId = studentId
+              token.classId = classId
+              token.effectiveRole = resolveEffectiveRole(userRow.role, studentPosition)
+            }
+          } catch {
+            // DB gagal → pertahankan role lama (server tetap fresh per-request)
+          }
         }
       }
       return token

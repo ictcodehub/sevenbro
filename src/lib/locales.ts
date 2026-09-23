@@ -10,6 +10,7 @@ export const STRINGS = {
   "nav.poin": { id: "Poin", en: "Points" },
   "nav.scan": { id: "Beri Poin", en: "Give Points" },
   "nav.roster": { id: "Roster", en: "Roster" },
+  "nav.whitelist": { id: "Whitelist", en: "Allowlist" },
   "nav.classSettings": { id: "Pengaturan Kelas", en: "Class Settings" },
   "nav.report": { id: "Buat Report", en: "Create Report" },
 
@@ -646,6 +647,8 @@ export const STRINGS = {
   "roster.briefTableHint": { id: "Tabel Brief Info · ganti guru di sini, tanpa deploy", en: "Brief Info table · change teachers here, no deploy" },
   "roster.loadingSubjects": { id: "Memuat daftar mapel…", en: "Loading subject list…" },
   "roster.colNo": { id: "No.", en: "No." },
+  "roster.colPosition": { id: "Posisi", en: "Position" },
+  "roster.colStatus": { id: "Status", en: "Status" },
   "roster.registerTeacher": { id: "Daftarkan guru", en: "Register teacher" },
   "roster.noTeachers": { id: "Belum ada guru - daftarkan email sekolah", en: "No teachers yet - register a school email" },
   "roster.allowlistTitle": { id: "Whitelist Akses Login", en: "Login Allowlist" },

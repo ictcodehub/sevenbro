@@ -20,6 +20,7 @@ import { formatDisplayName } from "@/lib/format"
 import { formatRoleLabel } from "@/lib/roles"
 import { clearSwrCache } from "@/lib/swr-store"
 import { useT } from "@/lib/i18n"
+import { VerifiedBadge, usePositions } from "@/components/VerifiedBadge"
 
 type LeaderRow = {
   student_id: string
@@ -169,8 +170,16 @@ function ScanInner() {
       {studentId && (
         <div className="flex items-center gap-2 rounded-xl bg-surface px-3 py-2">
           <User className="h-4 w-4 text-forest shrink-0" />
-          <p className="text-sm font-semibold text-ink truncate">
-            {students?.find((s) => s.id === studentId)?.full_name}
+          <p className="text-sm font-semibold text-ink truncate inline-flex items-center gap-1">
+            {(() => {
+              const s = students?.find((x) => x.id === studentId)
+              return (
+                <>
+                  {s?.full_name}
+                  <VerifiedBadge position={s?.position} className="h-3 w-3" />
+                </>
+              )
+            })()}
           </p>
         </div>
       )}

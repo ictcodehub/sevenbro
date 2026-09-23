@@ -20,6 +20,7 @@ import { useAppSWR } from "@/lib/fetcher"
 import { formatIDR, formatDateID, formatDateCompactID, formatTimeID, formatDisplayName } from "@/lib/format"
 import { RoleGate } from "@/components/RoleGate"
 import { useT } from "@/lib/i18n"
+import { VerifiedBadge } from "@/components/VerifiedBadge"
 
 type Tx = {
   id: string
@@ -576,6 +577,7 @@ function BukuKasInner() {
       return {
         id: s.id,
         name: formatDisplayName(s.full_name),
+        position: s.position,
         perWeek,
         totalSlots,
         lunas: totalSlots >= LUNAS_SLOTS,
@@ -911,6 +913,7 @@ function BukuKasInner() {
                           className={`block text-xs whitespace-nowrap overflow-hidden text-ellipsis ${s.lunas ? "font-semibold text-forest" : "font-medium text-ink"}`}
                         >
                           {s.name}
+                          <VerifiedBadge position={s.position} className="ml-0.5 h-3 w-3" />
                         </span>
                       </td>
                       {s.perWeek.map((c, wi) => {
@@ -974,6 +977,7 @@ function BukuKasInner() {
                         <td className="px-1.5 py-1.5 border-r border-line/40 overflow-hidden">
                           <span className="block text-xs font-medium text-ink whitespace-nowrap overflow-hidden text-ellipsis">
                             {s.name}
+                            <VerifiedBadge position={s.position} className="ml-0.5 h-3 w-3" />
                           </span>
                         </td>
                         <td className={`px-1 py-1.5 text-center text-[11px] font-medium tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden ${level.cls}`}>

@@ -104,6 +104,10 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-22 | **Backdate semua input kas** — `/api/kas/collect` terima `occurred_on` (validasi format + tolak masa depan) · UI Kas: date picker di header + sheet Khusus/Pengeluaran · izin POST/DELETE ikut tanggal terpilih | `api/kas/collect` · `kas/page.tsx` (`BackdateInput`) |
 | 2026-09-22 | **Buku Kas UI batch** — Matriks: kolom No + sel 0/1/2 square · Per Siswa: table-fixed proporsional · Transaksi: frame card hijau + date `DD Mon` + tanpa search · filter bar card seragam `py-3` · StudentMultiSelect: i18n EN + select-all default · `formatDateCompactID` | `kas/buku/page.tsx` · `StudentSelect.tsx` · `format.ts` · `locales.ts` |
 | 2026-09-22 | **Login allowlist (advanced security)** — sign-in wajib domain + siswa/teachers/homeroom/`login_allowlist` · UI Roster Homeroom · migration **017** · PENDING→TEACHER saat add | `auth.ts` · `sign-in-guard.ts` · `api/admin/login-allowlist` · `roster/page.tsx` · migration 017 |
+| 2026-09-23 | **Badge verified SSOT global** — semua halaman yang menampilkan nama siswa nampilin badge pengurus (topi = `students.position`, bukan hardcode): Ketua emas · Bendahara hijau · Sekretaris biru · posisi lain auto-warna; Anggota tanpa badge | `VerifiedBadge.tsx` (SSOT + `usePositions`) · roster/poin/beranda/kas/buku kas/StudentSelect/scan/report/MassReportPanel/whitelist |
+| 2026-09-23 | **Posisi 100% dinamis** — hapus whitelist `POSITIONS`/`STUDENT_POSITIONS` di 2 API + roles; posisi bebas teks (input+datalist saran dari roster); `resolveEffectiveRole` = posisi itu sendiri (bukan PENDING); label Title Case generik | `api/admin/students/[id]` · `api/admin/roster-proposals` · `roles.ts` (+test) · `roster/page.tsx` |
+| 2026-09-23 | **Roster UI**: student list = tabel (No·Nama·Position·toggle) + frame ala Info (`RosterSectionCard`) · tap nama → modal (ubah posisi + edit + hapus) · toggle switch SSOT settings · Allowlist pecah ke `/app/admin/whitelist` + frame | `roster/page.tsx` · `whitelist/page.tsx` · `ui-primitives.tsx` |
+| 2026-09-23 | **Session auto-sync role tanpa login ulang** — JWT cek DB saat window focus, gated **max 1×/24 jam** (hemat free tier, tanpa timer); server tetap fresh per-request | `auth.ts` · `AuthProvider.tsx` · `next-auth.d.ts` |
 
 ---
 
@@ -168,5 +172,6 @@ Setelah kerja selesai: update `PROGRESS.md` Open + baris **Keputusan sinkron** d
 
 
 
+
 ### Automation log
-- last session-sync: `2026-09-22T15:26:59.536Z` · branch `master`
+- last session-sync: `2026-09-23T06:45:19.140Z` · branch `master`

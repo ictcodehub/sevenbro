@@ -18,6 +18,7 @@ import { formatDisplayName } from "@/lib/format"
 import { canCreateMassReport } from "@/lib/policies"
 import { inputClass } from "@/components/ui/sheet"
 import { useT } from "@/lib/i18n"
+import { VerifiedBadge } from "@/components/VerifiedBadge"
 
 const PAGE_ROLES = ["HOMEROOM", "KETUA"]
 
@@ -217,8 +218,9 @@ function NewReportInner() {
                   className="w-full flex items-center gap-2 px-3 py-2.5 text-left"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-ink truncate">
+                    <p className="text-sm font-semibold text-ink truncate inline-flex items-center gap-1">
                       {formatDisplayName(s.full_name)}
+                      <VerifiedBadge position={s.position} className="h-3 w-3" />
                     </p>
                     {s.position !== "ANGGOTA" && (
                       <p className="text-xs text-ink-soft/55">{s.position}</p>

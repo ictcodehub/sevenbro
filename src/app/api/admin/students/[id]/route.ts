@@ -9,8 +9,6 @@ export const dynamic = "force-dynamic"
 
 type Params = { params: Promise<{ id: string }> }
 
-const POSITIONS = ["KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
-
 export async function PATCH(req: Request, { params }: Params) {
   ensureContextReader()
   try {
@@ -26,10 +24,14 @@ export async function PATCH(req: Request, { params }: Params) {
       patch.full_name = name
     }
     if (typeof body?.position === "string") {
-      if (!POSITIONS.includes(body.position)) {
-        return NextResponse.json({ error: "Posisi tidak valid" }, { status: 400 })
+      // Posisi bebas (bisa berubah tiap rotasi roster) — validasi format saja
+      const position = body.position.trim().toUpperCase()
+      if (position) {
+        if (position.length > 32 || !/^[A-Z0-9 _-]+$/.test(position)) {
+          return NextResponse.json({ error: "Posisi tidak valid" }, { status: 400 })
+        }
+        patch.position = position
       }
-      patch.position = body.position
     }
     if (typeof body?.email === "string") patch.email = body.email.trim() || null
     if (typeof body?.nis === "string") patch.nis = body.nis.trim() || null

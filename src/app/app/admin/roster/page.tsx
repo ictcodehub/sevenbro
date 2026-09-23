@@ -15,8 +15,8 @@ import {
   X,
   Clock,
 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { SectionHeader, EmptyState } from "@/components/ui-primitives"
+import { EmptyState, SectionCard as RosterSectionCard } from "@/components/ui-primitives"
+import { positionTextClass, positionLabel, VerifiedBadge, invalidatePositions } from "@/components/VerifiedBadge"
 import { Sheet, inputClass } from "@/components/ui/sheet"
 import { formatDisplayName } from "@/lib/format"
 import { canProposeRoster, canViewRoster } from "@/lib/policies"
@@ -47,14 +47,6 @@ type Teacher = {
   name: string | null
 }
 
-type AllowlistRow = {
-  id: string
-  email: string
-  note: string | null
-  created_by: string | null
-  created_at: string
-}
-
 type RosterProposal = {
   id: string
   action: "ADD" | "UPDATE" | "DELETE"
@@ -74,27 +66,9 @@ type RosterProposal = {
   reviewed_at: string | null
 }
 
-const POSITIONS = ["KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"] as const
-
-const POSITION_BADGE: Record<string, "default" | "secondary" | "warning" | "success" | "info"> = {
-  KETUA: "default",
-  BENDAHARA: "success",
-  SEKRETARIS: "info",
-  ANGGOTA: "secondary",
-}
-
-function positionBadge(position: string) {
-  const variant = POSITION_BADGE[position] ?? "secondary"
-  return (
-    <Badge variant={variant} className="text-[11px] px-1.5 py-0">
-      {position}
-    </Badge>
-  )
-}
-
 function describePatch(patch: Record<string, unknown>): string {
   const parts: string[] = []
-  if (typeof patch.position === "string") parts.push(`Posisi → ${patch.position}`)
+  if (typeof patch.position === "string") parts.push(`Posisi → ${positionLabel(patch.position)}`)
   if (typeof patch.full_name === "string") {
     parts.push(`Nama → ${formatDisplayName(patch.full_name)}`)
   }
@@ -159,9 +133,6 @@ export default function AdminRosterPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [pending, setPending] = useState<PendingUser[]>([])
   const [teachers, setTeachers] = useState<Teacher[]>([])
-  const [allowlist, setAllowlist] = useState<AllowlistRow[]>([])
-  const [allowEmail, setAllowEmail] = useState("")
-  const [allowNote, setAllowNote] = useState("")
   const [proposals, setProposals] = useState<RosterProposal[]>([])
   const [teacherEmail, setTeacherEmail] = useState("")
   const [teacherName, setTeacherName] = useState("")
@@ -177,6 +148,7 @@ export default function AdminRosterPage() {
   const [editName, setEditName] = useState("")
   const [editEmail, setEditEmail] = useState("")
   const [editNis, setEditNis] = useState("")
+  const [editPosition, setEditPosition] = useState("")
   const t = useT()
 
   const flash = (msg: string) => {
@@ -190,6 +162,7 @@ export default function AdminRosterPage() {
     setEditName(s.full_name)
     setEditEmail(s.email ?? "")
     setEditNis(s.nis ?? "")
+    setEditPosition(positionLabel(s.position))
   }
 
   const openEditTeacher = (t: Teacher) => {
@@ -198,6 +171,7 @@ export default function AdminRosterPage() {
     setEditName(t.name ?? "")
     setEditEmail(t.email)
     setEditNis("")
+    setEditPosition("")
   }
 
   const closeEdit = () => {
@@ -206,13 +180,16 @@ export default function AdminRosterPage() {
     setEditName("")
     setEditEmail("")
     setEditNis("")
+    setEditPosition("")
   }
 
   const load = async () => {
     setLoading(true)
     setError(null)
+    // Badge verified nempel ke topi (position di DB) — refresh index tiap load
+    invalidatePositions()
     try {
-      const [sr, pr, tr, rr, ar] = await Promise.all([
+      const [sr, pr, tr, rr] = await Promise.all([
         fetch("/api/admin/students", { headers: { Accept: "application/json" } }),
         isHomeroom
           ? fetch("/api/admin/pending-users", { headers: { Accept: "application/json" } })
@@ -221,9 +198,6 @@ export default function AdminRosterPage() {
           ? fetch("/api/admin/teachers", { headers: { Accept: "application/json" } })
           : Promise.resolve(null),
         fetch("/api/admin/roster-proposals", { headers: { Accept: "application/json" } }),
-        isHomeroom
-          ? fetch("/api/admin/login-allowlist", { headers: { Accept: "application/json" } })
-          : Promise.resolve(null),
       ])
       const sb = await sr.json().catch(() => null)
       if (!sr.ok) throw new Error(sb?.error || `Gagal (${sr.status})`)
@@ -255,10 +229,6 @@ export default function AdminRosterPage() {
       if (tr) {
         const tb = await tr.json().catch(() => null)
         if (tr.ok) setTeachers(tb as Teacher[])
-      }
-      if (ar?.ok) {
-        const ab = await ar.json().catch(() => null)
-        if (Array.isArray(ab)) setAllowlist(ab as AllowlistRow[])
       }
       if (rr?.ok) {
         const rb = await rr.json().catch(() => null)
@@ -345,6 +315,7 @@ export default function AdminRosterPage() {
           full_name: name,
           email: editEmail.trim() || null,
           nis: editNis.trim() || null,
+          position: editPosition,
         }
         if (canProposeRoster(role ?? "")) {
           await propose(
@@ -355,6 +326,7 @@ export default function AdminRosterPage() {
               full_name: name,
               email: editEmail.trim() || null,
               nis: editNis.trim() || null,
+              position: editPosition,
             },
             t("roster.proposeUpdateSent"),
           )
@@ -432,31 +404,6 @@ export default function AdminRosterPage() {
     }
   }
 
-  const updatePosition = async (s: Student, position: string) => {
-    if (canProposeRoster(role ?? "")) {
-      await propose(
-        { action: "UPDATE", studentId: s.id, label: s.full_name, position },
-        t("roster.proposePositionSent"),
-      )
-      return
-    }
-    try {
-      const r = await fetch(`/api/admin/students/${s.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ position }),
-      })
-      if (!r.ok) {
-        const b = await r.json().catch(() => null)
-        throw new Error(b?.error || t("common.failed"))
-      }
-      setStudents((prev) => prev.map((x) => (x.id === s.id ? { ...x, position } : x)))
-      flash(t("roster.positionUpdated"))
-    } catch (e) {
-      flash(e instanceof Error ? e.message : t("common.failed"))
-    }
-  }
-
   const toggleActive = async (s: Student) => {
     if (canProposeRoster(role ?? "")) {
       await propose(
@@ -491,6 +438,7 @@ export default function AdminRosterPage() {
         { action: "DELETE", studentId: s.id, label: s.full_name },
         t("roster.proposeDeleteSent"),
       )
+      closeEdit()
       return
     }
     if (!confirm(t("roster.deleteStudentConfirm"))) return
@@ -502,6 +450,7 @@ export default function AdminRosterPage() {
       }
       setStudents((prev) => prev.filter((x) => x.id !== s.id))
       flash(t("roster.studentDeleted"))
+      closeEdit()
     } catch (e) {
       flash(e instanceof Error ? e.message : t("common.failed"))
     }
@@ -569,48 +518,6 @@ export default function AdminRosterPage() {
     }
   }
 
-  const addAllowlist = async () => {
-    const email = allowEmail.trim().toLowerCase()
-    if (!email) {
-      flash(t("roster.emailRequired"))
-      return
-    }
-    setSaving(true)
-    try {
-      const r = await fetch("/api/admin/login-allowlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, note: allowNote.trim() || null }),
-      })
-      const b = await r.json().catch(() => null)
-      if (!r.ok) throw new Error(b?.error || t("roster.allowlistAddFailed"))
-      setAllowEmail("")
-      setAllowNote("")
-      flash(t("roster.allowlistAdded"))
-      await load()
-    } catch (e) {
-      flash(e instanceof Error ? e.message : t("common.failed"))
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const removeAllowlist = async (id: string) => {
-    try {
-      const r = await fetch(`/api/admin/login-allowlist?id=${encodeURIComponent(id)}`, {
-        method: "DELETE",
-      })
-      if (!r.ok) {
-        const b = await r.json().catch(() => null)
-        throw new Error(b?.error || t("common.failed"))
-      }
-      setAllowlist((prev) => prev.filter((x) => x.id !== id))
-      flash(t("roster.allowlistDeleted"))
-    } catch (e) {
-      flash(e instanceof Error ? e.message : t("common.failed"))
-    }
-  }
-
   const pendingProposals = proposals.filter((p) => p.status === "PENDING")
   const myProposals = proposals.filter((p) => p.status !== "PENDING" || isKetua)
 
@@ -626,15 +533,15 @@ export default function AdminRosterPage() {
         <button
           type="button"
           onClick={() => setShowBulk((v) => !v)}
-          className="flex items-center gap-1 bg-forest text-white text-sm font-semibold px-3 py-1.5 rounded-xl active:scale-[0.97] transition-transform"
+          className="flex items-center gap-1.5 bg-forest text-white text-sm font-semibold px-3.5 min-h-9 rounded-full active:scale-[0.97] transition-transform"
         >
-          <UserPlus className="h-3.5 w-3.5" />
+          <UserPlus className="h-4 w-4" />
           {isKetua ? t("roster.addPropose") : t("agenda.add")}
         </button>
       </div>
 
       {showBulk && (
-        <div className="bg-white border border-line shadow-sm rounded-2xl p-3 space-y-2">
+        <div className="rounded-xl border border-line bg-page p-2.5 space-y-2">
           <p className="text-[11px] font-semibold text-ink">
             {isKetua ? t("roster.bulkHintPropose") : t("roster.bulkHint")}
           </p>
@@ -649,7 +556,7 @@ export default function AdminRosterPage() {
             type="button"
             disabled={saving || !bulkNames.trim()}
             onClick={() => void bulkSubmit()}
-            className="w-full bg-forest text-white text-[11px] font-semibold py-2 rounded-xl disabled:opacity-50"
+            className="w-full bg-forest text-white text-xs font-semibold py-2 rounded-full disabled:opacity-50"
           >
             {saving ? t("roster.sending") : isKetua ? t("roster.sendProposal") : t("common.save")}
           </button>
@@ -664,18 +571,14 @@ export default function AdminRosterPage() {
 
       {/* Homeroom: review usulan Ketua */}
       {isHomeroom && pendingProposals.length > 0 && (
-        <div>
-          <SectionHeader
-            title={t("roster.proposalsTitle")}
-            count={String(pendingProposals.length)}
-          />
+        <RosterSectionCard title={t("roster.proposalsTitle")} count={pendingProposals.length}>
           <div className="space-y-2">
             {pendingProposals.map((p) => {
               const { title, detail } = proposalLines(p)
               return (
                 <div
                   key={p.id}
-                  className="bg-white border border-line shadow-sm rounded-2xl p-3 space-y-2"
+                  className="bg-page border border-line rounded-xl p-2.5 space-y-2"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
@@ -711,14 +614,13 @@ export default function AdminRosterPage() {
               )
             })}
           </div>
-        </div>
+        </RosterSectionCard>
       )}
 
       {/* Guru — Homeroom only */}
       {isHomeroom && (
-        <div>
-          <SectionHeader title={t("roster.teachersTitle")} count={String(teachers.length)} />
-          <div className="bg-white border border-line shadow-sm rounded-2xl p-3 space-y-2 mb-2">
+        <RosterSectionCard title={t("roster.teachersTitle")} count={teachers.length}>
+          <div className="rounded-xl border border-line bg-page p-2.5 space-y-2">
             <div className="flex gap-2">
               <input
                 value={teacherEmail}
@@ -738,9 +640,9 @@ export default function AdminRosterPage() {
               type="button"
               disabled={saving || !teacherEmail.trim()}
               onClick={() => void addTeacher()}
-              className="w-full bg-forest text-white text-[11px] font-semibold py-2 rounded-xl flex items-center justify-center gap-1.5 disabled:opacity-50"
+              className="w-full bg-forest text-white text-xs font-semibold py-2 rounded-full flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
-              <GraduationCap className="h-3.5 w-3.5" />
+              <GraduationCap className="h-4 w-4" />
               {saving ? t("kas.saving") : t("roster.registerTeacher")}
             </button>
           </div>
@@ -750,7 +652,7 @@ export default function AdminRosterPage() {
               message={t("roster.noTeachers")}
             />
           ) : (
-            <div className="bg-white border border-line shadow-sm rounded-2xl divide-y divide-line/60">
+            <div className="rounded-xl border border-line bg-page divide-y divide-line/60">
               {teachers.map((tc) => (
                 <div key={tc.id} className="p-2.5 flex items-center gap-2.5">
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber/15 shrink-0">
@@ -782,83 +684,16 @@ export default function AdminRosterPage() {
               ))}
             </div>
           )}
-        </div>
-      )}
-
-      {/* Whitelist login — Homeroom only */}
-      {isHomeroom && (
-        <div>
-          <SectionHeader
-            title={t("roster.allowlistTitle")}
-            count={String(allowlist.length)}
-          />
-          <div className="bg-white border border-line shadow-sm rounded-2xl p-3 space-y-2 mb-2">
-            <p className="text-xs text-ink-soft/70 leading-snug">{t("roster.allowlistHint")}</p>
-            <input
-              value={allowEmail}
-              onChange={(e) => setAllowEmail(e.target.value)}
-              placeholder="guru.mapel@mutiarabangsa.sch.id"
-              className={inputClass}
-              type="email"
-            />
-            <input
-              value={allowNote}
-              onChange={(e) => setAllowNote(e.target.value)}
-              placeholder={t("roster.allowlistNote")}
-              className={inputClass}
-            />
-            <button
-              type="button"
-              disabled={saving || !allowEmail.trim()}
-              onClick={() => void addAllowlist()}
-              className="w-full bg-forest text-white text-[11px] font-semibold py-2 rounded-xl flex items-center justify-center gap-1.5 disabled:opacity-50"
-            >
-              <Shield className="h-3.5 w-3.5" />
-              {saving ? t("kas.saving") : t("roster.allowlistAdd")}
-            </button>
-          </div>
-          {allowlist.length === 0 ? (
-            <EmptyState
-              icon={<Shield className="h-6 w-6" />}
-              message={t("roster.allowlistEmpty")}
-            />
-          ) : (
-            <div className="bg-white border border-line shadow-sm rounded-2xl divide-y divide-line/60">
-              {allowlist.map((row) => (
-                <div key={row.id} className="p-2.5 flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-forest/10 shrink-0">
-                    <Shield className="h-3.5 w-3.5 text-forest" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-semibold text-ink truncate">{row.email}</p>
-                    {row.note && (
-                      <p className="text-xs text-ink-soft/70 truncate">{row.note}</p>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => void removeAllowlist(row.id)}
-                    aria-label={t("roster.allowlistDeleteAria")}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-alert hover:bg-alert-bg shrink-0"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        </RosterSectionCard>
       )}
 
       {isHomeroom && pending.length > 0 && (
-        <div>
-          <SectionHeader title={t("roster.pendingTitle")} count={String(pending.length)} />
+        <RosterSectionCard title={t("roster.pendingTitle")} count={pending.length}>
           <div className="space-y-2">
-            {pending.map((u) => (
-              <div
-                key={u.id}
-                className="bg-white border border-line shadow-sm rounded-2xl p-3 space-y-2"
-              >
+            {pending.map((u) => (                <div
+                  key={u.id}
+                  className="bg-page border border-line rounded-xl p-2.5 space-y-2"
+                >
                 <p className="text-[11px] font-semibold text-ink truncate">
                   {formatDisplayName(u.name) || u.email}
                 </p>
@@ -888,107 +723,118 @@ export default function AdminRosterPage() {
                   <button
                     type="button"
                     onClick={() => void linkAccount(u.id)}
-                    className="flex items-center gap-1 bg-forest text-white text-sm font-semibold px-3 rounded-xl shrink-0"
-                  >
-                    <Link2 className="h-3.5 w-3.5" />
+                  className="flex items-center gap-1 bg-forest text-white text-sm font-semibold px-3 min-h-9 rounded-full shrink-0"
+                >
+                  <Link2 className="h-4 w-4" />
                     {t("roster.link")}
                   </button>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </RosterSectionCard>
       )}
 
-      <div>
-        <SectionHeader
-          title={t("roster.studentList")}
-          count={String(students.length)}
-        />
+      <RosterSectionCard title={t("roster.studentList")} count={students.length}>
         {loading ? (
           <EmptyState icon={<Users className="h-6 w-6" />} message={t("roster.loading")} />
         ) : students.length === 0 ? (
           <EmptyState icon={<Inbox className="h-6 w-6" />} message={t("roster.noStudents")} />
         ) : (
-          <div className="bg-white border border-line shadow-sm rounded-2xl divide-y divide-line/60">
-            {students.map((s) => (
-              <div key={s.id} className="p-2.5 flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface shrink-0">
-                  <Users className="h-3.5 w-3.5 text-forest" />
-                </div>
-                <div className="flex-1 min-w-0 space-y-1">
-                  <p className="text-[11px] font-semibold text-ink truncate">
-                    {formatDisplayName(s.full_name)}
-                  </p>
-                  <p className="text-xs text-ink-soft/75 truncate">
-                    {s.email || t("roster.notLinked")}
-                  </p>
-                  <div className="flex items-center gap-1.5">
-                    <select
-                      value={s.position}
-                      onChange={(e) => void updatePosition(s, e.target.value)}
-                      className="text-xs border border-line rounded-lg bg-page px-1.5 py-0.5 text-ink"
-                    >
-                      {POSITIONS.map((p) => (
-                        <option key={p} value={p}>
-                          {p}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => void toggleActive(s)}
-                      className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full border ${
-                        s.active
-                          ? "bg-ok-bg text-forest border-forest/20"
-                          : "bg-alert-bg text-alert border-alert/20"
-                      }`}
-                    >
-                      {s.active ? t("roster.active") : t("roster.inactive")}
-                    </button>
-                  </div>
-                </div>
-                {positionBadge(s.position)}
-                <button
-                  type="button"
-                  onClick={() => openEditStudent(s)}
-                  aria-label={t("roster.editStudentAria")}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-ink-soft hover:bg-surface shrink-0"
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void removeStudent(s)}
-                  aria-label={isKetua ? t("roster.deleteStudentAriaPropose") : t("roster.deleteStudentAria")}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-alert hover:bg-alert-bg shrink-0"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ))}
+          <div className="overflow-x-auto rounded-xl border border-line bg-white">
+            <table className="w-full table-fixed border-collapse text-[11px]">
+              <thead>
+                <tr className="bg-page border-b border-line">
+                  <th className="px-2 py-1.5 text-center text-xs font-semibold text-ink w-7 whitespace-nowrap overflow-hidden">
+                    {t("roster.colNo")}
+                  </th>
+                  <th className="px-2 py-1.5 text-left text-xs font-semibold text-ink whitespace-nowrap overflow-hidden">
+                    {t("kas.colName")}
+                  </th>
+                  <th className="px-1.5 py-1.5 text-left text-xs font-semibold text-ink w-[84px] whitespace-nowrap overflow-hidden">
+                    {t("roster.colPosition")}
+                  </th>
+                  <th className="px-1.5 py-1.5 text-center text-xs font-semibold text-ink w-[56px] whitespace-nowrap overflow-hidden">
+                    {t("roster.colStatus")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {students.map((s, i) => (
+                  <tr
+                    key={s.id}
+                    onClick={() => openEditStudent(s)}
+                    className="border-b border-line/60 last:border-0 cursor-pointer active:bg-page/60"
+                  >
+                    <td className="px-2 py-1.5 text-center align-middle text-xs text-ink-soft tabular-nums whitespace-nowrap">
+                      {i + 1}
+                    </td>
+                    <td className="px-2 py-1.5 align-middle overflow-hidden">
+                      <button
+                        type="button"
+                        aria-label={t("roster.editStudentAria")}
+                        className="block w-full text-left"
+                      >
+                        <span className="block text-xs font-semibold text-ink truncate">
+                          {formatDisplayName(s.full_name)}
+                          <VerifiedBadge position={s.position} className="ml-1 h-3 w-3" />
+                        </span>
+                        <span className="block text-[11px] text-ink-soft/70 truncate">
+                          {s.email || t("roster.notLinked")}
+                        </span>
+                      </button>
+                    </td>
+                    <td className="px-1.5 py-1 align-middle text-[11px] whitespace-nowrap overflow-hidden">
+                      <span className={positionTextClass(s.position)}>{positionLabel(s.position)}</span>
+                    </td>
+                    <td className="px-1.5 py-1.5 text-center align-middle">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          void toggleActive(s)
+                        }}
+                        aria-label={t("roster.colStatus")}
+                        aria-pressed={s.active}
+                        className="inline-flex items-center shrink-0 active:scale-95 transition-transform"
+                      >
+                        <span
+                          className={`h-5 w-9 rounded-full transition-colors relative ${
+                            s.active ? "bg-forest" : "bg-line"
+                          }`}
+                        >
+                          <span
+                            className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${
+                              s.active ? "left-[18px]" : "left-0.5"
+                            }`}
+                          />
+                        </span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-      </div>
+      </RosterSectionCard>
 
       {/* Riwayat / status usulan */}
       {proposals.length > 0 && (
-        <div>
-          <SectionHeader
-            title={isKetua ? t("roster.myProposals") : t("roster.proposalHistory")}
-            count={String(isKetua ? proposals.length : proposals.length - pendingProposals.length)}
-          />
+        <RosterSectionCard
+          title={isKetua ? t("roster.myProposals") : t("roster.proposalHistory")}
+          count={isKetua ? proposals.length : proposals.length - pendingProposals.length}
+        >
           <div className="space-y-1.5">
             {proposals
               .filter((p) => (isKetua ? true : p.status !== "PENDING"))
               .slice(0, 20)
               .map((p) => {
                 const { title, detail } = proposalLines(p)
-                return (
-                  <div
-                    key={p.id}
-                    className="bg-white border border-line shadow-sm rounded-xl px-3 py-2.5"
-                  >
+                return (                    <div
+                      key={p.id}
+                      className="bg-page border border-line rounded-xl px-3 py-2.5"
+                    >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="text-[11px] font-semibold text-ink truncate">{title}</p>
@@ -1010,7 +856,7 @@ export default function AdminRosterPage() {
                 )
               })}
           </div>
-        </div>
+        </RosterSectionCard>
       )}
 
       {toast && (
@@ -1046,13 +892,31 @@ export default function AdminRosterPage() {
           </div>
           {editStudent && (
             <div>
-            <span className="text-[11px] font-semibold text-ink">{t("roster.nisLabel")}</span>
-            <input
-              value={editNis}
-              onChange={(e) => setEditNis(e.target.value)}
-              className={inputClass + " mt-1"}
-              placeholder={t("roster.nisPlaceholder")}
-            />
+              <span className="text-[11px] font-semibold text-ink">{t("roster.nisLabel")}</span>
+              <input
+                value={editNis}
+                onChange={(e) => setEditNis(e.target.value)}
+                className={inputClass + " mt-1"}
+                placeholder={t("roster.nisPlaceholder")}
+              />
+            </div>
+          )}
+          {editStudent && (
+            <div>
+              <span className="text-[11px] font-semibold text-ink">{t("roster.colPosition")}</span>
+              <input
+                value={editPosition}
+                onChange={(e) => setEditPosition(e.target.value)}
+                list="roster-position-options"
+                aria-label={t("roster.colPosition")}
+                className={inputClass + " mt-1"}
+                placeholder={t("roster.colPosition")}
+              />
+              <datalist id="roster-position-options">
+                {[...new Set(students.map((x) => positionLabel(x.position)))].map((p) => (
+                  <option key={p} value={p} />
+                ))}
+              </datalist>
             </div>
           )}
           {isKetua && editStudent && (
@@ -1064,10 +928,21 @@ export default function AdminRosterPage() {
             type="button"
             disabled={saving || !editName.trim()}
             onClick={() => void saveEdit()}
-            className="w-full bg-forest text-white text-sm font-semibold py-2.5 rounded-xl disabled:opacity-50 active:scale-[0.98] transition-transform"
+            className="w-full bg-forest text-white text-sm font-semibold py-2.5 rounded-full disabled:opacity-50 active:scale-[0.98] transition-transform"
           >
             {saving ? t("kas.saving") : isKetua ? t("roster.sendProposal") : t("info.saveChanges")}
           </button>
+          {editStudent && (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => void removeStudent(editStudent)}
+              aria-label={isKetua ? t("roster.deleteStudentAriaPropose") : t("roster.deleteStudentAria")}
+              className="w-full border border-alert/30 bg-white text-alert text-sm font-semibold py-2.5 rounded-full active:scale-[0.98] transition-transform"
+            >
+              {t("common.delete")}
+            </button>
+          )}
         </div>
       </Sheet>
 

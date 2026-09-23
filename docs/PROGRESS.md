@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: **Login allowlist (advanced security) + Roster whitelist UI · migration 017 · 2026-09-22** · sebelumnya kas backlog+backdate + Buku Kas UI `7f5a536` · tipografi hierarchy `8799657` · APK 1.1.0; `allowBackup` tetap `true`.
+> Status terakhir: **Badge verified SSOT global + posisi dinamis + session auto-sync role (24 jam/window focus) · 2026-09-23** · sebelumnya login allowlist + Roster whitelist UI `f139c6e` · kas backlog+backdate `7f5a536` · APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 
@@ -8,6 +8,9 @@
 - Login Google `@mutiarabangsa.sch.id`
 - **Login allowlist:** selain siswa aktif / teachers / homeroom, hanya email di `login_allowlist` yang boleh sign-in · kelola di **Roster → Whitelist Akses Login** (Homeroom) · migration **017**
 - Role: Homeroom, Teacher, Ketua, Bendahara, Sekretaris, Anggota, Pending
+- **Posisi siswa 100% dinamis** — bebas teks (validasi format saja, max 32), role efektif = posisi itu sendiri; label Title Case generik
+- **Badge verified SSOT** (`VerifiedBadge.tsx` + `usePositions`) — tampil di semua halaman penyaji nama siswa; topi = `students.position`; Ketua emas · Bendahara hijau · Sekretaris biru · posisi lain auto-warna · Anggota tanpa badge
+- **Session auto-sync role**: JWT cek DB saat window focus (gate 24 jam) — ganti pengurus tanpa login ulang; server tetap fresh per-request
 - RoleGate + `policies.ts`; TEACHER hanya `/app/scan`
 - Session JWT 30 hari · **`allowBackup=true` tetap ON** (session selamat uninstall→install; user decision 2026-09-19)
 
@@ -38,6 +41,7 @@
 
 ### Roster
 - Homeroom mutasi + review usulan Ketua (`roster_proposals`, migration 005)
+- Student list = tabel clean (No · Nama · Position · toggle Aktif) + frame ala Info; tap nama → modal (ubah posisi + edit + hapus); Allowlist pecah ke `/app/admin/whitelist`
 
 ### Notifikasi
 - Server table (006); API `/api/notifications`
@@ -123,8 +127,9 @@
 - Aktivasi FCM end-to-end di device (env Vercel sudah ada)
 - ~~Tipografi rollout~~ **selesai f1–f3 + hierarchy pass** — SSOT: judul `text-sm` bold · body `text-sm-plus` (12) · meta 11 · micro 10; token `--text-sm-plus` di `@theme`; audit: **0** `text-[7–9px]` · Kas badge sejajar + anti overflow
 - **Login allowlist live** (migration 017 applied + deploy) — jangan diulang
+- **Badge verified global + posisi dinamis + session auto-sync** — selesai 2026-09-23, jangan diulang
 
-**Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · **notif hard-delete + 1-baris** · **Agenda timeline + deskripsi** · **Beri Poin multi-siswa + section card** · **StudentSelect SSOT** · **i18n ID/EN + Settings Bahasa** · APK 1.1.0 build · Vercel `f83273e` · **Tipografi SSOT M3 + rollout f1–f3 seluruh app**
+**Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · **notif hard-delete + 1-baris** · **Agenda timeline + deskripsi** · **Beri Poin multi-siswa + section card** · **StudentSelect SSOT** · **i18n ID/EN + Settings Bahasa** · APK 1.1.0 build · Vercel `f83273e` · **Tipografi SSOT M3 + rollout f1–f3 seluruh app** · **Badge verified SSOT global + posisi dinamis**
 
 ## Deploy
 - https://sevenbro.vercel.app — **deployed 2026-09-22** (`f139c6e` login allowlist + migration **017** · sebelumnya `7f5a536` kas backlog+backdate + Buku Kas UI, `c3e92e2` nominal Rp 1.000, `8799657` tipografi hierarchy, `cd352cf` poin arena, `a7cf598` tipografi M3, `f83273e`, `0af39a4`, `aff8856`, `4fdd07f`, `bc3a379`, `90d6c0c`)

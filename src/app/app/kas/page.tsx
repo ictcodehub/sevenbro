@@ -25,6 +25,7 @@ import { canManageKas, canViewKas } from "@/lib/policies"
 import { RoleGate } from "@/components/RoleGate"
 import FeatureGate from "@/components/FeatureGate"
 import { useT } from "@/lib/i18n"
+import { VerifiedBadge, usePositions } from "@/components/VerifiedBadge"
 
 /** Kas: manage = HOMEROOM & BENDAHARA; siswa lain read-only */
 const PAGE_ROLES = ["HOMEROOM", "BENDAHARA", "KETUA", "SEKRETARIS", "ANGGOTA"]
@@ -210,6 +211,7 @@ function KasInner() {
   const [spNote, setSpNote] = useState("")
   const [savingSp, setSavingSp] = useState(false)
   const t = useT()
+  const posIndex = usePositions("kas")
 
   const collectionDay = isCollectionDay()
   const list = students ?? []
@@ -687,6 +689,10 @@ function KasInner() {
                               }`}
                             >
                               {formatDisplayName(s.full_name)}
+                              <VerifiedBadge
+                                position={s.position || posIndex.byId.get(s.id)}
+                                className="ml-1 h-3 w-3"
+                              />
                             </p>
                             {(() => {
                               if (!tunggak) return null
