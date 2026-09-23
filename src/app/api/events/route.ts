@@ -6,6 +6,7 @@ import { ensureContextReader } from "@/lib/server-context"
 import { createAdminClient } from "@/lib/db"
 import { notifyHomeroom } from "@/lib/notify"
 import { formatDisplayName } from "@/lib/format"
+import { isEventPast } from "@/lib/events"
 
 export const dynamic = "force-dynamic"
 
@@ -14,14 +15,22 @@ export async function GET() {
   try {
     const ctx = await requireApi()
     if (!ctx.classId) return NextResponse.json([])
-    const { data, error } = await createAdminClient()
+    const db = createAdminClient()
+    const nowMs = Date.now()
+    const { data: all, error } = await db
       .from("events")
       .select("*")
       .eq("class_id", ctx.classId)
-      .order("starts_at", { ascending: false })
-      .limit(100)
     if (error) throw new Error(error.message)
-    return NextResponse.json(data ?? [])
+    const rows = all ?? []
+    const pastIds = rows.filter((e) => isEventPast(e.starts_at, e.ends_at, nowMs)).map((e) => e.id)
+    if (pastIds.length) {
+      const { error: delErr } = await db.from("events").delete().in("id", pastIds)
+      if (delErr) throw new Error(delErr.message)
+    }
+    const alive = rows.filter((e) => !pastIds.includes(e.id))
+    alive.sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at))
+    return NextResponse.json(alive.slice(0, 100))
   } catch (e) {
     return errorResponse(e)
   }

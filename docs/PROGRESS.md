@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: **Badge verified SSOT global + posisi dinamis + session auto-sync role (24 jam/window focus) · 2026-09-23** · sebelumnya login allowlist + Roster whitelist UI `f139c6e` · kas backlog+backdate `7f5a536` · APK 1.1.0; `allowBackup` tetap `true`.
+> Status terakhir: **Brief format `[All Students]` + normalisasi + Agenda lampau auto-hapus · 2026-09-24** · sebelumnya Badge verified SSOT + posisi dinamis + session auto-sync `8ff1be2` · login allowlist `f139c6e` · kas backlog `7f5a536`; APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 
@@ -68,6 +68,7 @@
 - **Design system:** form row pattern FINAL di `docs/DESIGN_SYSTEM.md` § Form row pattern
 - **Guru mapel** di DB `subject_teachers` — Homeroom edit di Pengaturan Kelas → Guru Mapel; form brief baca DB
 - Seragam **otomatis per hari** (Sen–Kam Sailor/Batik, Jumat Pramuka + accessories + Bawa Seragam P.E); custom opsional
+- **Body format 2026-09-24:** `- Mapel. [All Students]` + detail terindent · `normalizeBriefText` Title Case + ejaan · piket `fixDutyName` (Avriel → Gavriella) · label i18n `[All Students]` id=en
 - Judul brief fix: `Info Harian - {Hari, tgl bln tahun}`
 - Brief hanya **hari sekolah**; Minggu → default Senin
 - API: `/api/subjects`, `/api/info-briefs`; notif ke Homeroom + siswa
@@ -119,7 +120,6 @@
 ## Open
 - Web-push server (VAPID)
 - Persist toggle offline ke SW
-- Agenda lampau
 - Checklist piket (A4/B3) — belum link dari brief
 - Auto −1 kas mingguan + izin 3× beruntun
 - Android shell: QA login Google + foto report + dark mode + **gap bottom sheet di device** (portal Sheet + fullHeight Agenda sudah di-fix; perlu QA device)
@@ -128,11 +128,12 @@
 - ~~Tipografi rollout~~ **selesai f1–f3 + hierarchy pass** — SSOT: judul `text-sm` bold · body `text-sm-plus` (12) · meta 11 · micro 10; token `--text-sm-plus` di `@theme`; audit: **0** `text-[7–9px]` · Kas badge sejajar + anti overflow
 - **Login allowlist live** (migration 017 applied + deploy) — jangan diulang
 - **Badge verified global + posisi dinamis + session auto-sync** — selesai 2026-09-23, jangan diulang
+- **Brief format `[All Students]` + normalisasi + Agenda lampau auto-hapus** — selesai 2026-09-24, jangan diulang
 
-**Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · **notif hard-delete + 1-baris** · **Agenda timeline + deskripsi** · **Beri Poin multi-siswa + section card** · **StudentSelect SSOT** · **i18n ID/EN + Settings Bahasa** · APK 1.1.0 build · Vercel `f83273e` · **Tipografi SSOT M3 + rollout f1–f3 seluruh app** · **Badge verified SSOT global + posisi dinamis**
+**Sudah selesai (jangan diulang):** migration 010–014 + **016** · notif soft-delete · gap Sheet absolute · **Sheet portal body** · Agenda form = Info Umum · **notif hard-delete + 1-baris** · **Agenda timeline + deskripsi** · **Beri Poin multi-siswa + section card** · **StudentSelect SSOT** · **i18n ID/EN + Settings Bahasa** · APK 1.1.0 build · Vercel `f83273e` · **Tipografi SSOT M3 + rollout f1–f3 seluruh app** · **Badge verified SSOT global + posisi dinamis** · **Brief body format + Agenda auto-hapus**
 
 ## Deploy
-- https://sevenbro.vercel.app — **deployed 2026-09-23** (`8ff1be2` badge verified SSOT + posisi dinamis + session auto-sync · sebelumnya `f139c6e` login allowlist + migration **017** 2026-09-22, `7f5a536` kas backlog+backdate + Buku Kas UI, `c3e92e2` nominal Rp 1.000, `8799657` tipografi hierarchy, `cd352cf` poin arena, `a7cf598` tipografi M3, `f83273e`, `0af39a4`, `aff8856`, `4fdd07f`, `bc3a379`, `90d6c0c`)
+- https://sevenbro.vercel.app — **deployed 2026-09-24** (`brief format + Agenda auto-hapus` · sebelumnya **2026-09-23** `8ff1be2` badge verified + posisi dinamis + session auto-sync · `f139c6e` login allowlist + migration **017** 2026-09-22, `7f5a536` kas backlog+backdate + Buku Kas UI, `c3e92e2` nominal Rp 1.000, `8799657` tipografi hierarchy, `cd352cf` poin arena, `a7cf598` tipografi M3, `f83273e`, `0af39a4`, `aff8856`, `4fdd07f`, `bc3a379`, `90d6c0c`)
 - Supabase `gdmqmoigudtgknkgomeu` — migrations 003–014, 016, **017 applied** (2026-09-22)
 - Redirect Google: prod `…/api/auth/callback/google` + localhost (opsional)
 - Android shell **1.1.0** (versionCode 11) — `android/dist/SevenBro-1.1.0-release.apk` (tidak di-commit)

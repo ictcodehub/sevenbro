@@ -207,13 +207,23 @@ export const GRADE_7B_PIKET: Record<number, string[]> = {
     "Rebecca Christa P",
     "Li Ming Xin",
   ],
-  4: ["Madeline Mellow Andrea", "Avriel", "Wilbert Bryan"],
+  4: ["Madeline Mellow Andrea", "Gavriella Mulia Sitorus", "Wilbert Bryan"],
   5: ["Jolin khojaya", "Jesslyn Aurelia Hamsidi", "Erica Aurie"],
 }
 
 /** Nama piket fix untuk tanggal brief (kosong di libur) */
 export function piketNamesForDate(dateKey: string): string[] {
   return GRADE_7B_PIKET[timetableDow(dateKey)] ?? []
+}
+
+/** Payload lama / alias Google → nama roster */
+const DUTY_RENAME: Record<string, string> = {
+  Avriel: "Gavriella Mulia Sitorus",
+  "Avriel Sitorus": "Gavriella Mulia Sitorus",
+}
+
+export function fixDutyName(raw: string): string {
+  return DUTY_RENAME[raw.trim()] ?? raw
 }
 
 /**
@@ -661,6 +671,8 @@ export function generateBriefBody(
     subjects?: BriefSubjectRow[]
     duties?: BriefDutyRow[]
     items?: BriefItemRow[]
+    /** Jumlah siswa aktif — nama terpilih ≥ ini ditulis "[All Students]" */
+    rosterSize?: number
   },
   now: Date = new Date(),
 ): string {
@@ -710,7 +722,7 @@ export function generateBriefBody(
     lines.push("")
     lines.push(`*Piket:*`)
     for (const d of duties) {
-      lines.push(`- ${d.name.trim()}`)
+      lines.push(`- ${fixDutyName(d.name).trim()}`)
     }
   }
 
@@ -738,17 +750,26 @@ export function generateBriefBody(
       lines.push(`*${title}:*`)
       for (const it of rows) {
         const mapel = (it.subject_name || "").trim()
-        const desc = (it.text || "").trim().replace(/^Tugas\s+/i, "")
+        const desc = normalizeBriefText(
+          (it.text || "").trim().replace(/^Tugas\s+/i, ""),
+        )
         const names = (it.student_names ?? []).filter(Boolean)
-        const who = names.length ? names.join(", ") : ""
+        const who =
+          input.rosterSize && names.length >= input.rosterSize
+            ? "[All Students]"
+            : names.length
+              ? names.join(", ")
+              : ""
         const ev = it.event_title?.trim()
-        const core =
-          title === "Tugas"
-            ? [mapel || "Tugas", who, desc].filter(Boolean).join(" · ")
-            : [desc || mapel, who ? `(${who})` : "", ev ? `[${ev}]` : ""]
-                .filter(Boolean)
-                .join(" ")
-        lines.push(`- ${core}`)
+        const evTag = ev ? `[${ev}]` : ""
+        const detail = [desc, evTag].filter(Boolean).join(" ")
+        if (mapel) {
+          // Header: - Mapel. [All Students] / nama · detail turun indent 2
+          lines.push(who ? `- ${mapel}. ${who}` : `- ${mapel}`)
+          if (detail) lines.push(`  ${detail}`)
+        } else {
+          lines.push(`- ${[who, detail].filter(Boolean).join(" ")}`)
+        }
       }
     }
 
@@ -766,4 +787,53 @@ export function generateBriefBody(
 /** Teks siap salin ke WhatsApp group */
 export function generateBriefWaText(input: Parameters<typeof generateBriefBody>[0]): string {
   return generateBriefBody(input)
+}
+
+/**
+ * Normalisasi teks ketikan siswa → format brief yang benar (Title Case + ejaan).
+ * Contoh: "Kerjakan tugas dibuku hal53 no12 sampai 14,hal 62 no 10 - 13"
+ *   → "Kerjakan Tugas di Buku Hal. 53 No. 12-14, Hal. 62 No. 10-13"
+ */
+const TITLE_STOP = new Set([
+  "di",
+  "ke",
+  "dari",
+  "dan",
+  "yang",
+  "untuk",
+  "pada",
+  "dengan",
+  "atau",
+  "ini",
+  "itu",
+])
+
+/** Singkatan yang wajib ALL-CAPS walau diketik lowercase */
+const TITLE_ABBREV = new Set(["ldks", "pk", "osis"])
+
+export function normalizeBriefText(raw: string): string {
+  let s = (raw || "").trim().replace(/\s+/g, " ")
+  if (!s) return s
+  // kata tempel: dibuku → di buku
+  s = s.replace(/\b(di)(buku|kelas|rumah|sekolah)\b/gi, "di $2")
+  // spasi setelah koma
+  s = s.replace(/,\s*/g, ", ")
+  // hal53 / hal 53 / hal.53 → Hal. 53
+  s = s.replace(/\bhal\s*\.?\s*(\d)/gi, "Hal. $1")
+  // no12 / no 12 / no.12 → No. 12
+  s = s.replace(/\bno\s*\.?\s*(\d)/gi, "No. $1")
+  // rentang: 12 sampai 14 / 10 - 13 / 1 s.d 3 → 12-14 / 10-13 / 1-3
+  s = s.replace(/(\d)\s*(?:sampai|s\.?\/?d\.?|-)\s*(\d)/gi, "$1-$2")
+  // Title Case per kata; singkatan ALL-CAPS (LDKS, PR) dipertahankan
+  s = s.replace(/\b([A-Za-z]+)\b/g, (w, offset: number) => {
+    if (w.length === 1) return w.toUpperCase()
+    if (w === w.toUpperCase()) return w
+    const lw = w.toLowerCase()
+    if (TITLE_ABBREV.has(lw)) return lw.toUpperCase()
+    if (offset === 0 || !TITLE_STOP.has(lw)) {
+      return lw.charAt(0).toUpperCase() + lw.slice(1)
+    }
+    return lw
+  })
+  return s
 }

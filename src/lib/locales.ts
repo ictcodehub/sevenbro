@@ -26,7 +26,7 @@ export const STRINGS = {
   "common.loading": { id: "Memuat…", en: "Loading…" },
   "common.retry": { id: "Coba lagi", en: "Retry" },
   "common.all": { id: "Semua", en: "All" },
-  "common.allStudents": { id: "Semua siswa", en: "All students" },
+  "common.allStudents": { id: "All Students", en: "All Students" },
   "common.yes": { id: "Ya", en: "Yes" },
   "common.no": { id: "Tidak", en: "No" },
   "common.optional": { id: "opsional", en: "optional" },

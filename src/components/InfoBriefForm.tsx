@@ -13,6 +13,7 @@ import {
   generateBriefBody,
   isSchoolDay,
   normalizeAudience,
+  fixDutyName,
   piketNamesForDate,
   relativeDayLabel,
   scheduleSubjectsForDate,
@@ -345,7 +346,7 @@ export default function InfoBriefForm({
       setDuties(
         p.duties.map((d, i) => ({
           student_id: d.student_id || `name-${i}`,
-          name: d.name || "",
+          name: fixDutyName(d.name || ""),
         })),
       )
     } else {
@@ -402,6 +403,7 @@ export default function InfoBriefForm({
           teacher: r.teacher ?? null,
         })),
         duties: duties.map((d) => ({ student_id: d.student_id, name: d.name })),
+        rosterSize: activeStudents.length,
         items: items
           .filter((i) => i.text.trim())
           .map((i) => ({
@@ -415,7 +417,7 @@ export default function InfoBriefForm({
             group: i.group,
           })),
       }),
-    [dateKey, greeting, uniform, uniformNote, rows, duties, items],
+    [dateKey, greeting, uniform, uniformNote, rows, duties, items, activeStudents],
   )
 
   /** Deteksi perubahan saat edit mode */

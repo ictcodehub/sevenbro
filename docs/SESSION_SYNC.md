@@ -108,6 +108,8 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-23 | **Posisi 100% dinamis** — hapus whitelist `POSITIONS`/`STUDENT_POSITIONS` di 2 API + roles; posisi bebas teks (input+datalist saran dari roster); `resolveEffectiveRole` = posisi itu sendiri (bukan PENDING); label Title Case generik | `api/admin/students/[id]` · `api/admin/roster-proposals` · `roles.ts` (+test) · `roster/page.tsx` |
 | 2026-09-23 | **Roster UI**: student list = tabel (No·Nama·Position·toggle) + frame ala Info (`RosterSectionCard`) · tap nama → modal (ubah posisi + edit + hapus) · toggle switch SSOT settings · Allowlist pecah ke `/app/admin/whitelist` + frame | `roster/page.tsx` · `whitelist/page.tsx` · `ui-primitives.tsx` |
 | 2026-09-23 | **Session auto-sync role tanpa login ulang** — JWT cek DB saat window focus, gated **max 1×/24 jam** (hemat free tier, tanpa timer); server tetap fresh per-request | `auth.ts` · `AuthProvider.tsx` · `next-auth.d.ts` |
+| 2026-09-24 | **Brief body format** — `[All Students]` (bukan `[Semua siswa]`, id=en, S kapital) di header `- Mapel. [All Students]` (pemisah **titik**, detail baris terindent); `normalizeBriefText` Title Case + ejaan (Hal./No./rentang); piket payload lama `Avriel` → **Gavriella Mulia Sitorus** via `fixDutyName` | `info-brief.ts` · `locales.ts` `common.allStudents` · `InfoBriefForm.tsx` · tests |
+| 2026-09-24 | **Agenda lampau auto-hapus** — `GET /api/events` buang event selesai (`isEventPast`: tanpa `ends_at` → lewat `starts_at`; multi-day → lewat `ends_at`); Beranda + Agenda hanya tampilkan mendatang | `api/events/route.ts` · `lib/events.ts` · `agenda/page.tsx` · `app/page.tsx` |
 
 ---
 
@@ -173,5 +175,7 @@ Setelah kerja selesai: update `PROGRESS.md` Open + baris **Keputusan sinkron** d
 
 
 
+
+
 ### Automation log
-- last session-sync: `2026-09-23T06:45:19.140Z` · branch `master`
+- last session-sync: `2026-09-23T16:35:46.479Z` · branch `master`

@@ -67,15 +67,12 @@ function AgendaInner() {
   const [toast, setToast] = useState<string | null>(null)
   const [page, setPage] = useState(0)
 
-  // Paling dekat “sekarang” di atas → timeline vertical
+  // Mendatang dulu (waktu naik) — yang lewat dibuang server
   const sorted = useMemo(() => {
     const now = Date.now()
-    return [...(data ?? [])].sort((a, b) => {
-      const da = Math.abs(+new Date(a.starts_at) - now)
-      const db = Math.abs(+new Date(b.starts_at) - now)
-      if (da !== db) return da - db
-      return +new Date(a.starts_at) - +new Date(b.starts_at)
-    })
+    return [...(data ?? [])]
+      .filter((e) => +new Date(e.starts_at) >= now)
+      .sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at))
   }, [data])
 
   const pageCount = Math.max(1, Math.ceil(sorted.length / PAGE_LIMIT))

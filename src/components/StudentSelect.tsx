@@ -171,8 +171,11 @@ export function StudentMultiSelect({
 }) {
   const t = useT()
   const [open, setOpen] = useState(false)
-  const display =
-    selectedNames.length > 0
+  // Semua terpilih (termasuk reload edit: ids kosong, names penuh) → label compact
+  const allSelected = students.length > 0 && selectedNames.length >= students.length
+  const display = allSelected
+    ? `[${t("common.allStudents")}]`
+    : selectedNames.length > 0
       ? selectedNames.join(", ")
       : (placeholder ?? t("poin.pickStudents"))
 

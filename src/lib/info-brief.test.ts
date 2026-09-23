@@ -6,11 +6,13 @@ import {
   dateKeyWIB,
   defaultBriefDateKey,
   formatBriefDateLong,
+  fixDutyName,
   generateBriefBody,
   greetingForBrief,
   greetingLinesForBrief,
   isSchoolDay,
   normalizeAudience,
+  normalizeBriefText,
   piketNamesForDate,
   relativeDayLabel,
   resolveSubjectOptions,
@@ -188,6 +190,25 @@ describe("piket fix mingguan", () => {
   it("Sabtu kosong", () => {
     expect(piketNamesForDate("2026-09-19")).toHaveLength(0)
   })
+
+  it("Kamis pakai Gavriella, bukan Avriel", () => {
+    const thu = piketNamesForDate("2026-09-24").join(" ")
+    expect(thu).toContain("Gavriella Mulia Sitorus")
+    expect(thu).not.toContain("Avriel")
+  })
+
+  it("payload lama Avriel diganti saat generate", () => {
+    const body = generateBriefBody({
+      dateKey: "2026-09-24",
+      duties: [
+        { student_id: "a", name: "Madeline Mellow Andrea" },
+        { student_id: "b", name: "Avriel" },
+      ],
+    })
+    expect(body).toContain("- Gavriella Mulia Sitorus")
+    expect(body).not.toContain("Avriel")
+    expect(fixDutyName("Avriel Sitorus")).toBe("Gavriella Mulia Sitorus")
+  })
 })
 
 describe("audience per jenis tugas", () => {
@@ -259,12 +280,89 @@ describe("generateBriefBody", () => {
     expect(body).toContain("*Tugas:*")
     expect(body).toContain("*Remedial:*")
     expect(body).toContain("*Info lain:*")
-    expect(body).toContain("Bawa baju P.E")
-    expect(body).toContain("Bikin tugas native mandarin")
-    expect(body).toContain("Mandarin yang remed")
+    expect(body).toContain("Bawa Baju P.E")
+    expect(body).toContain("Bikin Tugas Native Mandarin")
+    expect(body).toContain("Mandarin yang Remed")
     expect(body).toContain("LDKS")
     expect(body).toContain("*Sekian, mohon untuk diperhatikan bersama.*")
     expect(body).toContain("Terima kasih")
+  })
+
+  it("nama terpilih ≥ rosterSize ditulis [All Students]", () => {
+    const body = generateBriefBody({
+      dateKey: "2026-09-21",
+      rosterSize: 3,
+      items: [
+        {
+          kind: "TASK",
+          text: "Kerjakan tugas",
+          subject_name: "Math",
+          audience: "ALL",
+          student_names: ["Andra", "Pauline", "Freissy"],
+          group: "tugas",
+        },
+      ],
+    })
+    expect(body).toContain("[All Students]")
+    expect(body).not.toContain("Andra")
+  })
+
+  it("sebagian nama tetap dijabarkan", () => {
+    const body = generateBriefBody({
+      dateKey: "2026-09-21",
+      rosterSize: 10,
+      items: [
+        {
+          kind: "TASK",
+          text: "Kerjakan tugas",
+          subject_name: "Math",
+          audience: "NAMED",
+          student_names: ["Andra", "Pauline"],
+          group: "tugas",
+        },
+      ],
+    })
+    expect(body).toContain("- Math. Andra, Pauline")
+    expect(body).not.toContain("[All Students]")
+  })
+
+  it("normalisasi teks ketikan siswa (Title Case + ejaan)", () => {
+    expect(
+      normalizeBriefText(
+        "Kerjakan tugas dibuku hal53 no12 sampai 14,hal 62 no 10 - 13",
+      ),
+    ).toBe("Kerjakan Tugas di Buku Hal. 53 No. 12-14, Hal. 62 No. 10-13")
+  })
+
+  it("normalisasi idempoten pada teks sudah rapi", () => {
+    const s = "Kerjakan Tugas di Buku Hal. 53 No. 12-14"
+    expect(normalizeBriefText(s)).toBe(s)
+    expect(normalizeBriefText(normalizeBriefText(s))).toBe(s)
+  })
+
+  it("singkatan ALL-CAPS dipertahankan", () => {
+    expect(normalizeBriefText("siap ldks 2 hari")).toBe("Siap LDKS 2 Hari")
+  })
+
+  it("tugas dua baris: mapel lalu detail terindent", () => {
+    const body = generateBriefBody({
+      dateKey: "2026-09-21",
+      rosterSize: 3,
+      items: [
+        {
+          kind: "TASK",
+          text: "Kerjakan tugas dibuku hal53 no12 sampai 14",
+          subject_name: "Math",
+          audience: "ALL",
+          student_names: ["Andra", "Pauline", "Freissy"],
+          group: "tugas",
+        },
+      ],
+    })
+    expect(body).toContain(
+      "- Math. [All Students]\n  Kerjakan Tugas di Buku Hal. 53 No. 12-14",
+    )
+    expect(body).not.toContain(" · ")
   })
 
   it("boleh kosong di bagian opsional", () => {

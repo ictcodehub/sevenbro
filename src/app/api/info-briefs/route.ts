@@ -85,6 +85,13 @@ export async function POST(req: Request) {
       kind === "DAILY" ? briefTitleForDate(dateKey) : String(body?.title ?? "").trim() || "Info Kelas"
     const freeBody = String(body?.body ?? "").trim()
 
+    const db = createAdminClient()
+    const { count: rosterSize } = await db
+      .from("students")
+      .select("id", { count: "exact", head: true })
+      .eq("class_id", ctx.classId)
+      .eq("active", true)
+
     const bodyGenerated =
       kind === "DAILY"
         ? generateBriefBody({
@@ -95,6 +102,7 @@ export async function POST(req: Request) {
             subjects: payload.subjects,
             duties: payload.duties,
             items: payload.items,
+            rosterSize: rosterSize ?? undefined,
           })
         : freeBody || title
 
@@ -102,7 +110,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Isi pengumuman wajib diisi" }, { status: 400 })
     }
 
-    const db = createAdminClient()
     const author = formatDisplayName(ctx.name) || ctx.email || "Pengurus"
 
     // 1 brief DAILY per tanggal — update bila sudah ada

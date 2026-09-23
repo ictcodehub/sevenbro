@@ -158,8 +158,10 @@ function HomeInner() {
 
   const pinned =
     (announcements ?? []).find((a) => a.pinned) ?? (announcements ?? [])[0]
-  // Agenda Terdekat → tanggal terdekat di atas
-  const upcoming = [...(events ?? [])]
+  // Agenda Terdekat → hanya yang belum lewat, tanggal terdekat di atas
+  const nowMs = Date.now()
+  const upcoming = (events ?? [])
+    .filter((e) => +new Date(e.starts_at) >= nowMs)
     .sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at))
     .slice(0, 3)
   const top3 = (points?.leaderboard ?? []).slice(0, 3)
