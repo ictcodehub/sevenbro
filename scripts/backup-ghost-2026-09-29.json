@@ -1,0 +1,145 @@
+[
+  {
+    "id": "27604e44-8b22-47e4-8ef5-fcd52a482668",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran",
+    "amount": 1000,
+    "description": "Edmund Gracio Wirjo",
+    "occurred_on": "2026-09-29",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-22T10:05:47.382157+00:00"
+  },
+  {
+    "id": "0d73e7cd-ddfd-4ee2-8291-bd4647c32f65",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran",
+    "amount": 1000,
+    "description": "Evander Tristan Lee",
+    "occurred_on": "2026-09-29",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-22T10:05:47.382157+00:00"
+  },
+  {
+    "id": "ebdb1b94-0c69-4ebe-bb08-f0f906834799",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran",
+    "amount": 1000,
+    "description": "Freissy Celestyn Lien",
+    "occurred_on": "2026-09-29",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-22T10:05:47.382157+00:00"
+  },
+  {
+    "id": "24aebc1b-a3c0-41aa-9817-be4940bded86",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran",
+    "amount": 1000,
+    "description": "Gavriella Mulia Sitorus",
+    "occurred_on": "2026-09-29",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-22T10:05:47.382157+00:00"
+  },
+  {
+    "id": "c43e33b3-c7e0-4262-b8ac-9f14d6809ca9",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran",
+    "amount": 1000,
+    "description": "Jesslyn Aurelia Hamsidi",
+    "occurred_on": "2026-09-29",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-22T10:05:47.382157+00:00"
+  },
+  {
+    "id": "dacb29a7-8905-45f5-971b-5b22949ade2c",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran",
+    "amount": 1000,
+    "description": "Jivin Wellington Priyanto",
+    "occurred_on": "2026-09-29",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-22T10:05:47.382157+00:00"
+  },
+  {
+    "id": "d4787d37-1319-45fd-bc6e-d9f8dcb8fabd",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran",
+    "amount": 1000,
+    "description": "Jolin Khojaya",
+    "occurred_on": "2026-09-29",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-22T10:05:47.382157+00:00"
+  },
+  {
+    "id": "cd5256d6-4a36-47d2-a486-60c215dfaf3d",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran",
+    "amount": 1000,
+    "description": "Keiko Kholis",
+    "occurred_on": "2026-09-29",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-22T10:05:47.382157+00:00"
+  },
+  {
+    "id": "c3c03a88-b746-4bba-9ea1-80799f88d61c",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran",
+    "amount": 1000,
+    "description": "Madeline Mellow Andrea",
+    "occurred_on": "2026-09-29",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-22T10:05:47.382157+00:00"
+  },
+  {
+    "id": "2466f1d4-64fe-421c-b192-ecf684353a50",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran",
+    "amount": 1000,
+    "description": "Mishella Tjung",
+    "occurred_on": "2026-09-29",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-22T10:05:47.382157+00:00"
+  },
+  {
+    "id": "cfe75a1b-0d98-4d7d-8569-b896a65818b4",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran",
+    "amount": 1000,
+    "description": "Muhamad Dwi Andra Shakti",
+    "occurred_on": "2026-09-29",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-22T10:05:47.382157+00:00"
+  },
+  {
+    "id": "54a0661b-ed12-456b-9983-f7e1967f07c3",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran",
+    "amount": 1000,
+    "description": "Pauline Joice Widjadja",
+    "occurred_on": "2026-09-29",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-22T10:05:47.382157+00:00"
+  },
+  {
+    "id": "617e2f71-1961-4f93-8abe-c2c0a641a4d2",
+    "class_id": "301f54a9-cf42-4f60-b8ee-cf0c33b0b24a",
+    "kind": "IN",
+    "category": "Iuran",
+    "amount": 1000,
+    "description": "Wilbert Bryan",
+    "occurred_on": "2026-09-29",
+    "recorded_by": "madelinea@mutiarabangsa.sch.id",
+    "created_at": "2026-09-22T10:05:47.382157+00:00"
+  }
+]
