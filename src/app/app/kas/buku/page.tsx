@@ -379,36 +379,54 @@ function BukuKasInner() {
 
   const dayMarks = useMemo(() => buildDayMarks(rows ?? []), [rows])
 
+  // Filter tanggal → per BULAN (bukan per hari saja)
+  const dateMonth = date ? date.slice(0, 7) : ""
+  const currentYm = useMemo(() => {
+    const n = new Date()
+    return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}`
+  }, [])
+  // Bulan efektif: pilihan user, default bulan berjalan
+  const displayMonth = dateMonth || currentYm
+  const monthLabel = MONTHS_ID[parseInt(displayMonth.slice(5, 7), 10) - 1] ?? ""
+
   // Navigasi bulan cepat via panah ‹ › (tanpa buka kalender)
   const shiftMonth = (delta: number) => {
-    const nowD = new Date()
-    const base = date
-      ? `${date.slice(0, 4)}-${date.slice(5, 7)}`
-      : `${nowD.getFullYear()}-${String(nowD.getMonth() + 1).padStart(2, "0")}`
+    const base = dateMonth || currentYm
     const [y, m] = base.split("-").map(Number)
     const d = new Date(y, m - 1 + delta, 1)
     setDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`)
   }
 
-  // Batas waktu periode rekap (inclusive)
-  const periodFrom = useMemo(() => {
+  // Jendela waktu rekap per siswa — ikut month selector
+  const recapRange = useMemo(():
+    | { kind: "month"; prefix: string }
+    | { kind: "week"; from: string; to: string }
+    | null => {
     if (period === "all") return null
-    const now = new Date()
-    if (period === "week") {
-      const d = new Date(now)
-      const day = d.getDay() || 7
-      d.setDate(d.getDate() - day + 1) // Senin minggu ini
-      return d.toISOString().slice(0, 10)
+    if (period === "month") {
+      return { kind: "month", prefix: displayMonth }
     }
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`
-  }, [period])
+    // week: Senin–Minggu yang memuat tanggal terpilih (atau minggu berjalan)
+    const base = date ? new Date(date + "T12:00:00") : new Date()
+    const d = new Date(base)
+    const day = d.getDay() || 7
+    d.setDate(d.getDate() - day + 1)
+    const end = new Date(d)
+    end.setDate(end.getDate() + 6)
+    return {
+      kind: "week",
+      from: ymd(d.getFullYear(), d.getMonth(), d.getDate()),
+      to: ymd(end.getFullYear(), end.getMonth(), end.getDate()),
+    }
+  }, [period, date, displayMonth])
 
   // Rekap per siswa dari transaksi IN pada periode terpilih
   const perSiswa = useMemo(() => {
     const inc = (rows ?? []).filter((t) => {
       if (t.kind !== "IN") return false
-      if (periodFrom && t.occurred_on < periodFrom) return false
-      return true
+      if (!recapRange) return true
+      if (recapRange.kind === "month") return t.occurred_on.startsWith(recapRange.prefix)
+      return t.occurred_on >= recapRange.from && t.occurred_on <= recapRange.to
     })
     return (students ?? []).map((s) => {
       const name = s.full_name.toLowerCase()
@@ -430,10 +448,7 @@ function BukuKasInner() {
         last,
       }
     }).sort((a, b) => a.times - b.times || a.name.localeCompare(b.name))
-  }, [rows, students, periodFrom])
-
-  // Filter tanggal → per BUKAN (bukan per hari saja)
-  const dateMonth = date ? date.slice(0, 7) : ""
+  }, [rows, students, recapRange])
 
   // Matriks: hormati selector bulan — hanya minggu dalam bulan terpilih (atau bulan berjalan).
   // Lunas = Rp 23.000 (total sepanjang waktu). Sel = 0/1/2 per minggu bulan itu saja.
@@ -744,9 +759,7 @@ function BukuKasInner() {
                 <ChevronLeft className="h-3.5 w-3.5" />
               </button>
               <span className="w-[76px] text-center truncate">
-                {date
-                  ? MONTHS_ID[parseInt(date.slice(5, 7), 10) - 1]
-                  : t("kas.month")}
+                {monthLabel}
               </span>
               <button
                 type="button"
