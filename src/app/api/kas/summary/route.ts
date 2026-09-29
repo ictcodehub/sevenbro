@@ -5,6 +5,9 @@ import { ensureContextReader } from "@/lib/server-context"
 import { createAdminClient } from "@/lib/db"
 import { monthKeyWIB } from "@/lib/format"
 
+/** Baris bulk-plot backlog 22 Sep (fix-kas-backlog) — bukan uang masuk nyata. */
+const BACKLOG_PLOT_AT = "2026-09-22T10:05:47"
+
 export const dynamic = "force-dynamic"
 
 function firstName(name: string) {
@@ -80,16 +83,25 @@ export async function GET() {
       .order("created_at", { ascending: false })
       .limit(30)
 
-    // Arus kas bulan ini (dari transaksi)
+    // Arus kas bulan ini — SEMUA transaksi bulan ini, tanpa baris backlog plot
+    // (jangan pakai `recent` limit 30: itu bikin angka ngawur)
     let monthIn = 0
     let monthOut = 0
     const monthStart = `${mk}-01`
-    for (const t of recent ?? []) {
-      const day = String(t.occurred_on ?? "").slice(0, 10)
-      if (day >= monthStart) {
-        if (t.kind === "IN") monthIn += t.amount
-        else monthOut += t.amount
-      }
+    const nextMk = mk.endsWith("-12")
+      ? `${Number(mk.slice(0, 4)) + 1}-01`
+      : `${mk.slice(0, 4)}-${String(Number(mk.slice(5, 7)) + 1).padStart(2, "0")}`
+    const monthStartNext = `${nextMk}-01`
+    const { data: monthTxs } = await db
+      .from("transactions")
+      .select("kind, amount, created_at")
+      .eq("class_id", classId)
+      .gte("occurred_on", monthStart)
+      .lt("occurred_on", monthStartNext)
+    for (const t of monthTxs ?? []) {
+      if (String(t.created_at ?? "").startsWith(BACKLOG_PLOT_AT)) continue
+      if (t.kind === "IN") monthIn += t.amount
+      else monthOut += t.amount
     }
 
     // Aktivitas terakhir (transaksi atau pembayaran iuran) — audit
