@@ -1358,7 +1358,9 @@ function BukuKasInner() {
                                   {dmy(p.tx.occurred_on)} {p.tx.occurred_on.slice(0, 4)}
                                 </td>
                                 <td className="px-1 py-1.5 text-center text-[11px] text-ink-soft/70 tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden">
-                                  {formatTimeID(new Date(p.tx.created_at))}
+                                  {p.tx.created_at.slice(0, 10) === p.tx.occurred_on
+                                    ? formatTimeID(new Date(p.tx.created_at))
+                                    : "—"}
                                 </td>
                                 <td className="px-1.5 py-1.5 border-r border-line/40 overflow-hidden">
                                   <span className="block text-xs font-medium text-ink whitespace-nowrap overflow-hidden text-ellipsis">
