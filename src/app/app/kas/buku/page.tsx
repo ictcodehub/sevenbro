@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import {
   ArrowLeft,
@@ -48,6 +48,34 @@ function shortUraian(t: Tx) {
   const d = t.description || t.category
   const m = d.match(/^(.+?·\s*\d+\s*siswa)\b/i)
   return m ? m[1] : d
+}
+
+/**
+ * Status bayar dari deskripsi: "Nama · Pay 5x" → "Pay 5x".
+ * Frasa Indo di DB di-lokal-kan supaya tidak bocor ke UI Inggris.
+ */
+function payStatusLabel(
+  desc: string | undefined,
+  t: (key: "kas.statusArrears") => string,
+): string {
+  const raw = (desc || "").split("·").slice(1).join("·").trim()
+  if (!raw) return ""
+  const lower = raw.toLowerCase()
+  if (lower.includes("lunas tunggak")) return t("kas.statusArrears")
+  return raw
+}
+
+/** Label kategori dari DB (ID) → sesuai bahasa UI */
+function categoryLabel(
+  cat: string | undefined,
+  t: (key: "kas.catIuran" | "kas.catIuranHarian" | "kas.catIuranKhusus" | "kas.catExpense") => string,
+): string {
+  const c = (cat || "").toLowerCase()
+  if (c === "iuran khusus") return t("kas.catIuranKhusus")
+  if (c === "iuran harian") return t("kas.catIuranHarian")
+  if (c === "pengeluaran") return t("kas.catExpense")
+  if (c === "iuran") return t("kas.catIuran")
+  return cat || ""
 }
 
 const DOW_FULL = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]
@@ -630,6 +658,22 @@ function BukuKasInner() {
   const totalIn = journalRows.filter((t) => t.kind === "IN").reduce((s, t) => s + t.amount, 0)
   const totalOut = journalRows.filter((t) => t.kind === "OUT").reduce((s, t) => s + t.amount, 0)
   const lastSaldo = journalRows.at(-1)?.saldo ?? 0
+
+  // Jurnal: tampil bertahap biar tidak scroll panjang
+  const [journalLimit, setJournalLimit] = useState(20)
+  useEffect(() => {
+    setJournalLimit(20)
+  }, [displayMonth, only])
+  const journalVisible = useMemo(
+    () => [...journalRows].reverse().slice(0, journalLimit),
+    [journalRows, journalLimit],
+  )
+  const journalRemaining = journalRows.length - journalVisible.length
+
+  // Reset paginasi saat bulan / filter berubah
+  useEffect(() => {
+    setJournalLimit(20)
+  }, [displayMonth, only])
   const hasFilter = Boolean(only !== "all")
 
   return (
@@ -1043,14 +1087,14 @@ function BukuKasInner() {
               />
             ) : (
               (() => {
-                // Kelompokkan per hari agar tabel padat dan enak dipindai
+                // Kelompokkan per hari — terbaru di atas (journalVisible sudah di-reverse)
                 const byDay = new Map<string, LedgerRow[]>()
-                for (const row of journalRows) {
+                for (const row of journalVisible) {
                   const list = byDay.get(row.occurred_on) ?? []
                   list.push(row)
                   byDay.set(row.occurred_on, list)
                 }
-                const days = [...byDay.keys()].sort()
+                const days = [...byDay.keys()].sort().reverse()
                 return (
                   <div className="overflow-x-auto">
                     <table className="w-full table-fixed border-collapse">
@@ -1064,26 +1108,14 @@ function BukuKasInner() {
                       </thead>
                       {days.map((day) => {
                         const items = byDay.get(day) ?? []
-                        const dayIn = items
-                          .filter((r) => r.kind === "IN")
-                          .reduce((s, r) => s + r.amount, 0)
-                        const dayOut = items
-                          .filter((r) => r.kind === "OUT")
-                          .reduce((s, r) => s + r.amount, 0)
                         return (
                           <tbody key={day} className="last:border-b-0">
                             <tr className="bg-surface/80 border-y border-line/60">
                               <td
-                                colSpan={2}
+                                colSpan={4}
                                 className="px-1.5 py-1.5 text-[11px] font-semibold text-ink-soft whitespace-nowrap overflow-hidden text-ellipsis"
                               >
                                 {fullDate(day)}
-                              </td>
-                              <td className="px-1.5 py-1.5 text-right text-[11px] tabular-nums text-forest font-semibold whitespace-nowrap">
-                                {dayIn ? rp(dayIn) : ""}
-                              </td>
-                              <td className="px-1.5 py-1.5 text-right text-[11px] tabular-nums text-alert font-semibold whitespace-nowrap">
-                                {dayOut ? rp(dayOut) : ""}
                               </td>
                             </tr>
                             {items.map((line, idx) => {
@@ -1102,8 +1134,12 @@ function BukuKasInner() {
                                       {line.description || shortUraian(line)}
                                     </div>
                                     <div className="text-[10px] text-ink-soft/70 truncate">
-                                      {line.category}
-                                      {line.recorded_by ? ` · ${formatDisplayName(line.recorded_by)}` : ""}
+                                      {[
+                                        categoryLabel(line.category, t),
+                                        payStatusLabel(line.description, t),
+                                      ]
+                                        .filter(Boolean)
+                                        .join(" - ")}
                                     </div>
                                   </td>
                                   <td
@@ -1138,6 +1174,17 @@ function BukuKasInner() {
                         </tr>
                       </tfoot>
                     </table>
+                    {journalRemaining > 0 && (
+                      <div className="px-3 py-2.5 border-t border-line">
+                        <button
+                          type="button"
+                          onClick={() => setJournalLimit((n) => n + 20)}
+                          className="w-full rounded-xl border border-line bg-white py-2 text-xs font-semibold text-forest active:bg-page"
+                        >
+                          {t("kas.showMore", { n: Math.min(20, journalRemaining) })}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )
               })()
