@@ -7,13 +7,10 @@ import {
   CalendarDays,
   Megaphone,
   Pin,
-  Star,
   Trophy,
   Wallet,
   ArrowRight,
   ArrowUpRight,
-  Crown,
-  Award,
 } from "lucide-react"
 import {
   SectionHeader,
@@ -23,7 +20,7 @@ import { useAppSWR } from "@/lib/fetcher"
 import { formatIDR, formatDateID, formatTimeID, formatDisplayName } from "@/lib/format"
 import { RoleGate } from "@/components/RoleGate"
 import { useT } from "@/lib/i18n"
-import { VerifiedBadge, usePositions } from "@/components/VerifiedBadge"
+import { PodiumCard } from "@/components/PodiumCard"
 
 type Announcement = {
   id: string
@@ -60,43 +57,12 @@ type Summary = {
 
 type PointsPayload = {
   leaderboard: { student_id: string; full_name: string; total_points: number }[]
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function medalData(t: (k: any) => string) {
-  return [
-    {
-      chip: "bg-amber text-white",
-      ring: "ring-amber/40 bg-amber/10",
-      icon: Trophy,
-      label: t("home.1st"),
-      note: t("home.best"),
-    },
-    {
-      chip: "bg-ink-soft text-white",
-      ring: "ring-ink-soft/30 bg-surface",
-      icon: Award,
-      label: t("home.2nd"),
-      note: t("home.great"),
-    },
-    {
-      chip: "bg-amber/70 text-white",
-      ring: "ring-amber/25 bg-amber/5",
-      icon: Star,
-      label: t("home.3rd"),
-      note: t("home.good"),
-    },
-  ] as const
+  studentId: string | null
 }
 
 function firstName(full: string) {
   const w = full.trim().split(/\s+/)
   return w[0] || full
-}
-
-/** Nama utuh di kartu — jangan potong nama tengah (mis. Li Ming Xin) */
-function personName(full: string) {
-  return formatDisplayName(full)
 }
 
 /** Hanya untuk kartu Beranda — buang “ - Senin, 21 September 2026” dari judul */
@@ -153,7 +119,6 @@ function HomeInner() {
   const { data: events } = useAppSWR<EventRow[]>("/api/events")
   const { data: kas } = useAppSWR<Summary>("/api/kas/summary")
   const { data: points } = useAppSWR<PointsPayload>("/api/points")
-  const posIndex = usePositions("home")
   const bodyClip = useOverflow2Lines()
 
   const pinned =
@@ -165,7 +130,6 @@ function HomeInner() {
     .sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at))
     .slice(0, 3)
   const top3 = (points?.leaderboard ?? []).slice(0, 3)
-  const medals = medalData(t)
   const totalSiswa = points?.leaderboard?.length ?? 0
   // Mati kalau top skor masih seri
   const podiumMuted =
@@ -185,6 +149,85 @@ function HomeInner() {
           {totalSiswa > 0 ? t("home.students", { n: totalSiswa }) : "7B"}
         </span>
       </div>
+
+      {/* ── Podium Top 3 — leaderboard ── */}
+      <Link href="/app/poin" className="block active:scale-[0.99] transition-transform">
+        <div
+          className={`relative overflow-hidden bg-deep-2 border border-white/5 rounded-2xl p-3 ${
+            podiumMuted ? "podium-muted" : ""
+          }`}
+        >
+          {!podiumMuted && (
+            <div className="ember-field" aria-hidden="true">
+              <span className="ember red" />
+              <span className="ember gold" />
+              <span className="ember hot" />
+              <span className="ember" />
+              <span className="ember gold" />
+              <span className="ember red" />
+              <span className="ember" />
+              <span className="ember hot" />
+              <span className="ember gold" />
+              <span className="ember" />
+              <span className="ember red" />
+              <span className="ember gold" />
+              <span className="ember" />
+              <span className="ember hot" />
+              <span className="ember gold" />
+              <span className="ember red" />
+            </div>
+          )}
+
+          <div className="relative flex items-center justify-center gap-1.5 mb-2">
+            <Trophy className={`h-4 w-4 ${podiumMuted ? "text-white/40" : "text-amber"}`} />
+            <span
+              className={`text-xs font-bold uppercase tracking-[0.15em] ${
+                podiumMuted ? "text-white/45" : "text-acid"
+              }`}
+            >
+              {t("poin.leaderboard")}
+            </span>
+          </div>
+
+          {top3.length === 0 ? (
+            <p className="relative text-xs text-white/50 py-4 text-center">Belum ada poin</p>
+          ) : (
+            <>
+              <div className="relative flex items-end justify-center gap-1.5">
+                {top3[1] && (
+                  <PodiumCard
+                    rank={2}
+                    student={top3[1]}
+                    muted={podiumMuted}
+                    isMe={top3[1].student_id === points?.studentId}
+                  />
+                )}
+                {top3[0] && (
+                  <PodiumCard
+                    rank={1}
+                    student={top3[0]}
+                    muted={podiumMuted}
+                    isMe={top3[0].student_id === points?.studentId}
+                  />
+                )}
+                {top3[2] && (
+                  <PodiumCard
+                    rank={3}
+                    student={top3[2]}
+                    muted={podiumMuted}
+                    isMe={top3[2].student_id === points?.studentId}
+                  />
+                )}
+              </div>
+              {podiumMuted && (
+                <p className="relative text-center text-[11px] text-white/45 mt-2">
+                  {t("home.noDiff")}
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      </Link>
 
       {/* ── Disematkan / terbaru — semua siswa ── */}
       {pinned ? (
@@ -252,118 +295,6 @@ function HomeInner() {
             </span>
             <span className="inline-flex items-center gap-0.5 rounded-full bg-amber/15 border border-amber/30 px-1.5 py-0.5 text-[10px] font-semibold text-amber min-w-0 truncate">
               ↓ {formatIDR(kas?.monthOut ?? 0)}
-            </span>
-          </div>
-        </div>
-      </Link>
-
-      {/* ── Podium Top 3 — piala & bintang ── */}
-      <Link href="/app/poin" className="block active:scale-[0.99] transition-transform">
-        <div className="bg-white border border-line shadow-sm rounded-2xl p-3.5">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-1.5">
-              <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${podiumMuted ? "bg-surface" : "bg-amber/15"}`}>
-                <Trophy className={`h-3.5 w-3.5 ${podiumMuted ? "text-ink-soft/50" : "text-amber"}`} />
-              </div>
-              <div>
-                <h2 className="text-sm font-semibold text-ink">{t("home.pointsRank")}</h2>
-                <p className="text-[11px] text-ink-soft/60">
-                  {podiumMuted ? t("home.noDiff") : t("home.top3")}
-                </p>
-              </div>
-            </div>
-            <div className={`flex items-center gap-0.5 ${podiumMuted ? "text-ink-soft/30" : "text-amber"}`}>
-              <Star className={`h-3 w-3 ${podiumMuted ? "" : "fill-amber"}`} />
-              <Star className={`h-3 w-3 ${podiumMuted ? "" : "fill-amber"}`} />
-              <Star className="h-3 w-3" />
-            </div>
-          </div>
-
-          {top3.length === 0 ? (
-            <p className="text-xs text-ink-soft/60 py-2 text-center">
-              Belum ada poin
-            </p>
-          ) : podiumMuted ? (
-            <div className="rounded-xl border border-dashed border-line bg-surface/40 px-3 py-4 text-center">
-              <p className="text-sm font-bold text-ink-soft/60">—  ·  —  ·  —</p>
-              <p className="text-[11px] text-ink-soft/55 mt-1.5">
-                {t("home.noDiff")}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {/* Juara 1 dulu — lebih menonjol */}
-              {(() => {
-                const p = top3[0]
-                const m = medals[0]
-                const Icon = m.icon
-                return (
-                  <div className={`flex items-center gap-2.5 rounded-xl p-2.5 ring-1 ${m.ring}`}>
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${m.chip} shadow-sm`}>
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1">
-                        <Crown className="h-3 w-3 text-amber shrink-0" />
-                        <p className="text-sm font-semibold text-ink truncate">
-                          {personName(p.full_name)}
-                          <VerifiedBadge
-                            position={posIndex.byId.get(p.student_id)}
-                            className="ml-0.5 h-3 w-3"
-                          />
-                        </p>
-                      </div>
-                      <p className="text-[10px] text-ink-soft/70">{m.label} · {m.note}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-bold text-forest leading-none">
-                        {p.total_points}
-                      </p>
-                      <p className="text-[10px] text-ink-soft/60">{t("home.points")}</p>
-                    </div>
-                  </div>
-                )
-              })()}
-
-              {/* Juara 2 & 3 */}
-              <div className="grid grid-cols-2 gap-2">
-                {top3.slice(1, 3).map((p, idx) => {
-                  const m = medals[idx + 1]
-                  const Icon = m.icon
-                  return (
-                    <div
-                      key={p.student_id}
-                      className={`rounded-xl p-2.5 ring-1 ${m.ring} flex flex-col gap-1.5`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${m.chip}`}>
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <Star className="h-3 w-3 text-amber/70 fill-amber/40" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-ink truncate">
-                          {personName(p.full_name)}
-                          <VerifiedBadge
-                            position={posIndex.byId.get(p.student_id)}
-                            className="ml-0.5 h-3 w-3"
-                          />
-                        </p>
-                        <p className="text-[10px] text-ink-soft/60">{m.label}</p>
-                      </div>
-                      <p className="text-sm font-bold text-forest">
-                        {p.total_points} <span className="font-medium text-ink-soft/60">{t("home.points")}</span>
-                      </p>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          <div className="mt-3 pt-2 border-t border-line/40">
-            <span className="text-xs text-forest font-semibold flex items-center gap-0.5">
-              {t("home.viewAll")} <ArrowRight className="h-3.5 w-3.5" />
             </span>
           </div>
         </div>

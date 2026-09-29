@@ -418,13 +418,27 @@
   box-shadow: 0 4px 0 #115e59, 0 0 18px rgba(45, 212, 191, 0.25);
 }
 .podium-3 {
-  background: linear-gradient(180deg, #fdba74 0%, #ea580c 100%);
-  box-shadow: 0 4px 0 #9a3412;
+  background: linear-gradient(180deg, #d7f2a4 0%, #a3e635 100%);
+  box-shadow: 0 4px 0 #65a30d;
 }
 
 .crown-glow {
-  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.85));
-  animation: crown-bob 2.2s ease-in-out infinite;
+  filter:
+    drop-shadow(0 0 4px rgba(253, 224, 71, 0.9))
+    drop-shadow(0 0 12px rgba(251, 191, 36, 0.55))
+    drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+  animation: crown-bob 2.4s ease-in-out infinite, crown-shimmer 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes crown-shimmer {
+  from {
+    filter: drop-shadow(0 0 4px rgba(253, 224, 71, 0.75)) drop-shadow(0 0 10px rgba(251, 191, 36, 0.4))
+      drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+  }
+  to {
+    filter: drop-shadow(0 0 8px rgba(253, 224, 71, 1)) drop-shadow(0 0 20px rgba(251, 191, 36, 0.7))
+      drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+  }
 }
 
 @keyframes crown-bob {
@@ -590,4 +604,115 @@ html.sevenbro-shell {
 }
 .podium-muted .xp-bar-fill {
   transition: none !important;
+}
+
+/* ── Bara di belakang podium (Beranda & Points) ── */
+.ember-field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.ember-field::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(234, 88, 12, 0.08) 40%,
+    rgba(234, 88, 12, 0.28) 75%,
+    rgba(251, 146, 60, 0.45) 100%
+  );
+  animation: fire-breathe 1.6s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes fire-breathe {
+  from {
+    opacity: 0.65;
+    transform: scaleY(0.92);
+    transform-origin: bottom;
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1.06);
+    transform-origin: bottom;
+  }
+}
+.ember {
+  position: absolute;
+  bottom: -10px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50% 50% 50% 0;
+  background: #f97316;
+  box-shadow: 0 0 8px 2px rgba(249, 115, 22, 0.85), 0 0 16px 2px rgba(251, 146, 60, 0.4);
+  opacity: 0;
+  animation: flame-rise linear infinite;
+  transform: rotate(-45deg);
+}
+.ember.gold {
+  background: #fbbf24;
+  box-shadow: 0 0 8px 2px rgba(251, 191, 36, 0.9), 0 0 18px 2px rgba(253, 224, 71, 0.45);
+}
+.ember.red {
+  background: #ef4444;
+  box-shadow: 0 0 8px 2px rgba(239, 68, 68, 0.8), 0 0 16px 2px rgba(248, 113, 113, 0.4);
+}
+.ember.hot {
+  width: 7px;
+  height: 7px;
+  background: #fde047;
+  box-shadow: 0 0 12px 3px rgba(253, 224, 71, 0.95), 0 0 24px 3px rgba(251, 191, 36, 0.5);
+}
+.ember:nth-child(1)  { left: 4%;  width: 4px; height: 4px; animation-duration: 1.4s; animation-delay: 0s; }
+.ember:nth-child(2)  { left: 11%; animation-duration: 1.8s; animation-delay: 0.15s; }
+.ember:nth-child(3)  { left: 18%; width: 3px; height: 3px; animation-duration: 1.2s; animation-delay: 0.4s; }
+.ember:nth-child(4)  { left: 26%; animation-duration: 1.6s; animation-delay: 0.05s; }
+.ember:nth-child(5)  { left: 34%; width: 6px; height: 6px; animation-duration: 2s; animation-delay: 0.55s; }
+.ember:nth-child(6)  { left: 42%; animation-duration: 1.3s; animation-delay: 0.25s; }
+.ember:nth-child(7)  { left: 50%; width: 3px; height: 3px; animation-duration: 1.7s; animation-delay: 0.7s; }
+.ember:nth-child(8)  { left: 57%; animation-duration: 1.5s; animation-delay: 0.1s; }
+.ember:nth-child(9)  { left: 65%; width: 6px; height: 6px; animation-duration: 1.9s; animation-delay: 0.35s; }
+.ember:nth-child(10) { left: 73%; animation-duration: 1.35s; animation-delay: 0.5s; }
+.ember:nth-child(11) { left: 81%; width: 4px; height: 4px; animation-duration: 1.75s; animation-delay: 0.2s; }
+.ember:nth-child(12) { left: 89%; animation-duration: 1.45s; animation-delay: 0.6s; }
+.ember:nth-child(13) { left: 96%; width: 3px; height: 3px; animation-duration: 1.55s; animation-delay: 0.3s; }
+.ember:nth-child(14) { left: 8%;  animation-duration: 1.25s; animation-delay: 0.8s; }
+.ember:nth-child(15) { left: 47%; animation-duration: 1.65s; animation-delay: 0.9s; }
+.ember:nth-child(16) { left: 70%; animation-duration: 1.15s; animation-delay: 0.45s; }
+@keyframes flame-rise {
+  0% {
+    transform: translateY(0) rotate(-45deg) scale(0.5);
+    opacity: 0;
+  }
+  10% { opacity: 1; }
+  40% {
+    transform: translateY(-40px) rotate(-40deg) scale(0.95);
+    opacity: 0.95;
+  }
+  70% {
+    transform: translateY(-90px) rotate(-50deg) scale(0.7);
+    opacity: 0.65;
+  }
+  100% {
+    transform: translateY(-150px) rotate(-55deg) scale(0.15);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ember {
+    animation: none;
+    opacity: 0;
+  }
+  .ember-field::before {
+    animation: none;
+  }
+  .crown-glow {
+    animation: none;
+  }
 }

@@ -6,6 +6,7 @@ import { ensureContextReader } from "@/lib/server-context"
 import { createAdminClient } from "@/lib/db"
 import { formatIDR, formatDisplayName } from "@/lib/format"
 import { notifyHomeroom } from "@/lib/notify"
+import { awardKasPoint } from "@/lib/kas-points"
 
 export const dynamic = "force-dynamic"
 
@@ -79,9 +80,23 @@ export async function POST(req: Request) {
       .select("*")
       .single()
     if (error) throw new Error(error.message)
+
+    // A1 — Bayar Khusus adalah setoran juga, jadi ikut +1 poin (max 1×/siswa/hari),
+    // sama persis dengan setoran harian di /api/kas/collect
+    const studentId = String(body?.student_id ?? body?.studentId ?? "").trim()
+    let pointsAwarded = 0
+    if (kind === "IN" && studentId) {
+      const { data: stu } = await db
+        .from("students")
+        .select("id")
+        .eq("id", studentId)
+        .maybeSingle()
+      if (stu) pointsAwarded = await awardKasPoint(db, [studentId])
+    }
+
     await notifyHomeroom(ctx, {
       title: kind === "IN" ? "Pemasukan kas" : "Pengeluaran kas",
-      body: `${formatDisplayName(ctx.name) || "Bendahara"} mencatat ${kind === "IN" ? "masuk" : "keluar"} ${formatIDR(Math.round(amount))} · ${description}.`,
+      body: `${formatDisplayName(ctx.name) || "Bendahara"} mencatat ${kind === "IN" ? "masuk" : "keluar"} ${formatIDR(Math.round(amount))} · ${description}${pointsAwarded > 0 ? " · +1 poin" : ""}.`,
       kind: "kas",
     })
     return NextResponse.json(data, { status: 201 })

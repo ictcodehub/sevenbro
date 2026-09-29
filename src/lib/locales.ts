@@ -497,7 +497,6 @@ export const STRINGS = {
   "kas.myShareMonth": { id: "Iuran saya bulan ini", en: "My share this month" },
   "kas.notRecorded": { id: "Belum tercatat", en: "Not recorded yet" },
   "kas.todayDeposit": { id: "Setoran Hari Ini", en: "Today's Deposit" },
-  "kas.depositDay": { id: "Hari setoran", en: "Deposit day" },
   "kas.pay": { id: "Bayar", en: "Pay" },
   "kas.clearLeave": { id: "Hapus Izin", en: "Clear Leave" },
   "kas.clear": { id: "Kosongkan", en: "Clear" },

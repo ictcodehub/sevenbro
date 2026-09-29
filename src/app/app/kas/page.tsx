@@ -127,11 +127,6 @@ function todayLabel() {
   return `${hari[d.getDay()]}, ${formatDateID(d)}`
 }
 
-function isCollectionDay() {
-  const day = new Date().getDay()
-  return day === 2 || day === 4 // Selasa / Kamis
-}
-
 /** Input tanggal kejadian (backdate) — kosong = hari ini */
 function BackdateInput({
   value,
@@ -213,7 +208,6 @@ function KasInner() {
   const t = useT()
   const posIndex = usePositions("kas")
 
-  const collectionDay = isCollectionDay()
   const list = students ?? []
   const totalPick = picked.size
   const totalRupiah = totalPick * NOMINAL
@@ -399,6 +393,7 @@ function KasInner() {
           category: "Iuran khusus",
           description: `${name} · ${note}`,
           amount: n,
+          student_id: spStudent,
           ...(backdate ? { occurred_on: backdate } : {}),
         }),
       })
@@ -576,11 +571,9 @@ function KasInner() {
                       · {formatIDR(NOMINAL)}{t("kas.perPerson")}
                     </p>
                   </div>
-                  {collectionDay && (
-                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide bg-forest text-white px-2 py-1 rounded-full">
-                      {t("kas.depositDay")}
-                    </span>
-                  )}
+                  <span className="shrink-0 text-[11px] font-bold bg-forest text-white px-2.5 py-1 rounded-full tabular-nums">
+                    {totalPick} · {markMode === "izin" ? t("kas.leaveLower") : formatIDR(totalRupiah)}
+                  </span>
                 </div>
                 <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
                   <div className="flex gap-1 bg-white border border-line rounded-lg p-0.5 shrink-0">
@@ -604,9 +597,6 @@ function KasInner() {
                     </button>
                   </div>
                   <div className="flex items-center gap-1.5 min-w-0 flex-1 justify-end">
-                    <p className="text-[11px] font-semibold text-forest truncate min-w-0">
-                      {totalPick} · {markMode === "izin" ? t("kas.leaveLower") : formatIDR(totalRupiah)}
-                    </p>
                     <button
                       type="button"
                       onClick={selectAll}
