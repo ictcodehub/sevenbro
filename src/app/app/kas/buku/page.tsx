@@ -21,6 +21,7 @@ import { formatIDR, formatDateID, formatDateCompactID, formatTimeID, formatDispl
 import { RoleGate } from "@/components/RoleGate"
 import { useT } from "@/lib/i18n"
 import { VerifiedBadge } from "@/components/VerifiedBadge"
+import { StudentSelect } from "@/components/StudentSelect"
 
 type Tx = {
   id: string
@@ -89,6 +90,40 @@ function payLevel(times: number) {
   if (times < 5) return { cls: "text-amber-500", bg: "" }
   if (times < 7) return { cls: "text-orange-500", bg: "" }
   return { cls: "text-forest", bg: "bg-forest/8" }
+}
+
+const BATCH_RE = /·\s*(\d+)\s*siswa\b/i
+
+type StudentPay = { tx: Tx; share: number }
+
+/**
+ * Riwayat bayar siswa dari transaksi IN.
+ * Individual: description = nama. Batch "… · N siswa · …": share = amount/N bila nama ada di daftar.
+ */
+function paymentsForStudent(rows: Tx[], fullName: string): StudentPay[] {
+  const name = fullName.trim().toLowerCase()
+  if (!name) return []
+  const out: StudentPay[] = []
+  for (const t of rows) {
+    if (t.kind !== "IN") continue
+    const d = (t.description || "").toLowerCase()
+    if (d === name || d.startsWith(name + " ·")) {
+      out.push({ tx: t, share: t.amount })
+      continue
+    }
+    const bm = d.match(BATCH_RE)
+    if (bm) {
+      const n = Math.max(1, parseInt(bm[1], 10) || 1)
+      const marker = d.search(BATCH_RE)
+      const listPart = marker >= 0 ? d.slice(marker) : d
+      if (listPart.includes(name)) {
+        out.push({ tx: t, share: Math.max(1, Math.round(t.amount / n)) })
+      }
+      continue
+    }
+    if (d.includes(name)) out.push({ tx: t, share: t.amount })
+  }
+  return out.sort((a, b) => sortKey(b.tx).localeCompare(sortKey(a.tx)))
 }
 
 function ymd(y: number, m: number, d: number) {
@@ -372,7 +407,12 @@ function BukuKasInner() {
     }
   }
   const [view, setView] = useState<"matriks" | "siswa" | "ledger">("matriks")
-  const [period, setPeriod] = useState<"week" | "month" | "all">("month")
+  const [historyStudent, setHistoryStudent] = useState<{
+    id: string
+    name: string
+    nameKey: string
+    position: string
+  } | null>(null)
   const { data: students } = useAppSWR<
     { id: string; full_name: string; position: string }[]
   >("/api/admin/students", undefined, { refreshInterval: 60000 })
@@ -397,58 +437,23 @@ function BukuKasInner() {
     setDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`)
   }
 
-  // Jendela waktu rekap per siswa — ikut month selector
-  const recapRange = useMemo(():
-    | { kind: "month"; prefix: string }
-    | { kind: "week"; from: string; to: string }
-    | null => {
-    if (period === "all") return null
-    if (period === "month") {
-      return { kind: "month", prefix: displayMonth }
-    }
-    // week: Senin–Minggu yang memuat tanggal terpilih (atau minggu berjalan)
-    const base = date ? new Date(date + "T12:00:00") : new Date()
-    const d = new Date(base)
-    const day = d.getDay() || 7
-    d.setDate(d.getDate() - day + 1)
-    const end = new Date(d)
-    end.setDate(end.getDate() + 6)
-    return {
-      kind: "week",
-      from: ymd(d.getFullYear(), d.getMonth(), d.getDate()),
-      to: ymd(end.getFullYear(), end.getMonth(), end.getDate()),
-    }
-  }, [period, date, displayMonth])
-
-  // Rekap per siswa dari transaksi IN pada periode terpilih
+  // Rekap per siswa — semua riwayat bayar (tanpa filter periode)
   const perSiswa = useMemo(() => {
-    const inc = (rows ?? []).filter((t) => {
-      if (t.kind !== "IN") return false
-      if (!recapRange) return true
-      if (recapRange.kind === "month") return t.occurred_on.startsWith(recapRange.prefix)
-      return t.occurred_on >= recapRange.from && t.occurred_on <= recapRange.to
-    })
     return (students ?? []).map((s) => {
-      const name = s.full_name.toLowerCase()
-      const pays = inc.filter((t) => {
-        const d = t.description.toLowerCase()
-        return d === name || d.startsWith(name + " ·") || d.includes(name)
-      })
-      const total = pays.reduce((sum, t) => sum + t.amount, 0)
-      const last = pays
-        .map((t) => t.occurred_on)
-        .sort()
-        .at(-1)
+      const pays = paymentsForStudent(rows ?? [], s.full_name)
+      const total = pays.reduce((sum, p) => sum + p.share, 0)
+      const last = pays.map((p) => p.tx.occurred_on).sort().at(-1)
       return {
         id: s.id,
         name: formatDisplayName(s.full_name),
+        nameKey: s.full_name,
         position: s.position,
         times: pays.length,
         total,
         last,
       }
     }).sort((a, b) => a.times - b.times || a.name.localeCompare(b.name))
-  }, [rows, students, recapRange])
+  }, [rows, students])
 
   // Matriks: hormati selector bulan — hanya minggu dalam bulan terpilih (atau bulan berjalan).
   // Lunas = Rp 23.000 (total sepanjang waktu). Sel = 0/1/2 per minggu bulan itu saja.
@@ -858,30 +863,34 @@ function BukuKasInner() {
           </div>
         )}
 
-        {/* Filter periode — Per Siswa, card seragam (ledger) */}
+        {/* Filter Per Siswa: Semua + quick view nama */}
         {view === "siswa" && (
           <div className="bg-white border border-line shadow-sm rounded-xl px-3 py-3 mb-0">
-            <div className="flex items-center gap-1.5">
-              {(
-                [
-                  ["week", t("kas.thisWeek")],
-                  ["month", t("kas.thisMonth")],
-                  ["all", t("common.all")],
-                ] as const
-              ).map(([k, label]) => (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => setPeriod(k)}
-                  className={`text-xs font-semibold px-2.5 py-1 rounded-full border shrink-0 ${
-                    period === k
-                      ? "bg-forest text-white border-forest"
-                      : "bg-white text-ink-soft border-line"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full border bg-forest text-white border-forest shrink-0">
+                {t("common.all")}
+              </span>
+              <div className="flex-1 min-w-0">
+                <StudentSelect
+                  students={(students ?? []).map((s) => ({
+                    id: s.id,
+                    full_name: s.full_name,
+                    position: s.position,
+                  }))}
+                  value={historyStudent?.id ?? ""}
+                  onChange={(id) => {
+                    const s = (students ?? []).find((x) => x.id === id)
+                    if (!s) return
+                    setHistoryStudent({
+                      id: s.id,
+                      name: formatDisplayName(s.full_name),
+                      nameKey: s.full_name,
+                      position: s.position,
+                    })
+                  }}
+                  placeholder={t("kas.quickViewStudent")}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -983,7 +992,18 @@ function BukuKasInner() {
                   {perSiswa.map((s, i) => {
                     const level = payLevel(s.times)
                     return (
-                      <tr key={s.id} className={`border-b border-line/60 last:border-b-0 ${level.bg}`}>
+                      <tr
+                        key={s.id}
+                        onClick={() =>
+                          setHistoryStudent({
+                            id: s.id,
+                            name: s.name,
+                            nameKey: s.nameKey,
+                            position: s.position,
+                          })
+                        }
+                        className={`border-b border-line/60 last:border-b-0 cursor-pointer active:bg-page/60 ${level.bg}`}
+                      >
                         <td className="px-1 py-1.5 text-center text-[11px] text-ink-soft/40 tabular-nums whitespace-nowrap overflow-hidden">
                           {i + 1}
                         </td>
@@ -1262,6 +1282,117 @@ function BukuKasInner() {
             <button
               type="button"
               onClick={() => setDetail(null)}
+              className="w-full bg-forest text-white text-sm font-bold py-3 rounded-xl"
+            >
+              {t("common.close")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Riwayat bayar siswa — full screen */}
+      {historyStudent && (
+        <div className="fixed inset-0 z-50 bg-page flex flex-col">
+          <div className="flex items-center gap-2.5 px-4 py-3 bg-white border-b border-line">
+            <button
+              type="button"
+              onClick={() => setHistoryStudent(null)}
+              aria-label={t("kas.closeDetail")}
+              className="flex items-center justify-center text-ink"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg font-bold text-ink truncate">{t("kas.paymentHistory")}</h2>
+              <p className="text-xs text-ink-soft truncate">
+                {historyStudent.name}
+                <VerifiedBadge position={historyStudent.position} className="ml-0.5 h-3 w-3 inline-block align-middle" />
+              </p>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
+            {(() => {
+              const pays = paymentsForStudent(rows ?? [], historyStudent.nameKey)
+              const total = pays.reduce((sum, p) => sum + p.share, 0)
+              return (
+                <>
+                  <div className="bg-forest text-white rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-medium opacity-80">{t("kas.timesCol")}</p>
+                      <p className="text-xl font-black tabular-nums">{pays.length}x</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-medium opacity-80">{t("kas.totalCol")}</p>
+                      <p className="text-xl font-black tabular-nums">{rp(total)}</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-line shadow-sm rounded-xl overflow-hidden">
+                    <div className="px-3 pt-2.5 pb-2 bg-forest text-white">
+                      <p className="text-xs font-medium text-white/90">{t("kas.paymentHistory")}</p>
+                    </div>
+                    {pays.length === 0 ? (
+                      <div className="p-5 text-center text-xs text-ink-soft/45">
+                        {t("kas.noPaymentHistory")}
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full table-fixed border-collapse text-[11px]">
+                          <thead>
+                            <tr className="bg-page border-b border-line text-ink-soft/60 font-semibold">
+                              <th className="px-1 py-1.5 text-center w-8 whitespace-nowrap overflow-hidden">{t("kas.colNo")}</th>
+                              <th className="px-1.5 py-1.5 text-left w-[28%] whitespace-nowrap overflow-hidden">{t("kas.dateCol")}</th>
+                              <th className="px-1 py-1.5 text-center w-[14%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.timeCol")}</th>
+                              <th className="px-1.5 py-1.5 text-left border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.descCol")}</th>
+                              <th className="px-1.5 py-1.5 text-right w-[22%] whitespace-nowrap overflow-hidden">{t("kas.totalCol")}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {pays.map((p, i) => (
+                              <tr key={p.tx.id} className="border-b border-line/60 last:border-b-0">
+                                <td className="px-1 py-1.5 text-center text-[11px] text-ink-soft/40 tabular-nums whitespace-nowrap overflow-hidden">
+                                  {i + 1}
+                                </td>
+                                <td className="px-1.5 py-1.5 text-[11px] text-ink-soft/70 tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
+                                  {dmy(p.tx.occurred_on)} {p.tx.occurred_on.slice(0, 4)}
+                                </td>
+                                <td className="px-1 py-1.5 text-center text-[11px] text-ink-soft/70 tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden">
+                                  {formatTimeID(new Date(p.tx.created_at))}
+                                </td>
+                                <td className="px-1.5 py-1.5 border-r border-line/40 overflow-hidden">
+                                  <span className="block text-xs font-medium text-ink whitespace-nowrap overflow-hidden text-ellipsis">
+                                    {p.tx.category || shortUraian(p.tx)}
+                                  </span>
+                                </td>
+                                <td className="px-1.5 py-1.5 text-right text-[11px] font-semibold text-forest tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
+                                  {rp(p.share)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                    <div className="px-3 py-2 bg-page/60 border-t border-line text-[11px] text-ink-soft/50 font-medium">
+                      {t("kas.paymentHistoryHint")}
+                    </div>
+                  </div>
+                </>
+              )
+            })()}
+          </div>
+
+          <div
+            className="px-4 pt-2 bg-white border-t border-line"
+            style={{
+              paddingBottom:
+                "calc(1rem + var(--sevenbro-nav-bar-inset, 0px) + var(--sevenbro-safe-bottom, env(safe-area-inset-bottom, 0px)))",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setHistoryStudent(null)}
               className="w-full bg-forest text-white text-sm font-bold py-3 rounded-xl"
             >
               {t("common.close")}

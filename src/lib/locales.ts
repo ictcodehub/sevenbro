@@ -590,6 +590,11 @@ export const STRINGS = {
   "kas.totalCol": { id: "Total", en: "Total" },
   "kas.lastCol": { id: "Terakhir", en: "Last" },
   "kas.levelHint": { id: "Target 8x/bulan · 0 merah · 2 cokelat · 4 kuning · 6 oranye · 8+ hijau", en: "8x/month target · 0 red · 2 brown · 4 yellow · 6 orange · 8+ green" },
+  "kas.paymentHistory": { id: "Riwayat Pembayaran", en: "Payment History" },
+  "kas.paymentHistoryHint": { id: "Semua setoran tercatat untuk siswa ini", en: "All recorded payments for this student" },
+  "kas.timeCol": { id: "Jam", en: "Time" },
+  "kas.noPaymentHistory": { id: "Belum ada riwayat pembayaran", en: "No payment history yet" },
+  "kas.quickViewStudent": { id: "Quick view siswa", en: "Quick view student" },
   "kas.bookError": { id: "Gagal memuat buku kas", en: "Failed to load cash book" },
   "kas.targetLine": { id: "Target: {{names}} · −{{amount}} poin", en: "Target: {{names}} · −{{amount}} pts" },
 
