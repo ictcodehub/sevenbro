@@ -657,6 +657,7 @@ function BukuKasInner() {
 
   const totalIn = journalRows.filter((t) => t.kind === "IN").reduce((s, t) => s + t.amount, 0)
   const totalOut = journalRows.filter((t) => t.kind === "OUT").reduce((s, t) => s + t.amount, 0)
+  const lastSaldo = journalRows.at(-1)?.saldo ?? 0
 
   // Jurnal: tampil bertahap biar tidak scroll panjang
   const [journalLimit, setJournalLimit] = useState(20)
@@ -1101,8 +1102,8 @@ function BukuKasInner() {
                         <tr className="bg-page border-b border-line text-ink-soft/70 text-[11px] font-semibold">
                           <th className="px-1.5 py-2 text-center w-8 border-r border-line/50">{t("kas.colNo")}</th>
                           <th className="px-1.5 py-2 text-left border-r border-line/50">{t("kas.descCol")}</th>
-                          <th className="px-1.5 py-2 text-center w-[18%] border-r border-line/50">{t("kas.timeCol")}</th>
-                          <th className="px-1.5 py-2 text-right w-[26%]">{t("kas.amountCol")}</th>
+                          <th className="px-1.5 py-2 text-right w-[28%] border-r border-line/50">{t("kas.amountCol")}</th>
+                          <th className="px-1.5 py-2 text-right w-[28%]">{t("kas.saldoCol")}</th>
                         </tr>
                       </thead>
                       {days.map((day) => {
@@ -1141,16 +1142,16 @@ function BukuKasInner() {
                                         .join(" - ")}
                                     </div>
                                   </td>
-                                  <td className="px-1.5 py-2 text-center text-xs tabular-nums text-ink-soft/80 border-r border-line/40 whitespace-nowrap">
-                                    {formatTimeID(new Date(line.created_at))}
-                                  </td>
                                   <td
-                                    className={`px-1.5 py-2 text-right text-xs font-semibold tabular-nums whitespace-nowrap ${
+                                    className={`px-1.5 py-2 text-right text-xs font-semibold tabular-nums border-r border-line/40 whitespace-nowrap ${
                                       isIn ? "text-forest" : "text-alert"
                                     }`}
                                   >
                                     {isIn ? "" : "−"}
                                     {rp(line.amount)}
+                                  </td>
+                                  <td className="px-1.5 py-2 text-right text-xs tabular-nums text-ink whitespace-nowrap">
+                                    {rp(line.saldo)}
                                   </td>
                                 </tr>
                               )
@@ -1160,12 +1161,15 @@ function BukuKasInner() {
                       })}
                       <tfoot>
                         <tr className="bg-page border-t border-line">
-                          <td colSpan={3} className="px-1.5 py-2 text-xs font-bold text-ink">
+                          <td colSpan={2} className="px-1.5 py-2 text-xs font-bold text-ink">
                             {t("kas.totalRow")}
                           </td>
                           <td className="px-1.5 py-2 text-right text-xs font-bold tabular-nums whitespace-nowrap">
                             <span className="text-forest">{rp(totalIn)}</span>
                             {totalOut > 0 && <span className="text-alert"> · {rp(totalOut)}</span>}
+                          </td>
+                          <td className="px-1.5 py-2 text-right text-xs font-bold tabular-nums text-ink whitespace-nowrap">
+                            {rp(lastSaldo)}
                           </td>
                         </tr>
                       </tfoot>

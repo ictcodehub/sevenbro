@@ -1,6 +1,6 @@
 # Seven Bro! — Progress Snapshot (Beta)
 
-> Status terakhir: **Brief format `[All Students]` + normalisasi + Agenda lampau auto-hapus · 2026-09-24** · sebelumnya Badge verified SSOT + posisi dinamis + session auto-sync `8ff1be2` · login allowlist `f139c6e` · kas backlog `7f5a536`; APK 1.1.0; `allowBackup` tetap `true`.
+> Status terakhir: **Buku Kas jurnal + plot matriks + month selector · 2026-09-29** · sebelumnya Brief format + Agenda auto-hapus `646a515` · badge verified `8ff1be2` · login allowlist `f139c6e`; APK 1.1.0; `allowBackup` tetap `true`.
 
 ## Selesai
 
@@ -19,8 +19,8 @@
 - **Anchor periode = Selasa 4 Agu 2026** (keputusan user; `TERM_START` di `/api/kas/tunggak`) — checklist bendahara sumber kebenaran
 - **Backlog checklist dikoreksi** (2026-09-22): 19 tx "Iuran khusus" 21 Sep → 291 baris Rp 1.000/hari Sel/Kam sesuai checklist; kelebihan = bayar di muka mengalir ke Sel/Kam berikutnya (`scripts/fix-kas-backlog.mjs`, backup `scripts/backup-kas-2026-09-21.json`)
 - **Backdate**: semua input kas bisa pilih tanggal (header checklist + sheet Khusus/Pengeluaran; izin ikut tanggal); `/api/kas/collect` terima `occurred_on` (tolak masa depan)
-- Matriks: lunas = jumlah hari Sel/Kam sejak anchor (dinamis); sel 0/1/2 per minggu; filter bulan dihormati; kolom **No**
-- Buku Kas UI: Per Siswa table proporsional · Transaksi card hijau + date `DD Mon` + frame kolom · filter bar card seragam · tanpa search ledger
+- Matriks: lunas = jumlah hari Sel/Kam sejak anchor (dinamis); sel 0/1/2 per minggu; **plot total bayar berurutan dari 4 Agu** (surplus lanjut ke bulan depan); kolom **No**
+- Buku Kas UI: Per Siswa rekap + dropdown quick view + modal riwayat (sort terbaru; filter bulan) · **Transaksi = jurnal kas** per transaksi + group hari + Show 20 more · monthIn summary tanpa backlog
 - StudentMultiSelect: label i18n (EN “All students”) + default **select all**
 - Tunggak kumulatif dari anchor; tetap dihitung walau data kas kosong (kalender setoran)
 

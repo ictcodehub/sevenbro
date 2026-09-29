@@ -110,6 +110,10 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-23 | **Session auto-sync role tanpa login ulang** — JWT cek DB saat window focus, gated **max 1×/24 jam** (hemat free tier, tanpa timer); server tetap fresh per-request | `auth.ts` · `AuthProvider.tsx` · `next-auth.d.ts` |
 | 2026-09-24 | **Brief body format** — `[All Students]` (bukan `[Semua siswa]`, id=en, S kapital) di header `- Mapel. [All Students]` (pemisah **titik**, detail baris terindent); `normalizeBriefText` Title Case + ejaan (Hal./No./rentang); piket payload lama `Avriel` → **Gavriella Mulia Sitorus** via `fixDutyName` | `info-brief.ts` · `locales.ts` `common.allStudents` · `InfoBriefForm.tsx` · tests |
 | 2026-09-24 | **Agenda lampau auto-hapus** — `GET /api/events` buang event selesai (`isEventPast`: tanpa `ends_at` → lewat `starts_at`; multi-day → lewat `ends_at`); Beranda + Agenda hanya tampilkan mendatang | `api/events/route.ts` · `lib/events.ts` · `agenda/page.tsx` · `app/page.tsx` |
+| 2026-09-29 | **Buku Kas: plot matriks berurutan dari 4 Agu** — total bayar diplot ke hari setoran Sel/Kam; surplus lanjut ke bulan berikutnya (bukan hanya bulan aktif); Per Siswa = catatan bayar nyata (tanpa baris backlog plot / tanggal depan) | `kas/buku/page.tsx` § matriks · `paymentsForStudent` |
+| 2026-09-29 | **Buku Kas: month selector + dropdown Per Siswa** — label bulan = bulan berjalan/terpilih; rekap ikut bulan; dropdown biasa quick view detail di tabel; tap baris → modal full-screen riwayat; sort terbaru di atas; hapus tombol Muat ulang | `kas/buku/page.tsx` |
+| 2026-09-29 | **Tab Transaksi = Jurnal kas** — 1 baris = 1 transaksi (bukan agregat "16/16 Siswa"); kolom No·Uraian·Nominal·Saldo/Balance; group per hari; i18n kategori/status (Special dues, Arrears cleared); Show 20 more; monthIn summary tanpa backlog | `kas/buku/page.tsx` · `api/kas/summary` · `locales.ts` |
+| 2026-09-29 | **Saldo kas = keseluruhan** (historis backlog + setoran real) — `monthIn` bulan ini = transaksi real saja; baris backlog dihitung di saldo tetapi bukan setoran harian | `api/kas/summary` · DB transactions |
 
 ---
 
@@ -178,5 +182,6 @@ Setelah kerja selesai: update `PROGRESS.md` Open + baris **Keputusan sinkron** d
 
 
 
+
 ### Automation log
-- last session-sync: `2026-09-29T06:56:51.325Z` · branch `sevenbro-dev`
+- last session-sync: `2026-09-29T15:17:02.191Z` · branch `sevenbro-dev`
