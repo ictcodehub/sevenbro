@@ -21,7 +21,6 @@ import { formatIDR, formatDateID, formatDateCompactID, formatTimeID, formatDispl
 import { RoleGate } from "@/components/RoleGate"
 import { useT } from "@/lib/i18n"
 import { VerifiedBadge } from "@/components/VerifiedBadge"
-import { StudentSelect } from "@/components/StudentSelect"
 
 type Tx = {
   id: string
@@ -413,6 +412,8 @@ function BukuKasInner() {
     nameKey: string
     position: string
   } | null>(null)
+  // Quick view: dropdown biasa → detail di tabel bawah (bukan modal)
+  const [quickViewId, setQuickViewId] = useState("")
   const { data: students } = useAppSWR<
     { id: string; full_name: string; position: string }[]
   >("/api/admin/students", undefined, { refreshInterval: 60000 })
@@ -863,34 +864,37 @@ function BukuKasInner() {
           </div>
         )}
 
-        {/* Filter Per Siswa: Semua + quick view nama */}
+        {/* Filter Per Siswa: Semua + dropdown nama (quick view di tabel bawah) */}
         {view === "siswa" && (
           <div className="bg-white border border-line shadow-sm rounded-xl px-3 py-3 mb-0">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full border bg-forest text-white border-forest shrink-0">
+              <button
+                type="button"
+                onClick={() => setQuickViewId("")}
+                className={`text-xs font-semibold px-2.5 py-1.5 rounded-full border shrink-0 ${
+                  !quickViewId
+                    ? "bg-forest text-white border-forest"
+                    : "bg-white text-ink-soft border-line"
+                }`}
+              >
                 {t("common.all")}
-              </span>
-              <div className="flex-1 min-w-0">
-                <StudentSelect
-                  students={(students ?? []).map((s) => ({
-                    id: s.id,
-                    full_name: s.full_name,
-                    position: s.position,
-                  }))}
-                  value={historyStudent?.id ?? ""}
-                  onChange={(id) => {
-                    const s = (students ?? []).find((x) => x.id === id)
-                    if (!s) return
-                    setHistoryStudent({
-                      id: s.id,
-                      name: formatDisplayName(s.full_name),
-                      nameKey: s.full_name,
-                      position: s.position,
-                    })
-                  }}
-                  placeholder={t("kas.quickViewStudent")}
-                />
-              </div>
+              </button>
+              <select
+                value={quickViewId}
+                onChange={(e) => setQuickViewId(e.target.value)}
+                aria-label={t("kas.quickViewStudent")}
+                className="flex-1 min-w-0 h-9 rounded-lg border border-line bg-white px-2.5 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-forest/30"
+              >
+                <option value="">{t("kas.quickViewStudent")}</option>
+                {(students ?? [])
+                  .slice()
+                  .sort((a, b) => a.full_name.localeCompare(b.full_name))
+                  .map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {formatDisplayName(s.full_name)}
+                    </option>
+                  ))}
+              </select>
             </div>
           </div>
         )}
@@ -973,72 +977,142 @@ function BukuKasInner() {
             </div>
           </div>
         ) : view === "siswa" ? (
-          <div className="bg-white border border-line shadow-sm rounded-xl overflow-hidden">
-            <div className="px-3 pt-2.5 pb-2 bg-forest text-white">
-              <p className="text-xs font-medium text-white/90">{t("kas.perStudentTitle")}</p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full table-fixed border-collapse text-[11px]">
-                <thead>
-                  <tr className="bg-page border-b border-line text-ink-soft/60 font-semibold">
-                    <th className="px-1 py-1.5 text-center w-6 whitespace-nowrap overflow-hidden">{t("kas.colNo")}</th>
-                    <th className="px-1.5 py-1.5 text-left w-[38%] whitespace-nowrap overflow-hidden">{t("kas.colName")}</th>
-                    <th className="px-1 py-1.5 text-center w-[14%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.timesCol")}</th>
-                    <th className="px-1 py-1.5 text-right w-[24%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.totalCol")}</th>
-                    <th className="px-1.5 py-1.5 text-right w-[18%] whitespace-nowrap overflow-hidden">{t("kas.lastCol")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {perSiswa.map((s, i) => {
-                    const level = payLevel(s.times)
-                    return (
-                      <tr
-                        key={s.id}
-                        onClick={() =>
-                          setHistoryStudent({
-                            id: s.id,
-                            name: s.name,
-                            nameKey: s.nameKey,
-                            position: s.position,
-                          })
-                        }
-                        className={`border-b border-line/60 last:border-b-0 cursor-pointer active:bg-page/60 ${level.bg}`}
-                      >
-                        <td className="px-1 py-1.5 text-center text-[11px] text-ink-soft/40 tabular-nums whitespace-nowrap overflow-hidden">
-                          {i + 1}
-                        </td>
-                        <td className="px-1.5 py-1.5 border-r border-line/40 overflow-hidden">
-                          <span className="block text-xs font-medium text-ink whitespace-nowrap overflow-hidden text-ellipsis">
-                            {s.name}
-                            <VerifiedBadge position={s.position} className="ml-0.5 h-3 w-3" />
-                          </span>
-                        </td>
-                        <td className={`px-1 py-1.5 text-center text-[11px] font-medium tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden ${level.cls}`}>
-                          {s.times}x
-                        </td>
-                        <td className={`px-1 py-1.5 text-right text-[11px] font-medium tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden text-ellipsis ${level.cls}`}>
-                          {s.total ? rp(s.total) : "—"}
-                        </td>
-                        <td className="px-1.5 py-1.5 text-right text-[11px] text-ink-soft/50 tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
-                          {dmy(s.last)}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                  {perSiswa.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="p-5 text-center text-xs text-ink-soft/45 whitespace-nowrap">
-                        Belum ada data siswa
-                      </td>
-                    </tr>
+          (() => {
+            const q = quickViewId
+              ? (students ?? []).find((s) => s.id === quickViewId)
+              : null
+            if (q) {
+              const pays = paymentsForStudent(rows ?? [], q.full_name)
+              const total = pays.reduce((sum, p) => sum + p.share, 0)
+              return (
+                <div className="bg-white border border-line shadow-sm rounded-xl overflow-hidden">
+                  <div className="px-3 pt-2.5 pb-2 bg-forest text-white">
+                    <p className="text-xs font-medium text-white/90">
+                      {t("kas.paymentHistory")}
+                    </p>
+                    <p className="text-[11px] text-white/70 truncate">
+                      {formatDisplayName(q.full_name)} · {pays.length}x · {rp(total)}
+                    </p>
+                  </div>
+                  {pays.length === 0 ? (
+                    <div className="p-5 text-center text-xs text-ink-soft/45">
+                      {t("kas.noPaymentHistory")}
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full table-fixed border-collapse text-[11px]">
+                        <thead>
+                          <tr className="bg-page border-b border-line text-ink-soft/60 font-semibold">
+                            <th className="px-1 py-1.5 text-center w-8 whitespace-nowrap overflow-hidden">{t("kas.colNo")}</th>
+                            <th className="px-1.5 py-1.5 text-left w-[28%] whitespace-nowrap overflow-hidden">{t("kas.dateCol")}</th>
+                            <th className="px-1 py-1.5 text-center w-[14%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.timeCol")}</th>
+                            <th className="px-1.5 py-1.5 text-left border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.descCol")}</th>
+                            <th className="px-1.5 py-1.5 text-right w-[22%] whitespace-nowrap overflow-hidden">{t("kas.totalCol")}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pays.map((p, i) => (
+                            <tr key={p.tx.id} className="border-b border-line/60 last:border-b-0">
+                              <td className="px-1 py-1.5 text-center text-[11px] text-ink-soft/40 tabular-nums whitespace-nowrap overflow-hidden">
+                                {i + 1}
+                              </td>
+                              <td className="px-1.5 py-1.5 text-[11px] text-ink-soft/70 tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
+                                {dmy(p.tx.occurred_on)} {p.tx.occurred_on.slice(0, 4)}
+                              </td>
+                              <td className="px-1 py-1.5 text-center text-[11px] text-ink-soft/70 tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden">
+                                {p.tx.created_at.slice(0, 10) === p.tx.occurred_on
+                                  ? formatTimeID(new Date(p.tx.created_at))
+                                  : "—"}
+                              </td>
+                              <td className="px-1.5 py-1.5 border-r border-line/40 overflow-hidden">
+                                <span className="block text-xs font-medium text-ink whitespace-nowrap overflow-hidden text-ellipsis">
+                                  {p.tx.category || shortUraian(p.tx)}
+                                </span>
+                              </td>
+                              <td className="px-1.5 py-1.5 text-right text-[11px] font-semibold text-forest tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
+                                {rp(p.share)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   )}
-                </tbody>
-              </table>
-            </div>
-            <div className="px-3 py-2 bg-page/60 border-t border-line text-[11px] text-ink-soft/50 font-medium">
-              {t("kas.levelHint")}
-            </div>
-          </div>
+                  <div className="px-3 py-2 bg-page/60 border-t border-line text-[11px] text-ink-soft/50 font-medium">
+                    {t("kas.paymentHistoryHint")}
+                  </div>
+                </div>
+              )
+            }
+            return (
+              <div className="bg-white border border-line shadow-sm rounded-xl overflow-hidden">
+                <div className="px-3 pt-2.5 pb-2 bg-forest text-white">
+                  <p className="text-xs font-medium text-white/90">{t("kas.perStudentTitle")}</p>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full table-fixed border-collapse text-[11px]">
+                    <thead>
+                      <tr className="bg-page border-b border-line text-ink-soft/60 font-semibold">
+                        <th className="px-1 py-1.5 text-center w-6 whitespace-nowrap overflow-hidden">{t("kas.colNo")}</th>
+                        <th className="px-1.5 py-1.5 text-left w-[38%] whitespace-nowrap overflow-hidden">{t("kas.colName")}</th>
+                        <th className="px-1 py-1.5 text-center w-[14%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.timesCol")}</th>
+                        <th className="px-1 py-1.5 text-right w-[24%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.totalCol")}</th>
+                        <th className="px-1.5 py-1.5 text-right w-[18%] whitespace-nowrap overflow-hidden">{t("kas.lastCol")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {perSiswa.map((s, i) => {
+                        const level = payLevel(s.times)
+                        return (
+                          <tr
+                            key={s.id}
+                            onClick={() =>
+                              setHistoryStudent({
+                                id: s.id,
+                                name: s.name,
+                                nameKey: s.nameKey,
+                                position: s.position,
+                              })
+                            }
+                            className={`border-b border-line/60 last:border-b-0 cursor-pointer active:bg-page/60 ${level.bg}`}
+                          >
+                            <td className="px-1 py-1.5 text-center text-[11px] text-ink-soft/40 tabular-nums whitespace-nowrap overflow-hidden">
+                              {i + 1}
+                            </td>
+                            <td className="px-1.5 py-1.5 border-r border-line/40 overflow-hidden">
+                              <span className="block text-xs font-medium text-ink whitespace-nowrap overflow-hidden text-ellipsis">
+                                {s.name}
+                                <VerifiedBadge position={s.position} className="ml-0.5 h-3 w-3" />
+                              </span>
+                            </td>
+                            <td className={`px-1 py-1.5 text-center text-[11px] font-medium tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden ${level.cls}`}>
+                              {s.times}x
+                            </td>
+                            <td className={`px-1 py-1.5 text-right text-[11px] font-medium tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden text-ellipsis ${level.cls}`}>
+                              {s.total ? rp(s.total) : "—"}
+                            </td>
+                            <td className="px-1.5 py-1.5 text-right text-[11px] text-ink-soft/50 tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
+                              {dmy(s.last)}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                      {perSiswa.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="p-5 text-center text-xs text-ink-soft/45 whitespace-nowrap">
+                            Belum ada data siswa
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="px-3 py-2 bg-page/60 border-t border-line text-[11px] text-ink-soft/50 font-medium">
+                  {t("kas.levelHint")}
+                </div>
+              </div>
+            )
+          })()
         ) : (
           <div className="bg-white border border-line shadow-sm rounded-xl overflow-hidden">
             <div className="px-3 pt-2.5 pb-2 bg-forest text-white">
