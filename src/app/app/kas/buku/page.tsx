@@ -95,16 +95,24 @@ const BATCH_RE = /·\s*(\d+)\s*siswa\b/i
 
 type StudentPay = { tx: Tx; share: number }
 
+/** Baris bulk-plot backlog 22 Sep (fix-kas-backlog): bukan catatan bayar harian. */
+const BACKLOG_PLOT_AT = "2026-09-22T10:05:47"
+
 /**
- * Riwayat bayar siswa dari transaksi IN.
- * Individual: description = nama. Batch "… · N siswa · …": share = amount/N bila nama ada di daftar.
+ * Riwayat bayar siswa untuk menu Per Siswa.
+ * Hanya catatan bayar yang dicatat pada tanggal bayarnya —
+ * slot yang diplot ke hari lain (backlog / bayar di muka) urusan Matriks.
  */
 function paymentsForStudent(rows: Tx[], fullName: string): StudentPay[] {
   const name = fullName.trim().toLowerCase()
   if (!name) return []
+  const now = new Date()
+  const todayYmd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
   const out: StudentPay[] = []
   for (const t of rows) {
     if (t.kind !== "IN") continue
+    if (t.occurred_on > todayYmd) continue
+    if ((t.created_at || "").startsWith(BACKLOG_PLOT_AT)) continue
     const d = (t.description || "").toLowerCase()
     if (d === name || d.startsWith(name + " ·")) {
       out.push({ tx: t, share: t.amount })
@@ -456,23 +464,29 @@ function BukuKasInner() {
     }).sort((a, b) => a.times - b.times || a.name.localeCompare(b.name))
   }, [rows, students])
 
-  // Matriks: hormati selector bulan — hanya minggu dalam bulan terpilih (atau bulan berjalan).
-  // Lunas = Rp 23.000 (total sepanjang waktu). Sel = 0/1/2 per minggu bulan itu saja.
+  // Matriks: plot total bayar berurutan dari mulai kas (4 Agu 2026) ke hari setoran Sel/Kam.
+  // Surplus (bayar di muka) otomatis lanjut ke minggu/bulan berikutnya — bukan ke occurred_on.
   const matriks = useMemo(() => {
     const NOMINAL = 1000
-    // Lunas dinamis = jumlah hari setoran Sel/Kam sejak anchor awal Agustus s.d. hari ini
     const TERM_START = "2026-08-04"
     const now0 = new Date()
     const todayStr0 = ymd(now0.getFullYear(), now0.getMonth(), now0.getDate())
-    let LUNAS_SLOTS = 0
+
+    // Daftar hari setoran (Sel/Kam) dari anchor sampai cukup jauh ke depan
+    const collectionDays: string[] = []
     for (
       let d = new Date(TERM_START + "T12:00:00");
-      ymd(d.getFullYear(), d.getMonth(), d.getDate()) <= todayStr0;
+      collectionDays.length < 120;
       d.setDate(d.getDate() + 1)
     ) {
       const dow = d.getDay()
-      if (dow === 2 || dow === 4) LUNAS_SLOTS += 1
+      if (dow === 2 || dow === 4) {
+        collectionDays.push(ymd(d.getFullYear(), d.getMonth(), d.getDate()))
+      }
     }
+    // Lunas = slot yang jatuh tempo s.d. hari ini
+    const LUNAS_SLOTS = collectionDays.filter((d) => d <= todayStr0).length
+
     const BATCH_RE = /·\s*(\d+)\s*siswa\b/i
 
     const now = new Date()
@@ -545,56 +559,29 @@ function BukuKasInner() {
     }
 
     const inc = (rows ?? []).filter((t) => t.kind === "IN" && isIuran(t))
-    const ymPrefix = `${year}-${String(month + 1).padStart(2, "0")}`
 
     const rowsOut = (students ?? []).map((s) => {
       const name = s.full_name.toLowerCase()
       const perWeek = weekRanges.map(() => 0)
 
-      // Semua bayar (untuk lunas) + yang jatuh di bulan ini (untuk sel)
+      // Total bayar sepanjang waktu (semua baris iuran, termasuk backlog plot)
       let totalPaid = 0
-      let specialSlots = 0
-
       for (const t of inc) {
         const m = matchPay(t, name)
-        if (m.share <= 0) continue
-        totalPaid += m.share
+        if (m.share > 0) totalPaid += m.share
+      }
 
-        const inMonth = t.occurred_on.startsWith(ymPrefix)
-        const wi = weekRanges.findIndex(
-          ({ from, to }) => t.occurred_on >= from && t.occurred_on <= to,
-        )
-        const isSpecial =
-          !m.batch &&
-          (t.category === "Iuran khusus" || t.amount > NOMINAL)
-
-        if (isSpecial) {
-          // Slot Bayar Khusus hanya dari transaksi bulan ini
-          if (inMonth) {
-            specialSlots += Math.max(1, Math.round(t.amount / NOMINAL))
-            if (wi >= 0) perWeek[wi] = Math.min(2, Math.max(perWeek[wi], 1))
-          }
-        } else if (wi >= 0) {
-          // Setoran harian / batch: hitung 1× di minggu asal (bukan full amount)
+      // Plot berurutan: slot 1..N ke hari setoran dari 4 Agu
+      // (N = totalPaid / 1000). Surplus otomatis lanjut ke bulan depan.
+      const totalSlots = Math.round(totalPaid / NOMINAL)
+      for (let i = 0; i < totalSlots && i < collectionDays.length; i++) {
+        const day = collectionDays[i]
+        const wi = weekRanges.findIndex(({ from, to }) => day >= from && day <= to)
+        if (wi >= 0) {
           perWeek[wi] = Math.min(2, perWeek[wi] + 1)
         }
       }
 
-      // Isi slot Bayar Khusus bulan ini dari awal — hanya ke minggu < 2
-      let slots = specialSlots
-      while (slots > 0) {
-        let target = -1
-        for (let i = 0; i < perWeek.length; i++) {
-          if (perWeek[i] < 2 && (target < 0 || perWeek[i] < perWeek[target])) {
-            target = i
-          }
-        }
-        if (target < 0) break
-        perWeek[target] += 1
-        slots -= 1
-      }
-
-      const totalSlots = Math.round(totalPaid / NOMINAL)
       return {
         id: s.id,
         name: formatDisplayName(s.full_name),
