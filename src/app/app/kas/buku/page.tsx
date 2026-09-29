@@ -102,8 +102,9 @@ const BACKLOG_PLOT_AT = "2026-09-22T10:05:47"
  * Riwayat bayar siswa untuk menu Per Siswa.
  * Hanya catatan bayar yang dicatat pada tanggal bayarnya —
  * slot yang diplot ke hari lain (backlog / bayar di muka) urusan Matriks.
+ * monthKey "YYYY-MM" → filter ke bulan di month selector.
  */
-function paymentsForStudent(rows: Tx[], fullName: string): StudentPay[] {
+function paymentsForStudent(rows: Tx[], fullName: string, monthKey?: string): StudentPay[] {
   const name = fullName.trim().toLowerCase()
   if (!name) return []
   const now = new Date()
@@ -113,6 +114,7 @@ function paymentsForStudent(rows: Tx[], fullName: string): StudentPay[] {
     if (t.kind !== "IN") continue
     if (t.occurred_on > todayYmd) continue
     if ((t.created_at || "").startsWith(BACKLOG_PLOT_AT)) continue
+    if (monthKey && !t.occurred_on.startsWith(monthKey)) continue
     const d = (t.description || "").toLowerCase()
     if (d === name || d.startsWith(name + " ·")) {
       out.push({ tx: t, share: t.amount })
@@ -316,7 +318,7 @@ export default function BukuKasPage() {
 }
 
 function BukuKasInner() {
-  const { data: rows, error, mutate } = useAppSWR<Tx[]>(
+  const { data: rows, error } = useAppSWR<Tx[]>(
     "/api/kas/transactions",
     undefined,
     { refreshInterval: 20000 },
@@ -446,10 +448,10 @@ function BukuKasInner() {
     setDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`)
   }
 
-  // Rekap per siswa — semua riwayat bayar (tanpa filter periode)
+  // Rekap per siswa — ikut month selector
   const perSiswa = useMemo(() => {
     return (students ?? []).map((s) => {
-      const pays = paymentsForStudent(rows ?? [], s.full_name)
+      const pays = paymentsForStudent(rows ?? [], s.full_name, displayMonth)
       const total = pays.reduce((sum, p) => sum + p.share, 0)
       const last = pays.map((p) => p.tx.occurred_on).sort().at(-1)
       return {
@@ -461,8 +463,14 @@ function BukuKasInner() {
         total,
         last,
       }
-    }).sort((a, b) => a.times - b.times || a.name.localeCompare(b.name))
-  }, [rows, students])
+    }).sort((a, b) => {
+      // Terbaru di atas; yang belum bayar di bawah
+      const la = a.last ?? ""
+      const lb = b.last ?? ""
+      if (la !== lb) return lb.localeCompare(la)
+      return a.name.localeCompare(b.name)
+    })
+  }, [rows, students, displayMonth])
 
   // Matriks: plot total bayar berurutan dari mulai kas (4 Agu 2026) ke hari setoran Sel/Kam.
   // Surplus (bayar di muka) otomatis lanjut ke minggu/bulan berikutnya — bukan ke occurred_on.
@@ -507,7 +515,8 @@ function BukuKasInner() {
       const wStart = new Date(cur)
       const wEnd = new Date(cur)
       wEnd.setDate(wEnd.getDate() + 6)
-      if (wEnd >= monthStart && wStart <= monthEnd) {
+      // buang minggu sebelum mulai kas (mis. 27/7 — tidak ada korelasi)
+      if (wEnd >= monthStart && wStart <= monthEnd && wEnd >= new Date(TERM_START + "T12:00:00")) {
         const label = `${wStart.getDate()}/${wStart.getMonth() + 1}`
         weekRanges.push({
           from: ymd(wStart.getFullYear(), wStart.getMonth(), wStart.getDate()),
@@ -969,7 +978,7 @@ function BukuKasInner() {
               ? (students ?? []).find((s) => s.id === quickViewId)
               : null
             if (q) {
-              const pays = paymentsForStudent(rows ?? [], q.full_name)
+              const pays = paymentsForStudent(rows ?? [], q.full_name, displayMonth)
               const total = pays.reduce((sum, p) => sum + p.share, 0)
               return (
                 <div className="bg-white border border-line shadow-sm rounded-xl overflow-hidden">
@@ -1184,14 +1193,6 @@ function BukuKasInner() {
             )}
           </div>
         )}
-
-        <button
-          type="button"
-          onClick={() => void mutate()}
-          className="mt-2 w-full text-xs font-semibold text-ink-soft py-1.5"
-        >
-          {t("kas.reload")}
-        </button>
       </div>
 
       {/* Detail full-screen */}
@@ -1374,7 +1375,7 @@ function BukuKasInner() {
 
           <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
             {(() => {
-              const pays = paymentsForStudent(rows ?? [], historyStudent.nameKey)
+              const pays = paymentsForStudent(rows ?? [], historyStudent.nameKey, displayMonth)
               const total = pays.reduce((sum, p) => sum + p.share, 0)
               return (
                 <>
