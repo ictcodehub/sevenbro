@@ -17,7 +17,7 @@ import {
 } from "lucide-react"
 import { EmptyState } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
-import { formatIDR, formatDateCompactID, formatTimeID, formatDisplayName } from "@/lib/format"
+import { formatIDR, formatTimeID, formatDisplayName } from "@/lib/format"
 import { RoleGate } from "@/components/RoleGate"
 import { useT } from "@/lib/i18n"
 import { VerifiedBadge } from "@/components/VerifiedBadge"
@@ -1042,82 +1042,105 @@ function BukuKasInner() {
                 message={hasFilter ? t("kas.noFilterData") : t("kas.noTransactions")}
               />
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full table-fixed border-collapse text-[11px]">
-                  <thead>
-                    <tr className="bg-page border-b border-line text-ink-soft/60 font-semibold">
-                      <th className="px-0.5 py-1.5 text-center w-6 border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.colNo")}</th>
-                      <th className="px-1 py-1.5 text-left w-[18%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.dateCol")}</th>
-                      <th className="px-1 py-1.5 text-left w-[32%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.descCol")}</th>
-                      <th className="px-0.5 py-1.5 text-center w-[16%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("home.in")}</th>
-                      <th className="px-0.5 py-1.5 text-center w-[16%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("home.out")}</th>
-                      <th className="px-0.5 py-1.5 text-center w-[16%] whitespace-nowrap overflow-hidden">{t("kas.saldoCol")}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {journalRows.map((line, i) => (
-                      <tr
-                        key={line.id}
-                        onClick={() => void openDetail(line)}
-                        className="border-b border-line/60 last:border-b-0 cursor-pointer active:bg-page/60"
-                      >
-                        <td className="px-0.5 py-1.5 text-center text-[11px] text-ink-soft/40 tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden">
-                          {i + 1}
-                        </td>
-                        <td className="px-1 py-1.5 border-r border-line/40 whitespace-nowrap overflow-hidden">
-                          <span className="block text-[11px] text-ink-soft/70 tabular-nums">
-                            {formatDateCompactID(new Date(line.occurred_on + "T12:00:00"))}
-                          </span>
-                          <span className="block text-[9px] text-ink-soft/45 tabular-nums">
-                            {formatTimeID(new Date(line.created_at))}
-                          </span>
-                        </td>
-                        <td className="px-1 py-1.5 border-r border-line/40 overflow-hidden">
-                          <span className="block text-xs font-medium text-ink whitespace-nowrap overflow-hidden text-ellipsis">
-                            {line.description || shortUraian(line)}
-                          </span>
-                          <span className="block text-[9px] text-ink-soft/50 whitespace-nowrap overflow-hidden text-ellipsis">
-                            {line.category}
-                          </span>
-                        </td>
-                        <td
-                          className={`px-0.5 py-1.5 text-right text-[11px] font-medium tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden text-ellipsis ${
-                            line.kind === "IN" ? "text-forest" : "text-ink-soft/20"
-                          }`}
-                        >
-                          {line.kind === "IN" ? rp(line.amount) : "—"}
-                        </td>
-                        <td
-                          className={`px-0.5 py-1.5 text-right text-[11px] font-medium tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden text-ellipsis ${
-                            line.kind === "OUT" ? "text-alert" : "text-ink-soft/20"
-                          }`}
-                        >
-                          {line.kind === "OUT" ? rp(line.amount) : "—"}
-                        </td>
-                        <td className="px-0.5 py-1.5 text-right text-[11px] font-semibold tabular-nums text-ink whitespace-nowrap overflow-hidden text-ellipsis">
-                          {rp(line.saldo)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr className="bg-page border-t border-line">
-                      <td colSpan={3} className="px-1 py-1.5 border-r border-line/50 text-[11px] font-bold text-ink whitespace-nowrap overflow-hidden text-ellipsis">
-                        {t("kas.totalRow")}
-                      </td>
-                      <td className="px-0.5 py-1.5 text-right text-[11px] font-bold text-forest tabular-nums border-r border-line/50 whitespace-nowrap overflow-hidden text-ellipsis">
-                        {rp(totalIn)}
-                      </td>
-                      <td className="px-0.5 py-1.5 text-right text-[11px] font-bold text-alert tabular-nums border-r border-line/50 whitespace-nowrap overflow-hidden text-ellipsis">
-                        {rp(totalOut)}
-                      </td>
-                      <td className="px-0.5 py-1.5 text-right text-[11px] font-bold text-ink tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
-                        {rp(lastSaldo)}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
+              (() => {
+                // Kelompokkan per hari agar tabel padat dan enak dipindai
+                const byDay = new Map<string, LedgerRow[]>()
+                for (const row of journalRows) {
+                  const list = byDay.get(row.occurred_on) ?? []
+                  list.push(row)
+                  byDay.set(row.occurred_on, list)
+                }
+                const days = [...byDay.keys()].sort()
+                return (
+                  <div className="overflow-x-auto">
+                    <table className="w-full table-fixed border-collapse">
+                      <thead>
+                        <tr className="bg-page border-b border-line text-ink-soft/70 text-[11px] font-semibold">
+                          <th className="px-1.5 py-2 text-center w-8 border-r border-line/50">{t("kas.colNo")}</th>
+                          <th className="px-1.5 py-2 text-left border-r border-line/50">{t("kas.descCol")}</th>
+                          <th className="px-1.5 py-2 text-right w-[28%] border-r border-line/50">{t("kas.amountCol")}</th>
+                          <th className="px-1.5 py-2 text-right w-[28%]">{t("kas.saldoCol")}</th>
+                        </tr>
+                      </thead>
+                      {days.map((day) => {
+                        const items = byDay.get(day) ?? []
+                        const dayIn = items
+                          .filter((r) => r.kind === "IN")
+                          .reduce((s, r) => s + r.amount, 0)
+                        const dayOut = items
+                          .filter((r) => r.kind === "OUT")
+                          .reduce((s, r) => s + r.amount, 0)
+                        return (
+                          <tbody key={day} className="last:border-b-0">
+                            <tr className="bg-surface/80 border-y border-line/60">
+                              <td
+                                colSpan={2}
+                                className="px-1.5 py-1.5 text-[11px] font-semibold text-ink-soft whitespace-nowrap overflow-hidden text-ellipsis"
+                              >
+                                {fullDate(day)}
+                              </td>
+                              <td className="px-1.5 py-1.5 text-right text-[11px] tabular-nums text-forest font-semibold whitespace-nowrap">
+                                {dayIn ? rp(dayIn) : ""}
+                              </td>
+                              <td className="px-1.5 py-1.5 text-right text-[11px] tabular-nums text-alert font-semibold whitespace-nowrap">
+                                {dayOut ? rp(dayOut) : ""}
+                              </td>
+                            </tr>
+                            {items.map((line, idx) => {
+                              const isIn = line.kind === "IN"
+                              return (
+                                <tr
+                                  key={line.id}
+                                  onClick={() => void openDetail(line)}
+                                  className="border-b border-line/50 last:border-b-0 cursor-pointer active:bg-page/70"
+                                >
+                                  <td className="px-1.5 py-2 text-center text-[11px] text-ink-soft/50 tabular-nums border-r border-line/40">
+                                    {idx + 1}
+                                  </td>
+                                  <td className="px-1.5 py-2 border-r border-line/40 overflow-hidden">
+                                    <div className="text-xs font-semibold text-ink whitespace-nowrap overflow-hidden text-ellipsis">
+                                      {line.description || shortUraian(line)}
+                                    </div>
+                                    <div className="text-[10px] text-ink-soft/70 truncate">
+                                      {line.category}
+                                      {line.recorded_by ? ` · ${formatDisplayName(line.recorded_by)}` : ""}
+                                    </div>
+                                  </td>
+                                  <td
+                                    className={`px-1.5 py-2 text-right text-xs font-semibold tabular-nums border-r border-line/40 whitespace-nowrap ${
+                                      isIn ? "text-forest" : "text-alert"
+                                    }`}
+                                  >
+                                    {isIn ? "" : "−"}
+                                    {rp(line.amount)}
+                                  </td>
+                                  <td className="px-1.5 py-2 text-right text-xs tabular-nums text-ink whitespace-nowrap">
+                                    {rp(line.saldo)}
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        )
+                      })}
+                      <tfoot>
+                        <tr className="bg-page border-t border-line">
+                          <td colSpan={2} className="px-1.5 py-2 text-xs font-bold text-ink">
+                            {t("kas.totalRow")}
+                          </td>
+                          <td className="px-1.5 py-2 text-right text-xs font-bold tabular-nums whitespace-nowrap">
+                            <span className="text-forest">{rp(totalIn)}</span>
+                            {totalOut > 0 && <span className="text-alert"> · {rp(totalOut)}</span>}
+                          </td>
+                          <td className="px-1.5 py-2 text-right text-xs font-bold tabular-nums text-ink whitespace-nowrap">
+                            {rp(lastSaldo)}
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                )
+              })()
             )}
           </div>
         )}

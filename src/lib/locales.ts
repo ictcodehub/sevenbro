@@ -564,6 +564,7 @@ export const STRINGS = {
   "kas.descCol": { id: "Uraian", en: "Description" },
   "kas.totalRow": { id: "TOTAL", en: "TOTAL" },
   "kas.saldoCol": { id: "Saldo", en: "Balance" },
+  "kas.amountCol": { id: "Nominal", en: "Amount" },
   "kas.journalHint": { id: "Jurnal kas per transaksi", en: "Cash journal per transaction" },
   "kas.reload": { id: "Muat ulang", en: "Reload" },
   "kas.closeDetail": { id: "Tutup detail", en: "Close details" },
