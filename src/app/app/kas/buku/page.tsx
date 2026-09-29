@@ -17,7 +17,7 @@ import {
 } from "lucide-react"
 import { EmptyState } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
-import { formatIDR, formatDateID, formatDateCompactID, formatTimeID, formatDisplayName } from "@/lib/format"
+import { formatIDR, formatDateCompactID, formatTimeID, formatDisplayName } from "@/lib/format"
 import { RoleGate } from "@/components/RoleGate"
 import { useT } from "@/lib/i18n"
 import { VerifiedBadge } from "@/components/VerifiedBadge"
@@ -610,112 +610,27 @@ function BukuKasInner() {
     }
   }, [rows, students, dateMonth])
 
-  const allWithSaldo: LedgerRow[] = useMemo(() => {
-    const sorted = [...(rows ?? [])].sort((a, b) => sortKey(a).localeCompare(sortKey(b)))
+  // Jurnal kas: 1 baris = 1 transaksi nyata (bukan agregat harian / slot plot)
+  const journalRows = useMemo(() => {
+    const sorted = [...(rows ?? [])]
+      .filter((t) => !(t.created_at || "").startsWith(BACKLOG_PLOT_AT))
+      .sort((a, b) => sortKey(a).localeCompare(sortKey(b)))
     let run = 0
-    return sorted.map((t) => {
+    const withSaldo: LedgerRow[] = sorted.map((t) => {
       run += t.kind === "IN" ? t.amount : -t.amount
       return { ...t, saldo: run }
     })
-  }, [rows])
+    return withSaldo.filter((t) => {
+      if (only !== "all" && t.kind !== only) return false
+      if (!t.occurred_on.startsWith(displayMonth)) return false
+      return true
+    })
+  }, [rows, only, displayMonth])
 
-  const display = useMemo(
-    () =>
-      allWithSaldo.filter((t) => {
-        if (only !== "all" && t.kind !== only) return false
-        if (dateMonth && !t.occurred_on.startsWith(dateMonth)) return false
-        return true
-      }),
-    [allWithSaldo, only, dateMonth],
-  )
-
-  type LedgerLine = {
-    key: string
-    day: string
-    uraian: string
-    masuk: number
-    keluar: number
-    detail?: Tx
-    count?: number
-    empty?: boolean
-  }
-
-  const ledgerLines = useMemo(() => {
-    const totalSiswa = students?.length ?? 0
-    const byDay = new Map<string, Tx[]>()
-    for (const t of display) {
-      const list = byDay.get(t.occurred_on) ?? []
-      list.push(t)
-      byDay.set(t.occurred_on, list)
-    }
-
-    // Opsi A: hanya hari yang benar-benar ada transaksi
-    const days = [...byDay.keys()].sort()
-
-    const lines: LedgerLine[] = []
-    for (const day of days) {
-      const items = byDay.get(day) ?? []
-      const tanggal = formatDateID(new Date(day + "T12:00:00"))
-
-      const iuran = items.filter((t) => {
-        if (t.kind !== "IN") return false
-        return (
-          t.category === "Iuran" ||
-          t.category === "Iuran harian" ||
-          t.category === "Iuran khusus"
-        )
-      })
-      if (iuran.length > 0) {
-        const sum = iuran.reduce((s, t) => s + t.amount, 0)
-        const nameSet = new Set<string>()
-        const roster = new Set(
-          (students ?? []).map((s) => s.full_name.toLowerCase()),
-        )
-        for (const t of iuran) {
-          const d = t.description.trim().toLowerCase()
-          if (roster.has(d)) nameSet.add(d)
-          else if (/·\s*\d+\s*siswa\b/i.test(d)) continue
-          else {
-            for (const n of roster) {
-              if (d === n || d.startsWith(n + " ·") || d.includes(n)) {
-                nameSet.add(n)
-                break
-              }
-            }
-          }
-        }
-        const paidCount = nameSet.size > 0 ? nameSet.size : iuran.length
-        const label =
-          totalSiswa > 0 ? t("kas.studentsCount", { paid: paidCount, total: totalSiswa }) : t("kas.studentsCountLabel", { n: paidCount })
-        lines.push({
-          key: `iuran-${day}`,
-          day,
-          uraian: label,
-          masuk: sum,
-          keluar: 0,
-          detail: iuran[iuran.length - 1],
-          count: paidCount,
-        })
-      }
-
-      const others = items.filter((t) => !iuran.includes(t))
-      for (const t of others) {
-        lines.push({
-          key: t.id,
-          day,
-          uraian: shortUraian(t),
-          masuk: t.kind === "IN" ? t.amount : 0,
-          keluar: t.kind === "OUT" ? t.amount : 0,
-          detail: t,
-        })
-      }
-    }
-    return lines
-  }, [display, students, dateMonth])
-
-  const totalIn = display.filter((t) => t.kind === "IN").reduce((s, t) => s + t.amount, 0)
-  const totalOut = display.filter((t) => t.kind === "OUT").reduce((s, t) => s + t.amount, 0)
-  const hasFilter = Boolean(date || only !== "all")
+  const totalIn = journalRows.filter((t) => t.kind === "IN").reduce((s, t) => s + t.amount, 0)
+  const totalOut = journalRows.filter((t) => t.kind === "OUT").reduce((s, t) => s + t.amount, 0)
+  const lastSaldo = journalRows.at(-1)?.saldo ?? 0
+  const hasFilter = Boolean(only !== "all")
 
   return (
     <div className="min-h-full bg-page">
@@ -1114,15 +1029,14 @@ function BukuKasInner() {
             <div className="px-3 pt-2.5 pb-2 bg-forest text-white">
               <p className="text-xs font-medium text-white/90">{t("kas.tabLedger")}</p>
               <p className="text-[11px] text-white/50 mt-0.5 truncate">
-                {dateMonth
-                  ? `${MONTHS_ID[parseInt(dateMonth.slice(5, 7), 10) - 1]} ${dateMonth.slice(0, 4)}`
-                  : t("common.all")}{" "}
-                · {rp(totalIn)} · {rp(totalOut)}
+                {MONTHS_ID[parseInt(displayMonth.slice(5, 7), 10) - 1]} {displayMonth.slice(0, 4)}
+                {" · "}
+                {t("kas.journalHint")}
               </p>
             </div>
             {error ? (
               <EmptyState icon={<Inbox className="h-6 w-6" />} message={t("kas.bookError")} />
-            ) : ledgerLines.length === 0 ? (
+            ) : journalRows.length === 0 ? (
               <EmptyState
                 icon={<BookOpen className="h-6 w-6" />}
                 message={hasFilter ? t("kas.noFilterData") : t("kas.noTransactions")}
@@ -1132,59 +1046,73 @@ function BukuKasInner() {
                 <table className="w-full table-fixed border-collapse text-[11px]">
                   <thead>
                     <tr className="bg-page border-b border-line text-ink-soft/60 font-semibold">
-                      <th className="px-0.5 py-1.5 text-center w-[7%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.colNo")}</th>
-                      <th className="px-1 py-1.5 text-left w-[21%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.dateCol")}</th>
-                      <th className="px-1 py-1.5 text-left w-[34%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.descCol")}</th>
-                      <th className="px-0.5 py-1.5 text-center w-[19%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("home.in")}</th>
-                      <th className="px-0.5 py-1.5 text-center w-[19%] whitespace-nowrap overflow-hidden">{t("home.out")}</th>
+                      <th className="px-0.5 py-1.5 text-center w-6 border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.colNo")}</th>
+                      <th className="px-1 py-1.5 text-left w-[18%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.dateCol")}</th>
+                      <th className="px-1 py-1.5 text-left w-[32%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("kas.descCol")}</th>
+                      <th className="px-0.5 py-1.5 text-center w-[16%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("home.in")}</th>
+                      <th className="px-0.5 py-1.5 text-center w-[16%] border-r border-line/50 whitespace-nowrap overflow-hidden">{t("home.out")}</th>
+                      <th className="px-0.5 py-1.5 text-center w-[16%] whitespace-nowrap overflow-hidden">{t("kas.saldoCol")}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {ledgerLines.map((line, i) => (
+                    {journalRows.map((line, i) => (
                       <tr
-                        key={line.key}
-                        onClick={() => line.detail && void openDetail(line.detail)}
-                        className={`border-b border-line/60 last:border-b-0 ${line.detail ? "cursor-pointer active:bg-page/60" : ""}`}
+                        key={line.id}
+                        onClick={() => void openDetail(line)}
+                        className="border-b border-line/60 last:border-b-0 cursor-pointer active:bg-page/60"
                       >
                         <td className="px-0.5 py-1.5 text-center text-[11px] text-ink-soft/40 tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden">
                           {i + 1}
                         </td>
-                        <td className="px-1 py-1.5 text-[11px] text-ink-soft/55 tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden text-ellipsis">
-                          {formatDateCompactID(new Date(line.day + "T12:00:00"))}
-                        </td>
                         <td className="px-1 py-1.5 border-r border-line/40 whitespace-nowrap overflow-hidden">
+                          <span className="block text-[11px] text-ink-soft/70 tabular-nums">
+                            {formatDateCompactID(new Date(line.occurred_on + "T12:00:00"))}
+                          </span>
+                          <span className="block text-[9px] text-ink-soft/45 tabular-nums">
+                            {formatTimeID(new Date(line.created_at))}
+                          </span>
+                        </td>
+                        <td className="px-1 py-1.5 border-r border-line/40 overflow-hidden">
                           <span className="block text-xs font-medium text-ink whitespace-nowrap overflow-hidden text-ellipsis">
-                            {line.uraian}
+                            {line.description || shortUraian(line)}
+                          </span>
+                          <span className="block text-[9px] text-ink-soft/50 whitespace-nowrap overflow-hidden text-ellipsis">
+                            {line.category}
                           </span>
                         </td>
                         <td
                           className={`px-0.5 py-1.5 text-right text-[11px] font-medium tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden text-ellipsis ${
-                            line.masuk ? "text-forest" : "text-ink-soft/20"
+                            line.kind === "IN" ? "text-forest" : "text-ink-soft/20"
                           }`}
                         >
-                          {line.masuk ? rp(line.masuk) : "—"}
+                          {line.kind === "IN" ? rp(line.amount) : "—"}
                         </td>
                         <td
-                          className={`px-0.5 py-1.5 text-right text-[11px] font-medium tabular-nums whitespace-nowrap overflow-hidden text-ellipsis ${
-                            line.keluar ? "text-alert" : "text-ink-soft/20"
+                          className={`px-0.5 py-1.5 text-right text-[11px] font-medium tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden text-ellipsis ${
+                            line.kind === "OUT" ? "text-alert" : "text-ink-soft/20"
                           }`}
                         >
-                          {line.keluar ? rp(line.keluar) : "—"}
+                          {line.kind === "OUT" ? rp(line.amount) : "—"}
+                        </td>
+                        <td className="px-0.5 py-1.5 text-right text-[11px] font-semibold tabular-nums text-ink whitespace-nowrap overflow-hidden text-ellipsis">
+                          {rp(line.saldo)}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr className="bg-page border-t border-line">
-                      <td colSpan={2} className="px-1 py-1.5 border-r border-line/50" />
-                      <td className="px-1 py-1.5 text-[11px] font-bold text-ink border-r border-line/50 whitespace-nowrap overflow-hidden text-ellipsis">
+                      <td colSpan={3} className="px-1 py-1.5 border-r border-line/50 text-[11px] font-bold text-ink whitespace-nowrap overflow-hidden text-ellipsis">
                         {t("kas.totalRow")}
                       </td>
                       <td className="px-0.5 py-1.5 text-right text-[11px] font-bold text-forest tabular-nums border-r border-line/50 whitespace-nowrap overflow-hidden text-ellipsis">
                         {rp(totalIn)}
                       </td>
-                      <td className="px-0.5 py-1.5 text-right text-[11px] font-bold text-alert tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
+                      <td className="px-0.5 py-1.5 text-right text-[11px] font-bold text-alert tabular-nums border-r border-line/50 whitespace-nowrap overflow-hidden text-ellipsis">
                         {rp(totalOut)}
+                      </td>
+                      <td className="px-0.5 py-1.5 text-right text-[11px] font-bold text-ink tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
+                        {rp(lastSaldo)}
                       </td>
                     </tr>
                   </tfoot>
