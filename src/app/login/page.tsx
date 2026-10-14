@@ -5,27 +5,32 @@ import { useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { LogIn } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-const ERROR_MESSAGES: Record<string, string> = {
-  OAuthCallback:
-    "Sesi login terputus. Coba lagi — pastikan memakai akun sekolah @mutiarabangsa.sch.id.",
-  OAuthAccountNotLinked:
-    "Email Google ini sudah terpakai. Login dengan akun sekolah yang sama.",
-  AccessDenied:
-    "Akses ditolak. Hanya email terdaftar (siswa / guru / whitelist) di @mutiarabangsa.sch.id yang diizinkan.",
-  Configuration: "Konfigurasi auth bermasalah. Hubungi admin kelas.",
-  default: "Login gagal. Coba lagi atau hubungi homeroom.",
-}
+import { useI18n } from "@/lib/i18n"
 
 function LoginForm() {
+  const { t } = useI18n()
   const [loading, setLoading] = useState(false)
   const [localError, setLocalError] = useState(false)
   const searchParams = useSearchParams()
   const oauthError = searchParams.get("error")
   const showError = localError || Boolean(oauthError)
-  const errorMessage = oauthError
-    ? ERROR_MESSAGES[oauthError] ?? ERROR_MESSAGES.default
-    : ERROR_MESSAGES.default
+
+  const getErrorMessage = (err: string | null) => {
+    switch (err) {
+      case "OAuthCallback":
+        return t("login.errOAuthCallback")
+      case "OAuthAccountNotLinked":
+        return t("login.errOAuthAccountNotLinked")
+      case "AccessDenied":
+        return t("login.errAccessDenied")
+      case "Configuration":
+        return t("login.errConfiguration")
+      default:
+        return t("login.errDefault")
+    }
+  }
+
+  const errorMessage = getErrorMessage(oauthError)
 
   return (
     <main className="min-h-dvh bg-page flex items-center justify-center">
@@ -34,7 +39,7 @@ function LoginForm() {
           7B
         </div>
         <h1 className="text-xl font-bold text-ink">Seven Bro!</h1>
-        <p className="text-xs text-ink-soft">Login dengan akun sekolah Anda</p>
+        <p className="text-xs text-ink-soft">{t("login.subtitle")}</p>
 
         <button
           onClick={() => {
@@ -51,7 +56,7 @@ function LoginForm() {
           )}
         >
           <LogIn className="h-5 w-5" />
-          {loading ? "Mengarahkan..." : "Masuk dengan Google"}
+          {loading ? t("login.redirecting") : t("login.google")}
         </button>
 
         {showError && (
@@ -59,7 +64,7 @@ function LoginForm() {
         )}
 
         <p className="text-xs text-ink-soft/60 text-center">
-          Hanya siswa & guru Kelas 7B yang dapat mengakses aplikasi ini.
+          {t("login.onlyClass")}
         </p>
       </div>
     </main>

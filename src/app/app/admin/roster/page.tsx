@@ -20,7 +20,7 @@ import { positionTextClass, positionLabel, VerifiedBadge, invalidatePositions } 
 import { Sheet, inputClass } from "@/components/ui/sheet"
 import { formatDisplayName } from "@/lib/format"
 import { canProposeRoster, canViewRoster } from "@/lib/policies"
-import { useT } from "@/lib/i18n"
+import { useI18n } from "@/lib/i18n"
 
 type Student = {
   id: string
@@ -149,7 +149,7 @@ export default function AdminRosterPage() {
   const [editEmail, setEditEmail] = useState("")
   const [editNis, setEditNis] = useState("")
   const [editPosition, setEditPosition] = useState("")
-  const t = useT()
+  const { lang, t } = useI18n()
 
   const flash = (msg: string) => {
     setToast(msg)
@@ -785,7 +785,7 @@ export default function AdminRosterPage() {
                       </button>
                     </td>
                     <td className="px-1.5 py-1 align-middle text-[11px] whitespace-nowrap overflow-hidden">
-                      <span className={positionTextClass(s.position)}>{positionLabel(s.position)}</span>
+                      <span className={positionTextClass(s.position)}>{positionLabel(s.position, lang)}</span>
                     </td>
                     <td className="px-1.5 py-1.5 text-center align-middle">
                       <button
@@ -913,7 +913,7 @@ export default function AdminRosterPage() {
                 placeholder={t("roster.colPosition")}
               />
               <datalist id="roster-position-options">
-                {[...new Set(students.map((x) => positionLabel(x.position)))].map((p) => (
+                {[...new Set(students.map((x) => positionLabel(x.position, lang)))].map((p) => (
                   <option key={p} value={p} />
                 ))}
               </datalist>

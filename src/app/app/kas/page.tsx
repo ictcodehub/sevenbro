@@ -26,7 +26,7 @@ import { Sheet, Field, inputClass } from "@/components/ui/sheet"
 import { canManageKas, canViewKas } from "@/lib/policies"
 import { RoleGate } from "@/components/RoleGate"
 import FeatureGate from "@/components/FeatureGate"
-import { useT } from "@/lib/i18n"
+import { useI18n, useT } from "@/lib/i18n"
 import { VerifiedBadge, usePositions } from "@/components/VerifiedBadge"
 
 /** Kas: manage = HOMEROOM & BENDAHARA; siswa lain read-only */
@@ -114,19 +114,21 @@ function actorName(
   return firstName(raw)
 }
 
-function whenShort(iso: string) {
+function whenShort(iso: string, lang?: "id" | "en") {
   try {
     const d = new Date(iso)
-    return `${formatDateID(d)} · ${formatTimeID(d)}`
+    return `${formatDateID(d, lang)} · ${formatTimeID(d)}`
   } catch {
     return iso
   }
 }
 
-function todayLabel() {
-  const hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]
+function todayLabel(lang?: "id" | "en") {
+  const hariID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]
+  const hariEN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
   const d = new Date()
-  return `${hari[d.getDay()]}, ${formatDateID(d)}`
+  const hari = lang === "en" ? hariEN : hariID
+  return `${hari[d.getDay()]}, ${formatDateID(d, lang)}`
 }
 
 /** Input tanggal kejadian (backdate) — kosong = hari ini */
@@ -183,9 +185,6 @@ function KasInner() {
     canManage ? "/api/admin/students" : null,
   )
   const today = new Date().toISOString().slice(0, 10)
-  const { data: izinRows, mutate: mutateIzin } = useAppSWR<
-    { id: string; student_id: string; occurred_on: string }[]
-  >(canManage ? `/api/kas/izin?date=${backdate || today}` : null)
   const { data: tunggak, mutate: mutateTunggak } = useAppSWR<TunggakPayload>(
     canManage ? `/api/kas/tunggak?amountPer=${NOMINAL}` : null,
     undefined,
@@ -193,7 +192,6 @@ function KasInner() {
   )
 
   const [picked, setPicked] = useState<Set<string>>(new Set())
-  const [markMode, setMarkMode] = useState<"bayar" | "izin">("bayar")
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
@@ -213,13 +211,12 @@ function KasInner() {
   const [spAmount, setSpAmount] = useState("20000")
   const [spNote, setSpNote] = useState("")
   const [savingSp, setSavingSp] = useState(false)
-  const t = useT()
+  const { lang, t } = useI18n()
   const posIndex = usePositions("kas")
 
   const list = students ?? []
   const totalPick = picked.size
   const totalRupiah = totalPick * NOMINAL
-  const izinIds = new Set((izinRows ?? []).map((r) => r.student_id))
   const tunggakByName = new Map(
     (tunggak?.all ?? []).map((r) => [r.name.toLowerCase(), r]),
   )
@@ -230,11 +227,6 @@ function KasInner() {
   }
 
   const toggle = (id: string) => {
-    // Bayar & izin saling eksklusif di hari yang sama
-    if (izinIds.has(id) && !picked.has(id)) {
-      flash(t("kas.alreadyLeave"))
-      return
-    }
     setPicked((prev) => {
       const n = new Set(prev)
       if (n.has(id)) n.delete(id)
@@ -244,60 +236,12 @@ function KasInner() {
   }
 
   const selectAll = () => {
-    if (markMode === "izin") {
-      const ids = list.map((s) => s.id).filter((id) => !izinIds.has(id))
-      if (ids.length === 0) {
-        flash(t("kas.allLeave"))
-        return
-      }
-      void (async () => {
-        setSaving(true)
-        try {
-          const r = await fetch("/api/kas/izin", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ studentIds: ids, date: backdate || today }),
-          })
-          const b = await r.json().catch(() => null)
-          if (!r.ok) throw new Error(b?.error || t("common.failed"))
-          flash(t("kas.markedLeave", { n: ids.length }))
-          await Promise.all([mutateIzin(), mutate(), mutateTunggak()])
-        } catch (e) {
-          flash(e instanceof Error ? e.message : t("common.failed"))
-        } finally {
-          setSaving(false)
-        }
-      })()
-      return
-    }
     setPicked(new Set(list.map((s) => s.id)))
     flash(t("kas.checkedCount", { n: list.length }))
   }
 
-  const clearAll = async () => {
+  const clearAll = () => {
     setPicked(new Set())
-    if (markMode === "izin") {
-      const ids = [...izinIds]
-      if (ids.length === 0) {
-        flash(t("kas.noLeaveToday"))
-        return
-      }
-      setSaving(true)
-      try {
-        for (const id of ids) {
-          await fetch(`/api/kas/izin?studentId=${id}&date=${backdate || today}`, {
-            method: "DELETE",
-          })
-        }
-        flash(t("kas.leaveDeleted", { n: ids.length }))
-        await Promise.all([mutateIzin(), mutate(), mutateTunggak()])
-      } catch {
-        flash(t("kas.deleteLeaveFailed"))
-      } finally {
-        setSaving(false)
-      }
-      return
-    }
     flash(t("kas.pickCleared"))
   }
 
@@ -306,78 +250,31 @@ function KasInner() {
     if (totalPick === 0) return
     setSaving(true)
     try {
-      if (markMode === "izin") {
-        const r = await fetch("/api/kas/izin", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },            body: JSON.stringify({
-              studentIds: [...picked],
-              date: backdate || today,
-            }),
-        })
-        const b = await r.json().catch(() => null)
-        if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
-        flash(b?.message || t("kas.leaveSaved"))
-      } else {
-        const bayarIds = [...picked].filter((id) => !izinIds.has(id))
-        if (bayarIds.length === 0) {
-          flash(t("kas.noPaySelection"))
-          setSaving(false)
-          return
-        }
-        const r = await fetch("/api/kas/collect", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            studentIds: bayarIds,
-            amountPer: NOMINAL,
-            ...(backdate ? { occurred_on: backdate } : {}),
-          }),
-        })
-        const b = await r.json().catch(() => null)
-        if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
-        flash(b?.message || t("kas.depositSaved"))
-        setBackdate("")
+      const bayarIds = [...picked]
+      if (bayarIds.length === 0) {
+        flash(t("kas.noPaySelection"))
+        setSaving(false)
+        return
       }
+      const r = await fetch("/api/kas/collect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentIds: bayarIds,
+          amountPer: NOMINAL,
+          ...(backdate ? { occurred_on: backdate } : {}),
+        }),
+      })
+      const b = await r.json().catch(() => null)
+      if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
+      flash(b?.message || t("kas.depositSaved"))
+      setBackdate("")
       setPicked(new Set())
-      await Promise.all([mutate(), mutateIzin(), mutateTunggak()])
+      await Promise.all([mutate(), mutateTunggak()])
     } catch (e) {
       setErr(e instanceof Error ? e.message : t("common.failed"))
     } finally {
       setSaving(false)
-    }
-  }
-
-  const toggleIzin = async (id: string) => {
-    try {
-      if (izinIds.has(id)) {
-        const r = await fetch(
-          `/api/kas/izin?studentId=${id}&date=${backdate || today}`,
-          { method: "DELETE" },
-        )
-        if (!r.ok) {
-          const b = await r.json().catch(() => null)
-          throw new Error(b?.error || t("common.failed"))
-        }
-        flash(t("kas.leaveCancelled"))
-      } else {
-        // Saat tandai izin, lepas centang bayar
-        setPicked((prev) => {
-          const n = new Set(prev)
-          n.delete(id)
-          return n
-        })
-        const r = await fetch("/api/kas/izin", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ studentIds: [id], date: backdate || today }),
-        })
-        const b = await r.json().catch(() => null)
-        if (!r.ok) throw new Error(b?.error || t("common.failed"))
-        flash(t("kas.markedLeaveOne"))
-      }
-      await Promise.all([mutateIzin(), mutate(), mutateTunggak()])
-    } catch (e) {
-      flash(e instanceof Error ? e.message : t("common.failed"))
     }
   }
 
@@ -641,41 +538,21 @@ function KasInner() {
                     <p className="text-sm font-bold text-ink truncate">{t("kas.todayDeposit")}</p>
                     <p className="text-[11px] text-ink-soft/70 mt-0.5 truncate">
                       {backdate
-                        ? `${formatDateID(new Date(backdate + "T12:00:00"))} · backdate`
-                        : todayLabel()}{" "}
+                        ? `${formatDateID(new Date(backdate + "T12:00:00"), lang)} · backdate`
+                        : todayLabel(lang)}{" "}
                       · {formatIDR(NOMINAL)}{t("kas.perPerson")}
                     </p>
                   </div>
                   <span className="shrink-0 text-[11px] font-bold bg-forest text-white px-2.5 py-1 rounded-full tabular-nums">
-                    {totalPick} · {markMode === "izin" ? t("kas.leaveLower") : formatIDR(totalRupiah)}
+                    {totalPick} · {formatIDR(totalRupiah)}
                   </span>
                 </div>
-                <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
-                  <div className="flex gap-1 bg-white border border-line rounded-lg p-0.5 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setMarkMode("bayar")}
-                      className={`px-2 py-1 rounded-md text-[11px] font-semibold ${
-                        markMode === "bayar" ? "bg-forest text-white" : "text-ink-soft"
-                      }`}
-                    >
-                      {t("kas.pay")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMarkMode("izin")}
-                      className={`px-2 py-1 rounded-md text-[11px] font-semibold ${
-                        markMode === "izin" ? "bg-amber text-white" : "text-ink-soft"
-                      }`}
-                    >
-                      {t("kas.leave")}
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-1.5 min-w-0 flex-1 justify-end">
+                <div className="mt-2.5 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       type="button"
                       onClick={selectAll}
-                      className="shrink-0 text-[11px] font-semibold px-2 py-1 rounded-lg bg-white border border-line text-ink"
+                      className="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-white border border-line text-ink"
                     >
                       {t("common.all")}
                     </button>
@@ -683,17 +560,17 @@ function KasInner() {
                       type="button"
                       onClick={() => void clearAll()}
                       disabled={saving}
-                      className="shrink-0 text-[11px] font-semibold px-2 py-1 rounded-lg bg-white border border-line text-ink-soft disabled:opacity-50"
+                      className="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-white border border-line text-ink-soft disabled:opacity-50"
                     >
-                      {markMode === "izin" ? t("kas.clearLeave") : t("kas.clear")}
+                      {t("kas.clear")}
                     </button>
-                    <BackdateInput
-                      value={backdate}
-                      onChange={setBackdate}
-                      max={today}
-                      compact
-                    />
                   </div>
+                  <BackdateInput
+                    value={backdate}
+                    onChange={setBackdate}
+                    max={today}
+                    compact
+                  />
                 </div>
               </div>
 
@@ -701,13 +578,12 @@ function KasInner() {
                 <p className="px-3.5 py-2 text-xs text-alert bg-alert-bg">{err}</p>
               )}
 
-              {/* Tabel: No | Nama | Bayar | Izin */}
+              {/* Tabel: No | Nama | Bayar */}
               <div>
                 <div className="flex items-center gap-2 px-2.5 py-1.5 bg-page/80 border-b border-line text-[11px] font-medium uppercase tracking-wide text-ink-soft/60">
                   <span className="w-6 text-center shrink-0">{t("kas.colNo")}</span>
                   <span className="flex-1 min-w-0">{t("kas.colName")}</span>
                   <span className="w-12 text-center shrink-0">{t("kas.pay")}</span>
-                  <span className="w-12 text-center shrink-0">{t("kas.leave")}</span>
                 </div>
                 {list.length === 0 ? (
                   <p className="p-5 text-center text-xs text-ink-soft/60">
@@ -717,27 +593,12 @@ function KasInner() {
                   <div className="divide-y divide-line/40">
                     {list.map((s, i) => {
                       const on = picked.has(s.id)
-                      const izin = izinIds.has(s.id)
-                      const bayarMode = markMode === "bayar"
                       return (
                         <div
                           key={s.id}
-                          onClick={() => {
-                            if (bayarMode) toggle(s.id)
-                            else void toggleIzin(s.id)
-                          }}
+                          onClick={() => toggle(s.id)}
                           className={`flex items-center gap-2 px-2.5 py-2.5 cursor-pointer transition-colors ${
-                            bayarMode
-                              ? on
-                                ? "bg-forest/8"
-                                : izin
-                                  ? "bg-amber/5 opacity-60"
-                                  : "bg-white"
-                              : izin
-                                ? "bg-amber/10"
-                                : on
-                                  ? "bg-forest/5 opacity-50"
-                                  : "bg-white"
+                            on ? "bg-forest/8" : "bg-white hover:bg-page/40"
                           }`}
                         >
                           <span className="w-6 text-center text-[11px] font-medium text-ink-soft/50 tabular-nums shrink-0">
@@ -746,11 +607,7 @@ function KasInner() {
                           <div className="flex-1 min-w-0">
                             <p
                               className={`text-sm font-semibold truncate ${
-                                bayarMode && on
-                                  ? "text-forest"
-                                  : izin
-                                    ? "text-amber-800"
-                                    : "text-ink"
+                                on ? "text-forest" : "text-ink"
                               }`}
                             >
                               {formatDisplayName(s.full_name)}
@@ -784,27 +641,12 @@ function KasInner() {
                           <div className="w-12 shrink-0 flex justify-center">
                             <span
                               className={`flex h-5 w-5 items-center justify-center rounded border-2 ${
-                                !bayarMode
-                                  ? "bg-surface border-line/60 text-transparent opacity-40"
-                                  : on
-                                    ? "bg-forest border-forest text-white"
-                                    : "bg-white border-line text-transparent"
+                                on
+                                  ? "bg-forest border-forest text-white"
+                                  : "bg-white border-line text-transparent"
                               }`}
                             >
                               <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                            </span>
-                          </div>
-                          <div className="w-12 shrink-0 flex justify-center">
-                            <span
-                              className={`flex h-5 w-5 items-center justify-center rounded border text-[11px] font-bold ${
-                                bayarMode
-                                  ? "bg-surface border-line/60 text-transparent opacity-40"
-                                  : izin
-                                  ? "bg-amber text-white border-amber"
-                                  : "bg-white border-line text-transparent"
-                            }`}
-                          >
-                            ✓
                             </span>
                           </div>
                         </div>
@@ -825,12 +667,8 @@ function KasInner() {
                   {saving
                     ? t("kas.saving")
                     : totalPick === 0
-                      ? markMode === "izin"
-                        ? t("kas.checkLeave")
-                        : t("kas.hintManage")
-                      : markMode === "izin"
-                        ? t("kas.saveLeaveCount", { n: totalPick })
-                        : t("kas.saveDepositCount", { n: totalPick, amount: formatIDR(totalRupiah) })}
+                      ? t("kas.hintManage")
+                      : t("kas.saveDepositCount", { n: totalPick, amount: formatIDR(totalRupiah) })}
                 </button>
               </div>
             </div>
@@ -933,13 +771,13 @@ function KasInner() {
               <div className="flex justify-between gap-3">
                 <span className="text-ink-soft">{t("kas.recordDate")}</span>
                 <span className="font-semibold text-ink text-right flex-1">
-                  {whenShort(detailTx.created_at)}
+                  {whenShort(detailTx.created_at, lang)}
                 </span>
               </div>
               <div className="flex justify-between gap-3">
                 <span className="text-ink-soft">{t("kas.eventDate")}</span>
                 <span className="font-semibold text-ink text-right flex-1">
-                  {formatDateID(new Date(detailTx.occurred_on))}
+                  {formatDateID(new Date(detailTx.occurred_on), lang)}
                 </span>
               </div>
               <div className="flex justify-between gap-3">

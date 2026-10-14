@@ -26,6 +26,11 @@
 - **Pengeluaran anti-desimal & double lock** (2026-10-14): parsing integer non-digit `replace(/\D/g, "")`, quick chips 10k–100k, preview Rp, ref lock `savingOutRef`. Koreksi transaksi belanja tissue Mishella di Supabase menjadi Rp 30.000 tunggal (duplikat dihapus).
 - **Sisa Belanja / Pengembalian Dana (Tema Oranye)** (2026-10-14): tombol aksi + Sheet di menu Kas, catat `IN` kategori `Sisa Pengeluaran`, tambah saldo kas riil; di Buku Kas ditampilkan teks biasa oranye `"Refund"` (tanpa pill badge) dan nominal oranye agar selaras dengan baris lainnya.
 - **Kartu Saldo Kas Tapable** (2026-10-14): kartu Saldo Kas (dark card) di menu Kas kini clickable/tapable langsung menuju `/app/kas/buku` dengan indikator `ChevronRight` dan micro-interaction scale.
+- **Pembersihan Fitur Leave Kas** (2026-10-14): tombol toggle switch Pay/Leave, kolom tabel LEAVE, dan handler izin di Kas dihapus; tombol All & Clear mepet kiri.
+- **Mass Report detail, voters & Revert** (2026-10-14): recorded_by menyimpan email pelapor asli, tombol show/hide voters di detail riwayat poin, popup modal konfirmasi approve Homeroom (≥10 votes), tombol Revert untuk membatalkan vote/hasil approved report.
+- **Full English Localization** (2026-10-14): label posisi (Leader, Treasurer, Secretary, Member), subtitle header pengumuman, tombol Brief/General, format tanggal & waktu relatif.
+- **Paginasi & Agenda Limits** (2026-10-14): batas 15 baris Pengumuman + navigasi; batas 10 baris Report history + navigasi; batas 10 baris Agenda + navigasi; event lampau di-disable visual (`opacity-55`, badge `Ended`) dan tidak dihapus dari DB.
+- **Auto-unpin Daily Brief Lama** (2026-10-14): saat Daily Brief baru dipin, brief lama otomatis di-unpin di `daily_briefs` dan `announcements` untuk mencegah double pin.
 
 ### Poin
 - Arena: Leaderboard · Battle Log · **Report**

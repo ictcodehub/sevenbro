@@ -307,7 +307,7 @@ export default function AppShell({
                 setShowProfile(false)
                 setShowQuick(false)
               }}
-              aria-label={`Notifikasi${unread > 0 ? `, ${unread} belum dibaca` : ""}`}
+              aria-label={unread > 0 ? t("notif.ariaUnread", { n: unread }) : t("notif.aria")}
               className="relative flex h-9 w-9 items-center justify-center rounded-xl text-ink hover:bg-surface transition"
             >
               <Bell className="h-5 w-5" />
@@ -327,7 +327,7 @@ export default function AppShell({
                     setShowNotif(false)
                     setShowQuick(false)
                   }}
-                  aria-label="Menu profil"
+                  aria-label={t("appShell.profileMenu")}
                   className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-surface transition shrink-0"
                 >
                   <Avatar className="h-8 w-8 ring-1 ring-line">
@@ -371,7 +371,7 @@ export default function AppShell({
             <button
               type="button"
               onClick={() => setShowQuick((v) => !v)}
-              aria-label="Pengaturan cepat"
+              aria-label={t("appShell.quickSettings")}
               aria-expanded={showQuick}
               className={`absolute right-0 flex h-9 w-9 items-center justify-center rounded-xl active:opacity-70 transition ${
                 showQuick ? "bg-forest/15 text-forest" : "text-ink"
@@ -398,7 +398,7 @@ export default function AppShell({
                 : "opacity-0 -translate-y-3 pointer-events-none"
             }`}
             role="dialog"
-            aria-label="Pengaturan cepat"
+            aria-label={t("appShell.quickSettings")}
             aria-hidden={!showQuick}
             inert={!showQuick}
           >

@@ -2,6 +2,7 @@
 // Spec: docs/INFO_BRIEF_SPEC.md
 
 const DAY_ID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]
+const DAY_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 const MONTH_ID = [
   "Januari",
   "Februari",
@@ -15,6 +16,20 @@ const MONTH_ID = [
   "Oktober",
   "November",
   "Desember",
+]
+const MONTH_EN = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ]
 
 export type BriefSubjectRow = {
@@ -635,8 +650,8 @@ export function defaultBriefDateKey(now = new Date()): string {
   return key
 }
 
-/** "Jumat, 17 September 2026" dari key Y-m-d */
-export function formatBriefDateLong(dateKey: string): string {
+/** "Jumat, 17 September 2026" dari key Y-m-d (atau "Friday, 17 September 2026" jika lang = "en") */
+export function formatBriefDateLong(dateKey: string, lang: "id" | "en" = "id"): string {
   const [ys, ms, ds] = dateKey.split("-")
   const y = Number(ys)
   const m = Number(ms)
@@ -644,16 +659,18 @@ export function formatBriefDateLong(dateKey: string): string {
   if (!y || !m || !d) return dateKey
   // Zaman UTC dari Y-m-d → weekday WIB sama (siang WIB masih hari yang sama)
   const dt = new Date(Date.UTC(y, m - 1, d, 12, 0, 0))
-  const day = DAY_ID[dt.getUTCDay()] || ""
-  const month = MONTH_ID[m - 1] || ""
+  const days = lang === "en" ? DAY_EN : DAY_ID
+  const months = lang === "en" ? MONTH_EN : MONTH_ID
+  const day = days[dt.getUTCDay()] || ""
+  const month = months[m - 1] || ""
   return `${day}, ${d} ${month} ${y}`
 }
 
-export function relativeDayLabel(dateKey: string, now = new Date()): string {
+export function relativeDayLabel(dateKey: string, now = new Date(), lang: "id" | "en" = "id"): string {
   const today = dateKeyWIB(now)
   const tomorrow = tomorrowKeyWIB(now)
-  if (dateKey === today) return "Hari ini"
-  if (dateKey === tomorrow) return "Besok"
+  if (dateKey === today) return lang === "en" ? "Today" : "Hari ini"
+  if (dateKey === tomorrow) return lang === "en" ? "Tomorrow" : "Besok"
   return ""
 }
 

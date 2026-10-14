@@ -7,6 +7,7 @@
 const WIB_OFFSET_MS = 7 * 60 * 60 * 1000
 
 const INDONESIAN_DAYS = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]
+const ENGLISH_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 const INDONESIAN_MONTH_LABELS: Record<string, string> = {
   "1": "Jan",
@@ -21,6 +22,21 @@ const INDONESIAN_MONTH_LABELS: Record<string, string> = {
   "10": "Okt",
   "11": "Nov",
   "12": "Des",
+}
+
+const ENGLISH_MONTH_LABELS: Record<string, string> = {
+  "1": "Jan",
+  "2": "Feb",
+  "3": "Mar",
+  "4": "Apr",
+  "5": "May",
+  "6": "Jun",
+  "7": "Jul",
+  "8": "Aug",
+  "9": "Sep",
+  "10": "Oct",
+  "11": "Nov",
+  "12": "Dec",
 }
 
 export function formatIDR(n: number): string {
@@ -42,31 +58,35 @@ export function monthKeyWIB(date?: Date | string): string {
  *  - "01" s/d "12" (satu/dua digit)
  *  - "YYYY-MM" (bulan dari posisi terakhir setelah '-')
  */
-export function monthLabel(m: string): string {
+export function monthLabel(m: string, lang?: "id" | "en"): string {
   if (!m) return ""
   // ambil segmen bulan dari key YYYY-MM
   const parts = m.split("-")
   const monthPart = parts[parts.length - 1] ?? ""
   const key = monthPart.replace(/^0+/, "")
   if (!key || !/^\d{1,2}$/.test(key)) return ""
-  return INDONESIAN_MONTH_LABELS[key] || ""
+  const months = lang === "en" ? ENGLISH_MONTH_LABELS : INDONESIAN_MONTH_LABELS
+  return months[key] || ""
 }
 
-export function formatDateID(d: Date): string {
+export function formatDateID(d: Date, lang?: "id" | "en"): string {
   if (!Number.isFinite(d.getTime())) return ""
   const wib = new Date(d.getTime() + WIB_OFFSET_MS)
-  const day  = INDONESIAN_DAYS[wib.getUTCDay()]
+  const days = lang === "en" ? ENGLISH_DAYS : INDONESIAN_DAYS
+  const months = lang === "en" ? ENGLISH_MONTH_LABELS : INDONESIAN_MONTH_LABELS
+  const day  = days[wib.getUTCDay()]
   const date = wib.getUTCDate()
-  const month = INDONESIAN_MONTH_LABELS[String(wib.getUTCMonth() + 1)] || ""
+  const month = months[String(wib.getUTCMonth() + 1)] || ""
   return `${day}, ${date} ${month}`
 }
 
 /** "06 Sep" — DD + spasi + bulan 3 huruf (WIB), tanpa hari/tahun */
-export function formatDateCompactID(d: Date): string {
+export function formatDateCompactID(d: Date, lang?: "id" | "en"): string {
   if (!Number.isFinite(d.getTime())) return ""
   const wib = new Date(d.getTime() + WIB_OFFSET_MS)
   const dd = String(wib.getUTCDate()).padStart(2, "0")
-  const month = INDONESIAN_MONTH_LABELS[String(wib.getUTCMonth() + 1)] || ""
+  const months = lang === "en" ? ENGLISH_MONTH_LABELS : INDONESIAN_MONTH_LABELS
+  const month = months[String(wib.getUTCMonth() + 1)] || ""
   return `${dd} ${month}`
 }
 

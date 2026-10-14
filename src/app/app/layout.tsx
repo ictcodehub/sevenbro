@@ -31,7 +31,7 @@ import { pathForNotification } from "@/lib/notif-nav"
 import { useAppSWR } from "@/lib/fetcher"
 import type { ClassSettings } from "@/lib/class-settings"
 import { useFcmTokenRegister } from "@/lib/push-client"
-import { useT } from "@/lib/i18n"
+import { useI18n } from "@/lib/i18n"
 
 function loadRead(): Set<string> {
   return loadIdSet(READ_KEY)
@@ -156,7 +156,7 @@ function getAdminItems(
 }
 
 export default function ShellLayout({ children }: { children: ReactNode }) {
-  const t = useT()
+  const { lang, t } = useI18n()
   const router = useRouter()
   const pathname = usePathname()
   const { data: session } = useSession()
@@ -316,7 +316,7 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
       onNotificationClick={openNotif}
       onNotificationDelete={deleteNotif}
       onClearAllNotifications={clearAllNotifs}
-      user={{ name, role: formatRoleLabel(role) }}
+      user={{ name, role: formatRoleLabel(role, lang) }}
       onSettings={() => router.push("/app/settings")}
       onViewHistory={() => router.push("/app/notifications")}
       onSignOut={() => {

@@ -19,7 +19,7 @@ import { RoleGate } from "@/components/RoleGate"
 import { formatDisplayName } from "@/lib/format"
 import { formatRoleLabel } from "@/lib/roles"
 import { clearSwrCache } from "@/lib/swr-store"
-import { useT } from "@/lib/i18n"
+import { useI18n } from "@/lib/i18n"
 import { VerifiedBadge, usePositions } from "@/components/VerifiedBadge"
 
 type LeaderRow = {
@@ -66,7 +66,7 @@ function ScanInner() {
   const [err, setErr] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [lastSaved, setLastSaved] = useState<string | null>(null)
-  const t = useT()
+  const { lang, t } = useI18n()
 
   if (status === "loading") {
     return (
@@ -161,7 +161,7 @@ function ScanInner() {
           {(students ?? []).map((s) => (
             <option key={s.id} value={s.id}>
               {formatDisplayName(s.full_name)}
-              {s.position !== "ANGGOTA" ? ` (${s.position})` : ""}
+              {s.position && s.position !== "ANGGOTA" ? ` (${formatRoleLabel(s.position, lang)})` : ""}
             </option>
           ))}
         </select>

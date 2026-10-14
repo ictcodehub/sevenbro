@@ -28,10 +28,11 @@ import { StudentMultiSelect } from "@/components/StudentSelect"
 import { canGivePoints, canAdmin } from "@/lib/policies"
 import { RoleGate } from "@/components/RoleGate"
 import FeatureGate from "@/components/FeatureGate"
-import { useT } from "@/lib/i18n"
+import { useI18n, useT } from "@/lib/i18n"
 import QRCode from "qrcode"
 import { formatDateID, formatTimeID, formatDisplayName } from "@/lib/format"
-import MassReportPanel from "@/components/MassReportPanel"
+import MassReportPanel, { type ListPayload, type ReportRow } from "@/components/MassReportPanel"
+import { Users, ChevronUp } from "lucide-react"
 import { VerifiedBadge, usePositions, type PositionIndex } from "@/components/VerifiedBadge"
 import { PodiumCard } from "@/components/PodiumCard"
 
@@ -121,10 +122,10 @@ function personName(full: string) {
   return formatDisplayName(full)
 }
 
-function whenLabel(iso: string) {
+function whenLabel(iso: string, lang?: "id" | "en") {
   try {
     const d = new Date(iso)
-    return `${formatDateID(d)} · ${formatTimeID(d)}`
+    return `${formatDateID(d, lang)} · ${formatTimeID(d)}`
   } catch {
     return iso
   }
@@ -146,49 +147,216 @@ function DeltaBadge({ delta }: { delta: number }) {
 }
 
 function HistoryList({ items, showStudent }: { items: PointLog[]; showStudent?: boolean }) {
-  const t = useT()
+  const { lang, t } = useI18n()
   const posIndex = usePositions("history")
+  const [selectedLog, setSelectedLog] = useState<PointLog | null>(null)
+  const [showVoters, setShowVoters] = useState(false)
+
+  // Fetch daftar mass reports untuk mencocokkan riwayat poin dengan laporan & data voters
+  const { data: reportData } = useAppSWR<ListPayload>("/api/mass-reports")
+
   if (items.length === 0) {
     return <EmptyState icon={<History className="h-6 w-6" />} message={t("poin.noHistory")} />
   }
+
+  // Cari mass report yang cocok berdasar reason dan status APPROVED
+  const matchedReport = selectedLog
+    ? (reportData?.reports ?? []).find(
+        (r) =>
+          r.status === "APPROVED" &&
+          (r.reason.toLowerCase() === selectedLog.reason.toLowerCase() ||
+            (r.original_reason && r.original_reason.toLowerCase() === selectedLog.reason.toLowerCase())),
+      )
+    : null
+
+  const isMassReport = Boolean(matchedReport) || selectedLog?.created_by === "system@mutiarabangsa.sch.id"
+
+  const yesVoters = matchedReport?.yesVoters ?? []
+  const noVoters = matchedReport?.noVoters ?? []
+  const totalVoters = yesVoters.length + noVoters.length
+
   return (
-    <div className="space-y-1.5">
-      {items.map((log) => (
-        <div
-          key={log.id}
-          className={`rounded-xl p-2.5 flex items-start gap-2.5 border ${
-            log.delta > 0
-              ? "bg-lime-soft/30 border-lime/40"
-              : "bg-alert-bg border-alert/25"
-          }`}
-        >
-          <div
-            className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg shrink-0 ${
-              log.delta > 0 ? "bg-forest text-lime" : "bg-alert text-white"
+    <>
+      <div className="space-y-1.5">
+        {items.map((log) => (
+          <button
+            key={log.id}
+            type="button"
+            onClick={() => {
+              setSelectedLog(log)
+              setShowVoters(false)
+            }}
+            className={`w-full text-left rounded-xl p-2.5 flex items-start gap-2.5 border transition active:scale-[0.99] cursor-pointer ${
+              log.delta > 0
+                ? "bg-lime-soft/30 border-lime/40 hover:bg-lime-soft/40"
+                : "bg-alert-bg border-alert/25 hover:bg-alert-bg/80"
             }`}
           >
-            {log.delta > 0 ? <Zap className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-sm-plus font-semibold text-ink leading-snug">{log.reason}</p>
-              <DeltaBadge delta={log.delta} />
+            <div
+              className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg shrink-0 ${
+                log.delta > 0 ? "bg-forest text-lime" : "bg-alert text-white"
+              }`}
+            >
+              {log.delta > 0 ? <Zap className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
             </div>
-            <p className="mt-0.5 text-[11px] text-ink-soft/60 truncate">
-              {showStudent && log.student?.full_name ? (
-                <HistoryStudentName index={posIndex} name={log.student.full_name} />
-              ) : null}
-              {showStudent && log.student?.full_name ? " · " : ""}
-              {log.kind === "PELANGGARAN" ? t("poin.pelanggaran") : t("poin.prestasi")}
-              {" · "}
-              {log.created_by || "—"}
-              {" · "}
-              {whenLabel(log.created_at)}
-            </p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm-plus font-semibold text-ink leading-snug">{log.reason}</p>
+                <DeltaBadge delta={log.delta} />
+              </div>
+              <p className="mt-0.5 text-[11px] text-ink-soft/60 truncate">
+                {showStudent && log.student?.full_name ? (
+                  <HistoryStudentName index={posIndex} name={log.student.full_name} />
+                ) : null}
+                {showStudent && log.student?.full_name ? " · " : ""}
+                {log.kind === "PELANGGARAN" ? t("poin.pelanggaran") : t("poin.prestasi")}
+                {" · "}
+                {log.created_by || "—"}
+                {" · "}
+                {whenLabel(log.created_at, lang)}
+              </p>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      <Sheet
+        open={Boolean(selectedLog)}
+        onClose={() => {
+          setSelectedLog(null)
+          setShowVoters(false)
+        }}
+        title={t("poin.detailTitle")}
+      >
+        {selectedLog && (
+          <div className="space-y-3 pt-1">
+            <div
+              className={`rounded-xl p-3 flex items-center justify-between border ${
+                selectedLog.delta > 0
+                  ? "bg-lime-soft/40 border-lime/50 text-forest"
+                  : "bg-alert-bg border-alert/30 text-alert"
+              }`}
+            >
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wider opacity-80">
+                  {selectedLog.kind === "PELANGGARAN" ? t("poin.pelanggaran") : t("poin.prestasi")}
+                </p>
+                <p className="text-sm font-bold text-ink mt-0.5">{selectedLog.reason}</p>
+              </div>
+              <div className="text-right">
+                <DeltaBadge delta={selectedLog.delta} />
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-line bg-surface/50 p-3 space-y-2 text-xs">
+              {selectedLog.student?.full_name && (
+                <div className="flex justify-between items-center py-0.5 border-b border-line/40">
+                  <span className="text-ink-soft/70">{t("poin.student")}</span>
+                  <span className="font-semibold text-ink">
+                    <HistoryStudentName index={posIndex} name={selectedLog.student.full_name} />
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between items-center py-0.5 border-b border-line/40">
+                <span className="text-ink-soft/70">{t("poin.recordedBy")}</span>
+                <span className="font-medium text-ink">
+                  {matchedReport?.created_by_name
+                    ? `${formatDisplayName(matchedReport.created_by_name)} (Ketua Kelas)`
+                    : selectedLog.created_by === "system@mutiarabangsa.sch.id"
+                    ? "Ketua Kelas (Mass Report)"
+                    : selectedLog.created_by || "—"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-line/40">
+                <span className="text-ink-soft/70">{t("poin.recordedAt")}</span>
+                <span className="font-medium text-ink">
+                  {whenLabel(selectedLog.created_at, lang)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-0.5">
+                <span className="text-ink-soft/70">{t("poin.detailSource")}</span>
+                <span className={`font-semibold ${isMassReport ? "text-forest" : "text-ink"}`}>
+                  {isMassReport ? t("poin.massReportVerified") : "Pemberian Poin Langsung"}
+                </span>
+              </div>
+            </div>
+
+            {isMassReport && (
+              <div className="space-y-2.5">
+                <div className="rounded-xl bg-forest/5 border border-forest/20 p-2.5">
+                  <p className="text-[11px] text-forest leading-relaxed">
+                    Poin ini dipotong secara otomatis oleh sistem atas persetujuan resmi Wali Kelas melalui alur Mass Report kelas 7B.
+                  </p>
+                </div>
+
+                {/* Tombol Show / Hide Voters */}
+                {totalVoters > 0 && (
+                  <div className="rounded-xl border border-line bg-surface/40 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setShowVoters((v) => !v)}
+                      className="w-full flex items-center justify-between p-2.5 text-xs font-semibold text-forest hover:bg-forest/5 transition"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Users className="h-3.5 w-3.5" />
+                        {showVoters
+                          ? t("report.hideVoteDetail")
+                          : t("report.showVoters", { n: totalVoters })}
+                      </span>
+                      {showVoters ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </button>
+
+                    {showVoters && (
+                      <div className="border-t border-line/60 p-2.5 space-y-2 text-xs">
+                        {yesVoters.length > 0 && (
+                          <div>
+                            <p className="text-[11px] font-bold text-forest mb-1">
+                              Setuju / Yes ({yesVoters.length}):
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {yesVoters.map((name, i) => (
+                                <span
+                                  key={`yes-${i}`}
+                                  className="inline-flex items-center gap-0.5 text-[11px] bg-forest/10 text-forest px-2 py-0.5 rounded-md font-medium"
+                                >
+                                  {formatDisplayName(name)}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {noVoters.length > 0 && (
+                          <div className={yesVoters.length > 0 ? "pt-1 border-t border-line/30" : ""}>
+                            <p className="text-[11px] font-bold text-alert mb-1">
+                              Tidak Setuju / No ({noVoters.length}):
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {noVoters.map((name, i) => (
+                                <span
+                                  key={`no-${i}`}
+                                  className="inline-flex items-center gap-0.5 text-[11px] bg-alert/10 text-alert px-2 py-0.5 rounded-md font-medium"
+                                >
+                                  {formatDisplayName(name)}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        </div>
-      ))}
-    </div>
+        )}
+      </Sheet>
+    </>
   )
 }
 

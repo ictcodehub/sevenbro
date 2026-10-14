@@ -11,7 +11,7 @@ export const DEFAULT_PREFS: Prefs = {
   push: false,
   dark: false,
   offline: true,
-  lang: "id",
+  lang: "en",
 }
 
 export function loadPrefs(): Prefs {

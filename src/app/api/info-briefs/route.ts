@@ -123,6 +123,36 @@ export async function POST(req: Request) {
     if (exErr) throw new Error(exErr.message)
 
     let announcementId: string | null = existing?.announcement_id ?? null
+
+    // Jika dipin dan jenisnya DAILY, unpin semua daily brief lama di kelas ini agar tidak double pin
+    if (pinned && kind === "DAILY") {
+      const { data: oldBriefs } = await db
+        .from("daily_briefs")
+        .select("id, announcement_id")
+        .eq("class_id", ctx.classId)
+        .eq("kind", "DAILY")
+        .neq("date", dateKey)
+
+      await db
+        .from("daily_briefs")
+        .update({ pinned: false })
+        .eq("class_id", ctx.classId)
+        .eq("kind", "DAILY")
+        .neq("date", dateKey)
+
+      const oldAnnIds = (oldBriefs ?? [])
+        .map((b) => b.announcement_id)
+        .filter(Boolean) as string[]
+
+      if (oldAnnIds.length) {
+        await db
+          .from("announcements")
+          .update({ pinned: false })
+          .in("id", oldAnnIds)
+          .eq("class_id", ctx.classId)
+      }
+    }
+
     const annPayload = {
       title,
       body: bodyGenerated,

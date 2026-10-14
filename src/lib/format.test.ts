@@ -188,6 +188,12 @@ describe("formatDateID", () => {
   it("mengembalikan string kosong untuk tanggal tidak valid", () => {
     expect(formatDateID(new Date(Number.NaN))).toBe("")
   })
+
+  it("memformat tanggal dalam bahasa Inggris saat lang='en'", () => {
+    expect(formatDateID(new Date("2026-09-15T00:00:00Z"), "en")).toBe("Tue, 15 Sep")
+    expect(formatDateID(new Date("2026-08-17T00:00:00Z"), "en")).toBe("Mon, 17 Aug")
+    expect(formatDateID(new Date("2026-10-22T00:00:00Z"), "en")).toBe("Thu, 22 Oct")
+  })
 })
 
 describe("formatTimeID", () => {
