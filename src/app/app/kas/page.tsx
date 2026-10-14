@@ -1,7 +1,7 @@
 "use client"
 
 import { useSession } from "next-auth/react"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import Link from "next/link"
 import {
   ArrowDownLeft,
@@ -14,8 +14,10 @@ import {
   History,
   Coins,
   ReceiptText,
+  RotateCcw,
   BookOpen,
   AlertTriangle,
+  ChevronRight,
 } from "lucide-react"
 import { SectionHeader, EmptyState } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
@@ -199,6 +201,12 @@ function KasInner() {
   const [outAmount, setOutAmount] = useState("")
   const [outNote, setOutNote] = useState("")
   const [savingOut, setSavingOut] = useState(false)
+  const savingOutRef = useRef(false)
+  const [openRefund, setOpenRefund] = useState(false)
+  const [refundAmount, setRefundAmount] = useState("")
+  const [refundNote, setRefundNote] = useState("")
+  const [savingRefund, setSavingRefund] = useState(false)
+  const savingRefundRef = useRef(false)
   const [detailTx, setDetailTx] = useState<Tx | null>(null)
   const [openSpecial, setOpenSpecial] = useState(false)
   const [spStudent, setSpStudent] = useState("")
@@ -415,11 +423,14 @@ function KasInner() {
 
   const saveOut = async () => {
     setErr(null)
-    const n = Number(outAmount)
+    const clean = outAmount.replace(/\D/g, "")
+    const n = Number(clean)
     if (!outNote.trim() || !Number.isFinite(n) || n <= 0) {
       setErr(t("kas.descRequired"))
       return
     }
+    if (savingOutRef.current) return
+    savingOutRef.current = true
     setSavingOut(true)
     try {
       const r = await fetch("/api/kas/transactions", {
@@ -444,7 +455,47 @@ function KasInner() {
     } catch (e) {
       setErr(e instanceof Error ? e.message : t("common.failed"))
     } finally {
+      savingOutRef.current = false
       setSavingOut(false)
+    }
+  }
+
+  const saveRefund = async () => {
+    setErr(null)
+    const clean = refundAmount.replace(/\D/g, "")
+    const n = Number(clean)
+    if (!refundNote.trim() || !Number.isFinite(n) || n <= 0) {
+      setErr(t("kas.refundRequired"))
+      return
+    }
+    if (savingRefundRef.current) return
+    savingRefundRef.current = true
+    setSavingRefund(true)
+    try {
+      const r = await fetch("/api/kas/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "IN",
+          category: "Sisa Pengeluaran",
+          description: refundNote.trim(),
+          amount: n,
+          ...(backdate ? { occurred_on: backdate } : {}),
+        }),
+      })
+      const b = await r.json().catch(() => null)
+      if (!r.ok) throw new Error(b?.error || t("common.failedWithStatus", { status: r.status }))
+      setOpenRefund(false)
+      setRefundAmount("")
+      setRefundNote("")
+      setBackdate("")
+      flash(t("kas.refundRecorded"))
+      await mutate()
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : t("common.failed"))
+    } finally {
+      savingRefundRef.current = false
+      setSavingRefund(false)
     }
   }
 
@@ -472,11 +523,18 @@ function KasInner() {
         <>
           {/* Saldo + tombol aksi sejajar (aksi hanya manage) */}
           <div className="flex items-stretch gap-2">
-            <div className={`bg-deep rounded-2xl p-3.5 text-white flex flex-col justify-between ${canManage ? "w-[60%]" : "w-full"}`}>
+            <Link
+              href="/app/kas/buku"
+              aria-label={t("kas.book")}
+              className={`bg-deep rounded-2xl p-3.5 text-white flex flex-col justify-between active:scale-[0.98] hover:opacity-95 transition-all cursor-pointer shadow-sm group ${
+                canManage ? "w-[58%]" : "w-full"
+              }`}
+            >
               <div>
                 <span className="flex items-center gap-1.5 text-xs font-medium text-white/70">
                   <Wallet className="h-3.5 w-3.5" />
-                  {t("kas.balanceTitle")}
+                  <span className="truncate">{t("kas.balanceTitle")}</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-white/40 ml-auto group-hover:translate-x-0.5 transition-transform shrink-0" />
                 </span>
                 <p className="mt-1.5 text-2xl font-bold leading-none text-acid">
                   {formatIDR(data?.balance ?? 0)}
@@ -495,23 +553,23 @@ function KasInner() {
                   {data.lastActivity.by} · {whenShort(data.lastActivity.at)}
                 </p>
               )}
-            </div>
+            </Link>
 
             {canManage && (
-              <div className="w-[40%] flex flex-col gap-2">
+              <div className="w-[42%] flex flex-col gap-1.5">
                 <button
                   type="button"
                   onClick={() => setOpenSpecial(true)}
-                  className="flex-1 rounded-2xl bg-white border border-line shadow-sm px-2.5 flex items-center gap-2 active:scale-[0.97] transition-transform"
+                  className="flex-1 rounded-xl bg-white border border-line shadow-sm px-2 py-1.5 flex items-center gap-1.5 active:scale-[0.97] transition-transform"
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-forest/10 text-forest shrink-0">
-                    <Coins className="h-4 w-4" />
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-forest/10 text-forest shrink-0">
+                    <Coins className="h-3.5 w-3.5" />
                   </span>
                   <span className="flex-1 min-w-0 text-left">
-                    <span className="block text-sm font-semibold leading-tight truncate">
+                    <span className="block text-xs font-semibold leading-tight truncate">
                       {t("kas.special")}
                     </span>
-                    <span className="block text-[10px] text-ink-soft/55 leading-tight mt-0.5 truncate">
+                    <span className="block text-[9.5px] text-ink-soft/55 leading-tight mt-0.5 truncate">
                       {t("kas.freeNominal")}
                     </span>
                   </span>
@@ -519,17 +577,34 @@ function KasInner() {
                 <button
                   type="button"
                   onClick={() => setOpenOut(true)}
-                  className="flex-1 rounded-2xl bg-white border border-line shadow-sm px-2.5 flex items-center gap-2 active:scale-[0.97] transition-transform"
+                  className="flex-1 rounded-xl bg-white border border-line shadow-sm px-2 py-1.5 flex items-center gap-1.5 active:scale-[0.97] transition-transform"
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-alert/10 text-alert shrink-0">
-                    <ReceiptText className="h-4 w-4" />
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-alert/10 text-alert shrink-0">
+                    <ReceiptText className="h-3.5 w-3.5" />
                   </span>
                   <span className="flex-1 min-w-0 text-left">
-                    <span className="block text-sm font-semibold leading-tight truncate">
+                    <span className="block text-xs font-semibold leading-tight truncate">
                       {t("kas.expense")}
                     </span>
-                    <span className="block text-[10px] text-ink-soft/55 leading-tight mt-0.5 truncate">
+                    <span className="block text-[9.5px] text-ink-soft/55 leading-tight mt-0.5 truncate">
                       {t("kas.expenseHint")}
+                    </span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOpenRefund(true)}
+                  className="flex-1 rounded-xl bg-white border border-line shadow-sm px-2 py-1.5 flex items-center gap-1.5 active:scale-[0.97] transition-transform"
+                >
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 shrink-0">
+                    <RotateCcw className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="flex-1 min-w-0 text-left">
+                    <span className="block text-xs font-semibold leading-tight truncate">
+                      {t("kas.refund")}
+                    </span>
+                    <span className="block text-[9.5px] text-ink-soft/55 leading-tight mt-0.5 truncate">
+                      {t("kas.refundHint")}
                     </span>
                   </span>
                 </button>
@@ -790,26 +865,54 @@ function KasInner() {
       >
         {detailTx && (
           <div className="space-y-3">
-            <div
-              className={`rounded-xl p-3 flex items-center justify-between ${
-                detailTx.kind === "IN" ? "bg-ok-bg" : "bg-alert-bg"
-              }`}
-            >
-              <div>
-                <p className="text-xs font-semibold text-ink-soft/70 uppercase">
-                  {detailTx.kind === "IN" ? t("home.in") : t("home.out")}
-                </p>
-                <p className="text-xs text-ink-soft">{detailTx.category}</p>
-              </div>
-              <p
-                className={`text-lg font-black ${
-                  detailTx.kind === "IN" ? "text-forest" : "text-alert"
-                }`}
-              >
-                {detailTx.kind === "IN" ? "+" : "−"}
-                {formatIDR(detailTx.amount)}
-              </p>
-            </div>
+            {(() => {
+              const isDetailRefund = Boolean(
+                detailTx.category &&
+                  (detailTx.category.toLowerCase().includes("sisa") ||
+                    detailTx.category.toLowerCase().includes("refund") ||
+                    detailTx.category.toLowerCase().includes("pengembalian"))
+              )
+              return (
+                <div
+                  className={`rounded-xl p-3 flex items-center justify-between ${
+                    isDetailRefund
+                      ? "bg-amber-500/15 border border-amber-500/25"
+                      : detailTx.kind === "IN"
+                      ? "bg-ok-bg"
+                      : "bg-alert-bg"
+                  }`}
+                >
+                  <div>
+                    <p
+                      className={`text-xs font-semibold uppercase ${
+                        isDetailRefund
+                          ? "text-amber-700 dark:text-amber-300"
+                          : "text-ink-soft/70"
+                      }`}
+                    >
+                      {isDetailRefund
+                        ? t("kas.refundUpper")
+                        : detailTx.kind === "IN"
+                        ? t("home.in")
+                        : t("home.out")}
+                    </p>
+                    <p className="text-xs text-ink-soft">{detailTx.category}</p>
+                  </div>
+                  <p
+                    className={`text-lg font-black ${
+                      isDetailRefund
+                        ? "text-amber-600 dark:text-amber-400"
+                        : detailTx.kind === "IN"
+                        ? "text-forest"
+                        : "text-alert"
+                    }`}
+                  >
+                    {detailTx.kind === "IN" ? "+" : "−"}
+                    {formatIDR(detailTx.amount)}
+                  </p>
+                </div>
+              )
+            })()}
             <div className="space-y-2 text-sm-plus">
               <div className="flex justify-between gap-3">
                 <span className="text-ink-soft">{t("kas.descLabel")}</span>
@@ -1005,7 +1108,7 @@ function KasInner() {
         </button>
       </Sheet>
 
-      {/* Pengeluaran minimal */}
+      {/* Pengeluaran */}
       <Sheet open={openOut} onClose={() => setOpenOut(false)} title={t("kas.expense")}>
         {err && (
           <p className="text-xs text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
@@ -1020,17 +1123,47 @@ function KasInner() {
             placeholder={t("kas.expensePlaceholder")}
           />
         </Field>
+        <div className="space-y-1">
+          <span className="text-sm font-semibold text-ink">{t("kas.nominal")}</span>
+          <div className="grid grid-cols-5 gap-1.5">
+            {[10000, 20000, 30000, 50000, 100000].map((num) => (
+              <button
+                key={num}
+                type="button"
+                onClick={() => setOutAmount(num.toLocaleString("id-ID"))}
+                className={`rounded-lg py-1.5 text-xs font-bold border transition-colors ${
+                  Number(outAmount.replace(/\D/g, "")) === num
+                    ? "bg-forest text-white border-forest"
+                    : "bg-white text-ink border-line hover:bg-page"
+                }`}
+              >
+                {num >= 1000 ? `${num / 1000}k` : num}
+              </button>
+            ))}
+          </div>
+        </div>
         <Field label={t("kas.amountRp")}>
           <input
-            type="number"
+            type="text"
             inputMode="numeric"
-            min={1}
             value={outAmount}
-            onChange={(e) => setOutAmount(e.target.value)}
+            onChange={(e) => {
+              const digits = e.target.value.replace(/\D/g, "")
+              if (!digits) {
+                setOutAmount("")
+                return
+              }
+              setOutAmount(Number(digits).toLocaleString("id-ID"))
+            }}
             className={inputClass}
-            placeholder="5000"
+            placeholder="30.000"
           />
         </Field>
+        {Number(outAmount.replace(/\D/g, "")) > 0 && (
+          <p className="text-xs font-semibold text-forest">
+            {formatIDR(Number(outAmount.replace(/\D/g, "")))}
+          </p>
+        )}
         <Field label={t("kas.eventDate")}>
           <BackdateInput value={backdate} onChange={setBackdate} max={today} />
         </Field>
@@ -1041,6 +1174,75 @@ function KasInner() {
           className="w-full bg-forest text-white text-sm font-semibold py-2.5 rounded-xl disabled:opacity-50"
         >
           {savingOut ? t("kas.saving") : t("common.save")}
+        </button>
+      </Sheet>
+
+      {/* Sisa Belanja / Pengembalian Dana */}
+      <Sheet open={openRefund} onClose={() => setOpenRefund(false)} title={t("kas.refundTitle")}>
+        {err && (
+          <p className="text-xs text-alert bg-alert-bg border border-alert/20 rounded-xl px-3 py-2">
+            {err}
+          </p>
+        )}
+        <Field label={t("kas.descLabel")}>
+          <input
+            value={refundNote}
+            onChange={(e) => setRefundNote(e.target.value)}
+            className={inputClass}
+            placeholder={t("kas.refundPlaceholder")}
+          />
+        </Field>
+        <div className="space-y-1">
+          <span className="text-sm font-semibold text-ink">{t("kas.nominal")}</span>
+          <div className="grid grid-cols-5 gap-1.5">
+            {[5000, 10000, 15000, 20000, 30000].map((num) => (
+              <button
+                key={num}
+                type="button"
+                onClick={() => setRefundAmount(num.toLocaleString("id-ID"))}
+                className={`rounded-lg py-1.5 text-xs font-bold border transition-colors ${
+                  Number(refundAmount.replace(/\D/g, "")) === num
+                    ? "bg-amber-600 text-white border-amber-600"
+                    : "bg-white text-ink border-line hover:bg-page"
+                }`}
+              >
+                {num >= 1000 ? `${num / 1000}k` : num}
+              </button>
+            ))}
+          </div>
+        </div>
+        <Field label={t("kas.amountRp")}>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={refundAmount}
+            onChange={(e) => {
+              const digits = e.target.value.replace(/\D/g, "")
+              if (!digits) {
+                setRefundAmount("")
+                return
+              }
+              setRefundAmount(Number(digits).toLocaleString("id-ID"))
+            }}
+            className={inputClass}
+            placeholder="8.000"
+          />
+        </Field>
+        {Number(refundAmount.replace(/\D/g, "")) > 0 && (
+          <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+            {formatIDR(Number(refundAmount.replace(/\D/g, "")))}
+          </p>
+        )}
+        <Field label={t("kas.eventDate")}>
+          <BackdateInput value={backdate} onChange={setBackdate} max={today} />
+        </Field>
+        <button
+          type="button"
+          disabled={savingRefund}
+          onClick={() => void saveRefund()}
+          className="w-full bg-amber-600 hover:bg-amber-700 active:scale-[0.98] text-white text-sm font-semibold py-2.5 rounded-xl disabled:opacity-50 transition-colors"
+        >
+          {savingRefund ? t("kas.saving") : t("kas.saveRefund")}
         </button>
       </Sheet>
 

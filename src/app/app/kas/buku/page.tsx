@@ -68,14 +68,20 @@ function payStatusLabel(
 /** Label kategori dari DB (ID) → sesuai bahasa UI */
 function categoryLabel(
   cat: string | undefined,
-  t: (key: "kas.catIuran" | "kas.catIuranHarian" | "kas.catIuranKhusus" | "kas.catExpense") => string,
+  t: (key: "kas.catIuran" | "kas.catIuranHarian" | "kas.catIuranKhusus" | "kas.catExpense" | "kas.catRefund") => string,
 ): string {
   const c = (cat || "").toLowerCase()
   if (c === "iuran khusus") return t("kas.catIuranKhusus")
   if (c === "iuran harian") return t("kas.catIuranHarian")
   if (c === "pengeluaran") return t("kas.catExpense")
+  if (c === "sisa pengeluaran" || c === "pengembalian dana") return t("kas.catRefund")
   if (c === "iuran") return t("kas.catIuran")
   return cat || ""
+}
+
+function isRefundCategory(cat?: string | null): boolean {
+  const c = (cat || "").toLowerCase()
+  return c.includes("sisa") || c.includes("refund") || c.includes("pengembalian")
 }
 
 const DOW_FULL = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]
@@ -640,10 +646,15 @@ function BukuKasInner() {
 
   // Jurnal kas: 1 baris = 1 transaksi nyata (bukan agregat harian / slot plot)
   const journalRows = useMemo(() => {
+    // Sertakan saldo awal dari backlog checklist (Rp 291.000) agar saldo berjalan cocok dengan saldo utama kas
+    const backlogSum = (rows ?? [])
+      .filter((t) => (t.created_at || "").startsWith(BACKLOG_PLOT_AT))
+      .reduce((s, t) => s + (t.kind === "IN" ? t.amount : -t.amount), 0)
+
     const sorted = [...(rows ?? [])]
       .filter((t) => !(t.created_at || "").startsWith(BACKLOG_PLOT_AT))
       .sort((a, b) => sortKey(a).localeCompare(sortKey(b)))
-    let run = 0
+    let run = backlogSum
     const withSaldo: LedgerRow[] = sorted.map((t) => {
       run += t.kind === "IN" ? t.amount : -t.amount
       return { ...t, saldo: run }
@@ -1120,6 +1131,7 @@ function BukuKasInner() {
                             </tr>
                             {items.map((line, idx) => {
                               const isIn = line.kind === "IN"
+                              const isRefund = isIn && isRefundCategory(line.category)
                               return (
                                 <tr
                                   key={line.id}
@@ -1133,18 +1145,22 @@ function BukuKasInner() {
                                     <div className="text-xs font-semibold text-ink whitespace-nowrap overflow-hidden text-ellipsis">
                                       {line.description || shortUraian(line)}
                                     </div>
-                                    <div className="text-[10px] text-ink-soft/70 truncate">
-                                      {[
-                                        categoryLabel(line.category, t),
-                                        payStatusLabel(line.description, t),
-                                      ]
-                                        .filter(Boolean)
-                                        .join(" - ")}
+                                    <div className="text-[10px] text-ink-soft/70 truncate flex items-center gap-1">
+                                      <span className={isRefund ? "text-amber-600 dark:text-amber-400 font-medium" : ""}>
+                                        {categoryLabel(line.category, t)}
+                                      </span>
+                                      {payStatusLabel(line.description, t) && (
+                                        <span> - {payStatusLabel(line.description, t)}</span>
+                                      )}
                                     </div>
                                   </td>
                                   <td
                                     className={`px-1.5 py-2 text-right text-xs font-semibold tabular-nums border-r border-line/40 whitespace-nowrap ${
-                                      isIn ? "text-forest" : "text-alert"
+                                      isIn
+                                        ? isRefund
+                                          ? "text-amber-600 dark:text-amber-400"
+                                          : "text-forest"
+                                        : "text-alert"
                                     }`}
                                   >
                                     {isIn ? "" : "−"}
@@ -1206,31 +1222,55 @@ function BukuKasInner() {
               <ArrowLeft className="h-5 w-5" />
             </button>
             <h2 className="text-lg font-bold text-ink flex-1">{t("kas.txDetailTitle")}</h2>
-            <span
-              className={`text-xs font-bold px-2 py-1 rounded-full ${
-                detail.kind === "IN"
-                  ? "bg-ok-bg text-forest"
-                  : "bg-alert-bg text-alert"
-              }`}
-            >
-              {detail.kind === "IN" ? t("kas.inUpper") : t("kas.outUpper")}
-            </span>
+            {(() => {
+              const isDetailRefund = isRefundCategory(detail.category)
+              return (
+                <span
+                  className={`text-xs font-bold px-2 py-1 rounded-full ${
+                    isDetailRefund
+                      ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                      : detail.kind === "IN"
+                      ? "bg-ok-bg text-forest"
+                      : "bg-alert-bg text-alert"
+                  }`}
+                >
+                  {isDetailRefund
+                    ? t("kas.refundUpper")
+                    : detail.kind === "IN"
+                    ? t("kas.inUpper")
+                    : t("kas.outUpper")}
+                </span>
+              )
+            })()}
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
             {/* Nominal besar */}
-            <div
-              className={`rounded-2xl p-4 text-center ${
-                detail.kind === "IN" ? "bg-forest text-white" : "bg-alert text-white"
-              }`}
-            >
-              <p className="text-xs font-medium opacity-80">
-                {detail.kind === "IN" ? t("kas.income") : t("kas.expense")}
-              </p>
-              <p className="mt-1 text-3xl font-black tabular-nums">
-                {rp(detail.amount)}
-              </p>
-            </div>
+            {(() => {
+              const isDetailRefund = isRefundCategory(detail.category)
+              return (
+                <div
+                  className={`rounded-2xl p-4 text-center ${
+                    isDetailRefund
+                      ? "bg-amber-600 text-white"
+                      : detail.kind === "IN"
+                      ? "bg-forest text-white"
+                      : "bg-alert text-white"
+                  }`}
+                >
+                  <p className="text-xs font-medium opacity-90">
+                    {isDetailRefund
+                      ? t("kas.catRefund")
+                      : detail.kind === "IN"
+                      ? t("kas.income")
+                      : t("kas.expense")}
+                  </p>
+                  <p className="mt-1 text-3xl font-black tabular-nums">
+                    {rp(detail.amount)}
+                  </p>
+                </div>
+              )
+            })()}
 
             {/* Tabel field */}
             <div className="bg-white border border-line shadow-sm rounded-2xl overflow-hidden">

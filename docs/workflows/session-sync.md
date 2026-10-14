@@ -45,15 +45,21 @@ Script akan:
 
 ---
 
-## Agent checklist (wajib ikut)
+## Agent checklist (wajib ikut — Combo Utama)
 
 1. **Run** `node scripts/session-sync-workflow.mjs`
 2. **Baca** output keputusan & open items
-3. **Kerja** sesuai task user
-4. **Update** `docs/PROGRESS.md` jika ada perubahan status
-5. **Update** `docs/SESSION_SYNC.md` → bagian **Keputusan sinkron** jika ada keputusan produk
-6. **CodeGraph**: `codegraph sync` jika ubah kode signifikan
-7. **Jangan** commit/push/deploy kecuali user eksplisit
+3. **Pilar 1 — Konsultasi CodeGraph (WAJIB)**: Jalankan `codegraph_explore` (MCP) atau `codegraph explore "<query>"` (CLI) sebelum membaca file manual atau menganalisis kode. Cek dependency via `codegraph callers <symbol>` / `codegraph impact <symbol>`.
+4. **Pilar 2 — Pipeline Matt Pocock (WAJIB)**:
+   - `/grill-me` (atau `/grill-with-docs`) → Validasi & hilangkan asumsi
+   - `/to-spec` → Tulis spesifikasi di `docs/specs/`
+   - `/to-tickets` → Pecah jadi tiket di `docs/tickets/`
+   - `/implement` → Eksekusi per tiket dengan TDD / verifikasi test
+   - `/code-review` → Review standards & spec
+5. **Update** `docs/PROGRESS.md` jika ada perubahan status
+6. **Update** `docs/SESSION_SYNC.md` → bagian **Keputusan sinkron** jika ada keputusan produk
+7. **CodeGraph sync**: Jalankan `codegraph status` / `codegraph sync` jika ubah kode signifikan
+8. **Jangan** commit/push/deploy kecuali user eksplisit
 
 ---
 
