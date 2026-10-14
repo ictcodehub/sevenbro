@@ -62,7 +62,19 @@ export function positionTextClass(position: string | null | undefined): string {
   return positionBadgeClass(position) ?? "text-ink-soft/70"
 }
 
-export function positionLabel(position: string | null | undefined): string {
+export function positionLabel(
+  position: string | null | undefined,
+  lang: "id" | "en" = "id",
+): string {
+  const p = (position ?? "").trim().toUpperCase()
+  if (!p) return ""
+  if (lang === "en") {
+    if (p === "KETUA") return "Leader"
+    if (p === "BENDAHARA") return "Treasurer"
+    if (p === "SEKRETARIS") return "Secretary"
+    if (p === "ANGGOTA") return "Member"
+    if (p === "WAKIL KETUA") return "Vice Leader"
+  }
   // Posisi bebas — Title Case generik ("WAKIL KETUA" → "Wakil Ketua")
   return formatDisplayName(position ?? "")
 }

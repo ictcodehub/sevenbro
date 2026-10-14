@@ -19,7 +19,7 @@ import { EmptyState } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
 import { formatIDR, formatTimeID, formatDisplayName } from "@/lib/format"
 import { RoleGate } from "@/components/RoleGate"
-import { useT } from "@/lib/i18n"
+import { useI18n, useT } from "@/lib/i18n"
 import { VerifiedBadge } from "@/components/VerifiedBadge"
 
 type Tx = {
@@ -85,23 +85,32 @@ function isRefundCategory(cat?: string | null): boolean {
 }
 
 const DOW_FULL = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]
+const DOW_FULL_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 const MONTHS_FULL = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
   "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ]
+const MONTHS_FULL_EN = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+]
 
 /** "2026-09-16" → "Rabu, 16 September 2026" */
-function fullDate(iso?: string | null) {
+function fullDate(iso?: string | null, lang?: "id" | "en") {
   if (!iso) return "—"
   const d = new Date(iso.length === 10 ? iso + "T12:00:00" : iso)
   if (Number.isNaN(d.getTime())) return "—"
-  return `${DOW_FULL[d.getDay()]}, ${d.getDate()} ${MONTHS_FULL[d.getMonth()]} ${d.getFullYear()}`
+  const dow = lang === "en" ? DOW_FULL_EN : DOW_FULL
+  const months = lang === "en" ? MONTHS_FULL_EN : MONTHS_FULL
+  return `${dow[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
 }
 
 /** "2026-09-16" → "16 Sep" */
-function dmy(iso?: string | null) {
+function dmy(iso?: string | null, lang?: "id" | "en") {
   if (!iso) return "—"
-  const months = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"]
+  const monthsID = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"]
+  const monthsEN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+  const months = lang === "en" ? monthsEN : monthsID
   const [y, m, d] = iso.slice(0, 10).split("-")
   if (!y || !m || !d) return "—"
   const mi = parseInt(m, 10) - 1
@@ -358,7 +367,7 @@ function BukuKasInner() {
     { refreshInterval: 20000 },
   )
 
-  const t = useT()
+  const { lang, t } = useI18n()
   const [only, setOnly] = useState<"all" | "IN" | "OUT">("all")
   // Default: semua bulan (bukan filter bulan berjalan)
   const [date, setDate] = useState("")
@@ -983,7 +992,7 @@ function BukuKasInner() {
                                 {i + 1}
                               </td>
                               <td className="px-1.5 py-1.5 text-[11px] text-ink-soft/70 tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
-                                {dmy(p.tx.occurred_on)} {p.tx.occurred_on.slice(0, 4)}
+                                {dmy(p.tx.occurred_on, lang)} {p.tx.occurred_on.slice(0, 4)}
                               </td>
                               <td className="px-1 py-1.5 text-center text-[11px] text-ink-soft/70 tabular-nums border-r border-line/40 whitespace-nowrap overflow-hidden">
                                 {p.tx.created_at.slice(0, 10) === p.tx.occurred_on
@@ -1304,7 +1313,7 @@ function BukuKasInner() {
               </span>
               <Clock className="h-3 w-3 shrink-0 ml-1" />
               <span className="shrink-0">
-                {fullDate(detail.created_at)} ·{" "}
+                {fullDate(detail.created_at, lang)} ·{" "}
                 {formatTimeID(new Date(detail.created_at))}
               </span>
             </div>

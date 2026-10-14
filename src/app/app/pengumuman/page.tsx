@@ -16,7 +16,7 @@ import { EmptyState } from "@/components/ui-primitives"
 import { useAppSWR } from "@/lib/fetcher"
 import { Sheet, Field } from "@/components/ui/sheet"
 import { canPostAnnouncement } from "@/lib/policies"
-import { useT } from "@/lib/i18n"
+import { useI18n, useT } from "@/lib/i18n"
 import { RoleGate } from "@/components/RoleGate"
 import FeatureGate from "@/components/FeatureGate"
 import InfoBriefForm, {
@@ -106,14 +106,14 @@ function WaBody({ text }: { text: string }) {
   )
 }
 
-function timeLabel(iso: string) {
+function timeLabel(iso: string, t?: ReturnType<typeof useT>) {
   try {
     const diff = Date.now() - new Date(iso).getTime()
     const h = Math.floor(diff / 3_600_000)
-    if (h < 1) return "Baru saja"
-    if (h < 24) return `${h} jam lalu`
+    if (h < 1) return t ? t("common.justNow") : "Baru saja"
+    if (h < 24) return t ? t("common.hoursAgo", { n: h }) : `${h} jam lalu`
     const d = Math.floor(h / 24)
-    return `${d} hari lalu`
+    return t ? t("common.daysAgo", { n: d }) : `${d} hari lalu`
   } catch {
     return iso
   }
@@ -126,9 +126,11 @@ function authorLabel(raw: string | null) {
 }
 
 /** Buang “ - Senin, 21 September 2026” dari judul brief lama di DB */
-function briefDisplayTitle(title: string) {
+function briefDisplayTitle(title: string, t?: ReturnType<typeof useT>) {
   const i = title.indexOf(" - ")
-  return i > 0 ? title.slice(0, i) : title
+  const base = i > 0 ? title.slice(0, i) : title
+  if (base === "Info Harian" && t) return t("info.dailyBrief")
+  return base
 }
 
 /** Toggle pin di pojok kanan-atas card — ON amber · OFF abu + coretan */
@@ -226,7 +228,7 @@ function PengumumanInner() {
     safePage * PAGE_LIMIT + PAGE_LIMIT,
   )
 
-  const t = useT()
+  const { lang, t } = useI18n()
   const flash = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(null), 3000)
@@ -356,7 +358,7 @@ function PengumumanInner() {
         <div>
           <h1 className="text-lg font-bold text-ink">{t("info.title")}</h1>
           <p className="text-xs text-ink-soft/75">
-            Info penting dari guru & pengurus kelas
+            {t("info.subtitle")}
           </p>
         </div>
         {canEdit && (
@@ -370,7 +372,7 @@ function PengumumanInner() {
               className="inline-flex items-center gap-1 rounded-full bg-forest text-white text-sm font-semibold px-3 py-1.5 active:scale-[0.97] transition-transform"
             >
               <PenLine className="h-3 w-3" />
-              Info
+              {t("info.brief")}
             </button>
             <button
               type="button"
@@ -378,7 +380,7 @@ function PengumumanInner() {
               className="inline-flex items-center gap-1 rounded-full border border-line bg-white text-ink text-sm font-semibold px-3 py-1.5 active:scale-[0.97] transition-transform"
             >
               <Plus className="h-3 w-3" />
-              Umum
+              {t("info.general")}
             </button>
           </div>
         )}
@@ -428,10 +430,10 @@ function PengumumanInner() {
                         Brief
                       </span>
                       <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">
-                        {briefDisplayTitle(a.title)}
+                        {briefDisplayTitle(a.title, t)}
                       </span>
                       <span className="shrink-0 text-xs text-ink-soft/65">
-                        {timeLabel(a.created_at)}
+                        {timeLabel(a.created_at, t)}
                       </span>
                     </div>
                     {expanded[a.id] && <WaBody text={a.body} />}
@@ -448,12 +450,12 @@ function PengumumanInner() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <h2 className="text-sm font-bold text-ink leading-snug">
-                          {briefDisplayTitle(a.title)}
+                          {briefDisplayTitle(a.title, t)}
                         </h2>
                         <p className="mt-0.5 text-xs text-ink-soft/70">
-                          {relativeDayLabel(brief.date)}
-                          {relativeDayLabel(brief.date) ? " · " : ""}
-                          {formatBriefDateLong(brief.date)}
+                          {relativeDayLabel(brief.date, undefined, lang)}
+                          {relativeDayLabel(brief.date, undefined, lang) ? " · " : ""}
+                          {formatBriefDateLong(brief.date, lang)}
                         </p>
                       </div>
                       {canEdit && (
@@ -503,7 +505,7 @@ function PengumumanInner() {
                 >
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <span className="text-xs text-ink-soft/75 pt-1">
-                      {timeLabel(a.created_at)}
+                      {timeLabel(a.created_at, t)}
                     </span>
                     {canEdit && (
                       <PinCardToggle
@@ -513,7 +515,7 @@ function PengumumanInner() {
                     )}
                   </div>
                   <h2 className="text-sm font-bold text-ink leading-snug">
-                    {a.title}
+                    {briefDisplayTitle(a.title, t)}
                   </h2>
                   <WaBody text={a.body} />
                   <div className="mt-2.5 pt-2 border-t border-line/60 flex items-center justify-between">
@@ -556,10 +558,10 @@ function PengumumanInner() {
                   onClick={() => setPage((p) => Math.max(0, p - 1))}
                   className="min-h-9 rounded-full border border-line bg-white px-3 text-sm font-semibold text-ink disabled:opacity-40"
                 >
-                  Sebelumnya
+                  {t("common.prev")}
                 </button>
                 <span className="text-xs text-ink-soft/70">
-                  {safePage + 1} / {pageCount} · max {PAGE_LIMIT} per halaman
+                  {safePage + 1} / {pageCount} · max {PAGE_LIMIT} {t("common.perPage")}
                 </span>
                 <button
                   type="button"
@@ -569,7 +571,7 @@ function PengumumanInner() {
                   }
                   className="min-h-9 rounded-full border border-line bg-white px-3 text-sm font-semibold text-ink disabled:opacity-40"
                 >
-                  Berikutnya
+                  {t("common.next")}
                 </button>
               </div>
             )}

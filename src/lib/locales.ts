@@ -16,6 +16,7 @@ export const STRINGS = {
 
   // ── Common ──
   "common.save": { id: "Simpan", en: "Save" },
+  "common.saving": { id: "Menyimpan...", en: "Saving..." },
   "common.cancel": { id: "Batal", en: "Cancel" },
   "common.close": { id: "Tutup", en: "Close" },
   "common.edit": { id: "Ubah", en: "Edit" },
@@ -276,6 +277,11 @@ export const STRINGS = {
   "poin.give": { id: "Beri Poin", en: "Give Points" },
   "poin.chasePodium": { id: "Kejar Podium", en: "Chase the Podium" },
   "poin.recent": { id: "Aktivitas terbaru", en: "Recent activity" },
+  "poin.detailTitle": { id: "Detail Aktivitas Poin", en: "Point Activity Details" },
+  "poin.detailSource": { id: "Sumber Aktivitas", en: "Activity Source" },
+  "poin.massReportVerified": { id: "Laporan Mass Report Sah (Disetujui)", en: "Verified Mass Report (Approved)" },
+  "poin.recordedBy": { id: "Dicatat oleh", en: "Recorded by" },
+  "poin.recordedAt": { id: "Waktu pencatatan", en: "Timestamp" },
   "poin.student": { id: "Siswa", en: "Student" },
   "poin.type": { id: "Tipe", en: "Type" },
   "poin.prestasi": { id: "Prestasi", en: "Achievement" },
@@ -339,6 +345,8 @@ export const STRINGS = {
 
   // ── Notifications ──
   "notif.title": { id: "Notifikasi", en: "Notifications" },
+  "notif.aria": { id: "Notifikasi", en: "Notifications" },
+  "notif.ariaUnread": { id: "Notifikasi, {{n}} belum dibaca", en: "Notifications, {{n}} unread" },
   "notif.history": { id: "Riwayat Notifikasi", en: "Notification History" },
   "notif.historyHint": {
     id: "Termasuk notifikasi yang dihapus dari shade",
@@ -359,20 +367,49 @@ export const STRINGS = {
   },
   "notif.notFound": { id: "Notifikasi tidak ditemukan?", en: "Notification not found?" },
   "notif.previous": { id: "Sebelumnya", en: "Earlier" },
+  "appShell.profileMenu": { id: "Menu profil", en: "Profile menu" },
+  "appShell.quickSettings": { id: "Pengaturan cepat", en: "Quick settings" },
+  "poin.empty": { id: "Belum ada poin", en: "No points yet" },
 
   // ── Login ──
   "login.title": { id: "Masuk", en: "Sign in" },
-  "login.google": { id: "Masuk dengan Google", en: "Continue with Google" },
+  "login.subtitle": { id: "Login dengan akun sekolah Anda", en: "Sign in with your school account" },
+  "login.google": { id: "Masuk dengan Google", en: "Sign in with Google" },
+  "login.redirecting": { id: "Mengarahkan...", en: "Redirecting..." },
   "login.schoolOnly": {
     id: "Hanya akun @mutiarabangsa.sch.id",
     en: "Only @mutiarabangsa.sch.id accounts",
   },
+  "login.onlyClass": {
+    id: "Hanya siswa & guru Kelas 7B yang dapat mengakses aplikasi ini.",
+    en: "Only Class 7B students & teachers can access this application.",
+  },
+  "login.errOAuthCallback": {
+    id: "Sesi login terputus. Coba lagi — pastikan memakai akun sekolah @mutiarabangsa.sch.id.",
+    en: "Login session expired. Try again — make sure to use your school @mutiarabangsa.sch.id account.",
+  },
+  "login.errOAuthAccountNotLinked": {
+    id: "Email Google ini sudah terpakai. Login dengan akun sekolah yang sama.",
+    en: "This Google email is already used. Sign in with the matching school account.",
+  },
+  "login.errAccessDenied": {
+    id: "Akses ditolak. Hanya email terdaftar (siswa / guru / whitelist) di @mutiarabangsa.sch.id yang diizinkan.",
+    en: "Access denied. Only registered accounts (students / teachers / whitelist) at @mutiarabangsa.sch.id are allowed.",
+  },
+  "login.errConfiguration": {
+    id: "Konfigurasi auth bermasalah. Hubungi admin kelas.",
+    en: "Auth configuration issue. Contact class admin.",
+  },
+  "login.errDefault": {
+    id: "Login gagal. Coba lagi atau hubungi homeroom.",
+    en: "Sign in failed. Try again or contact your homeroom.",
+  },
 
   // ── Role labels ──
-  "role.HOMEROOM": { id: "Wali Kelas", en: "Homeroom Teacher" },
+  "role.HOMEROOM": { id: "Wali Kelas", en: "Homeroom" },
   "role.TEACHER": { id: "Guru", en: "Teacher" },
-  "role.KETUA": { id: "Ketua", en: "Chairperson" },
-  "role.BENDAHARA": { id: "Bendahara", en: "Treasurer" },
+  "role.KETUA": { id: "Ketua", en: "Class Leader" },
+  "role.BENDAHARA": { id: "Bendahara", en: "Finance Lead" },
   "role.SEKRETARIS": { id: "Sekretaris", en: "Secretary" },
   "role.ANGGOTA": { id: "Anggota", en: "Member" },
   "role.PENDING": { id: "Menunggu", en: "Pending" },
@@ -410,7 +447,11 @@ export const STRINGS = {
   "report.whoVoted": { id: "Siapa yang vote", en: "Who voted" },
   "report.votesCol": { id: "Votes", en: "Votes" },
   "report.viewProof": { id: "Lihat Bukti", en: "View Proof" },
-  "report.accept": { id: "Terima", en: "Accept" },
+  "report.accept": { id: "Setujui", en: "Approve" },
+  "report.quorumNotMet": { id: "Belum 10 Vote", en: "Needs 10 Votes" },
+  "report.revert": { id: "Batalkan Hasil", en: "Undo Report" },
+  "report.revertConfirm": { id: "Batalkan laporan ini dan pulihkan poin siswa?", en: "Undo this report and restore student points?" },
+  "report.reverted": { id: "Laporan berhasil dibatalkan dan poin dipulihkan.", en: "Report undone and points restored." },
   "report.voted": { id: "Anda sudah vote", en: "You already voted" },
   "report.isTarget": { id: "Anda termasuk target - tidak bisa vote", en: "You're a target - can't vote" },
   "report.history": { id: "Riwayat report", en: "Report history" },

@@ -19,7 +19,7 @@ import {
 import { useAppSWR } from "@/lib/fetcher"
 import { formatIDR, formatDateID, formatTimeID, formatDisplayName } from "@/lib/format"
 import { RoleGate } from "@/components/RoleGate"
-import { useT } from "@/lib/i18n"
+import { useI18n } from "@/lib/i18n"
 import { PodiumCard } from "@/components/PodiumCard"
 
 type Announcement = {
@@ -66,9 +66,11 @@ function firstName(full: string) {
 }
 
 /** Hanya untuk kartu Beranda — buang “ - Senin, 21 September 2026” dari judul */
-function homeTitle(title: string) {
+function homeTitle(title: string, t?: (k: "info.dailyBrief") => string) {
   const i = title.indexOf(" - ")
-  return i > 0 ? title.slice(0, i) : title
+  const base = i > 0 ? title.slice(0, i) : title
+  if (base === "Info Harian" && t) return t("info.dailyBrief")
+  return base
 }
 
 /** Hanya untuk kartu Beranda — buang *bold* jadi teks polos (source tidak diubah) */
@@ -110,7 +112,7 @@ export default function HomePage() {
 }
 
 function HomeInner() {
-  const t = useT()
+  const { lang, t } = useI18n()
   const { data: session } = useSession()
   const role = (session?.user as { role?: string } | undefined)?.role
   const displayName = firstName(formatDisplayName(session?.user?.name) || "Kelas")
@@ -190,7 +192,7 @@ function HomeInner() {
           </div>
 
           {top3.length === 0 ? (
-            <p className="relative text-xs text-white/50 py-4 text-center">Belum ada poin</p>
+            <p className="relative text-xs text-white/50 py-4 text-center">{t("poin.empty")}</p>
           ) : (
             <>
               <div className="relative flex items-end justify-center gap-1.5">
@@ -238,7 +240,7 @@ function HomeInner() {
           <div className="bg-deep rounded-2xl p-4 text-white">
             <div className="flex items-start justify-between gap-2 mb-1">
               <h3 className="text-sm font-bold leading-tight min-w-0 flex-1">
-                {homeTitle(pinned.title)}
+                {homeTitle(pinned.title, t)}
               </h3>
               <span className="inline-flex shrink-0 items-center gap-1 bg-amber/20 text-amber rounded-full px-1.5 py-0.5 text-[10px] font-bold mt-0.5">
                 <Pin className="h-3 w-3" />
@@ -315,7 +317,7 @@ function HomeInner() {
               title={e.title}
               subtitle={e.location || "-"}
               rightTop={formatTimeID(new Date(e.starts_at))}
-              rightBottom={formatDateID(new Date(e.starts_at))}
+              rightBottom={formatDateID(new Date(e.starts_at), lang)}
               href="/app/agenda"
               accent={i === 0}
             />

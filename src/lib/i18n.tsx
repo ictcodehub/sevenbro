@@ -21,7 +21,7 @@ type I18nCtx = {
 const I18nContext = createContext<I18nCtx | null>(null)
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("id")
+  const [lang, setLangState] = useState<Lang>("en")
 
   useEffect(() => {
     const prefs = loadPrefs()
@@ -52,9 +52,9 @@ export function useI18n(): I18nCtx {
   if (!ctx) {
     // Fallback aman di luar provider (SSR / test)
     return {
-      lang: "id",
+      lang: "en",
       setLang: () => {},
-      t: (key, vars) => translate("id", key, vars),
+      t: (key, vars) => translate("en", key, vars),
     }
   }
   return ctx

@@ -15,9 +15,10 @@ import { useAppSWR } from "@/lib/fetcher"
 import { formatDateID, formatTimeID } from "@/lib/format"
 import { Sheet, Field } from "@/components/ui/sheet"
 import { canManageAgenda } from "@/lib/policies"
-import { useT } from "@/lib/i18n"
+import { useI18n, useT } from "@/lib/i18n"
 import { RoleGate } from "@/components/RoleGate"
 import FeatureGate from "@/components/FeatureGate"
+import { isEventPast } from "@/lib/events"
 
 type EventRow = {
   id: string
@@ -25,11 +26,12 @@ type EventRow = {
   location: string | null
   description: string | null
   starts_at: string
+  ends_at?: string | null
 }
 
 // Agenda dibuka untuk siswa aktif; manage tetap via canManageAgenda
 const PAGE_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
-const PAGE_LIMIT = 15
+const PAGE_LIMIT = 10
 
 function toLocalInputValue(iso: string) {
   const d = new Date(iso)
@@ -50,7 +52,7 @@ export default function AgendaPage() {
 }
 
 function AgendaInner() {
-  const t = useT()
+  const { lang, t } = useI18n()
   const { data: session } = useSession()
   const role = (session?.user as { role?: string } | undefined)?.role
   const canEdit = canManageAgenda(role ?? "")
@@ -67,12 +69,17 @@ function AgendaInner() {
   const [toast, setToast] = useState<string | null>(null)
   const [page, setPage] = useState(0)
 
-  // Mendatang dulu (waktu naik) — yang lewat dibuang server
+  // Mendatang dulu (waktu naik), disusul yang lampau (waktu turun)
   const sorted = useMemo(() => {
     const now = Date.now()
-    return [...(data ?? [])]
-      .filter((e) => +new Date(e.starts_at) >= now)
+    const all = data ?? []
+    const upcoming = all
+      .filter((e) => !isEventPast(e.starts_at, e.ends_at, now))
       .sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at))
+    const past = all
+      .filter((e) => isEventPast(e.starts_at, e.ends_at, now))
+      .sort((a, b) => +new Date(b.starts_at) - +new Date(a.starts_at))
+    return [...upcoming, ...past]
   }, [data])
 
   const pageCount = Math.max(1, Math.ceil(sorted.length / PAGE_LIMIT))
@@ -205,20 +212,22 @@ function AgendaInner() {
         <Timeline>
           {pageItems.map((ev, i) => {
             const d = new Date(ev.starts_at)
-            const isNearest = i === 0
+            const isPast = isEventPast(ev.starts_at, ev.ends_at)
+            const isNearest = !isPast && i === 0
             const isLast = i === pageItems.length - 1
 
             return (
               <TimelineItem
                 key={ev.id}
-                time={`${formatDateID(d)} · ${formatTimeID(d)}`}
+                time={`${formatDateID(d, lang)} · ${formatTimeID(d)}`}
                 title={ev.title}
                 location={ev.location || t("agenda.noLocation")}
                 description={ev.description}
                 isActive={isNearest}
                 isLast={isLast}
+                disabled={isPast}
                 actions={
-                  canEdit ? (
+                  canEdit && !isPast ? (
                     <button
                       type="button"
                       onClick={() => openEdit(ev)}

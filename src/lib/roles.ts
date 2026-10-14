@@ -28,7 +28,7 @@ export function resolveEffectiveRole(
   return "PENDING"
 }
 
-const ROLE_LABELS: Record<string, string> = {
+const ROLE_LABELS_ID: Record<string, string> = {
   HOMEROOM: "Wali Kelas",
   TEACHER: "Guru",
   KETUA: "Ketua",
@@ -38,9 +38,22 @@ const ROLE_LABELS: Record<string, string> = {
   PENDING: "Menunggu",
 }
 
-/** Label role untuk UI (Title Case Indonesia). Jangan tampilkan kode mentah. */
-export function formatRoleLabel(role: string | null | undefined): string {
-  if (!role) return "Siswa"
-  // Posisi bebas di luar peta → Title Case generik (mis. "WAKIL KETUA" → "Wakil Ketua")
-  return ROLE_LABELS[role] ?? formatDisplayName(role)
+const ROLE_LABELS_EN: Record<string, string> = {
+  HOMEROOM: "Homeroom",
+  TEACHER: "Teacher",
+  KETUA: "Leader",
+  BENDAHARA: "Treasurer",
+  SEKRETARIS: "Secretary",
+  ANGGOTA: "Member",
+  PENDING: "Pending",
+}
+
+/** Label role untuk UI. Jangan tampilkan kode mentah. */
+export function formatRoleLabel(
+  role: string | null | undefined,
+  lang: "id" | "en" = "id",
+): string {
+  if (!role) return lang === "en" ? "Student" : "Siswa"
+  const map = lang === "en" ? ROLE_LABELS_EN : ROLE_LABELS_ID
+  return map[role] ?? formatDisplayName(role)
 }

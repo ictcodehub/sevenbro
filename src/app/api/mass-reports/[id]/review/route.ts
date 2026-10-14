@@ -35,6 +35,15 @@ export async function POST(req: Request, { params }: Params) {
     if (report.status !== "READY" && report.status !== "VOTING") {
       return NextResponse.json({ error: "Report sudah diproses" }, { status: 409 })
     }
+    if (report.points_applied) {
+      return NextResponse.json({ error: "Poin untuk laporan ini sudah pernah diterapkan" }, { status: 409 })
+    }
+    if (decision === "APPROVED" && report.status === "VOTING") {
+      return NextResponse.json(
+        { error: "Laporan belum memenuhi kuorum minimal 10 vote untuk disetujui" },
+        { status: 400 },
+      )
+    }
 
     // Homeroom boleh perbaiki deskripsi sebelum apply
     const editedReason =
@@ -46,13 +55,14 @@ export async function POST(req: Request, { params }: Params) {
     if (decision === "APPROVED") {
       const targets = Array.isArray(report.target_ids) ? (report.target_ids as string[]) : []
       if (targets.length > 0) {
+        const creatorEmail = report.created_by || (ctx.email ?? "").toLowerCase()
         const { error: pErr } = await db.from("points").insert(
           targets.map((sid) => ({
             student_id: sid,
             kind: "PELANGGARAN",
             delta: -Math.abs(Number(report.delta) || 1),
             reason: editedReason,
-            created_by: "system@mutiarabangsa.sch.id",
+            created_by: creatorEmail,
           })),
         )
         if (pErr) throw new Error(pErr.message)

@@ -74,4 +74,15 @@ describe("formatRoleLabel", () => {
     expect(formatRoleLabel("ADMIN")).toBe("Admin")
     expect(formatRoleLabel("WAKIL KETUA")).toBe("Wakil Ketua")
   })
+
+  it("memetakan kode role ke label English saat lang='en'", () => {
+    expect(formatRoleLabel("HOMEROOM", "en")).toBe("Homeroom")
+    expect(formatRoleLabel("TEACHER", "en")).toBe("Teacher")
+    expect(formatRoleLabel("KETUA", "en")).toBe("Leader")
+    expect(formatRoleLabel("BENDAHARA", "en")).toBe("Treasurer")
+    expect(formatRoleLabel("SEKRETARIS", "en")).toBe("Secretary")
+    expect(formatRoleLabel("ANGGOTA", "en")).toBe("Member")
+    expect(formatRoleLabel("PENDING", "en")).toBe("Pending")
+    expect(formatRoleLabel(null, "en")).toBe("Student")
+  })
 })

@@ -12,7 +12,7 @@ import { useAppSWR } from "@/lib/fetcher"
 import { useT } from "@/lib/i18n"
 import { VerifiedBadge, usePositions, type PositionIndex } from "@/components/VerifiedBadge"
 
-type ReportRow = {
+export type ReportRow = {
   id: string
   reason: string
   delta: number
@@ -37,7 +37,7 @@ type ReportRow = {
   threshold: number
 }
 
-type ListPayload = {
+export type ListPayload = {
   reports: ReportRow[]
 }
 
@@ -74,6 +74,7 @@ export default function MassReportPanel() {
   const [expandId, setExpandId] = useState<string | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [donePage, setDonePage] = useState(0)
+  const [savingId, setSavingId] = useState<string | null>(null)
 
   const t = useT()
   const statusLabel = (s: string) => t(`report.status.${s.toLowerCase()}` as "report.status.voting" | "report.status.ready" | "report.status.approved" | "report.status.rejected" | "report.status.closed")
@@ -93,8 +94,8 @@ export default function MassReportPanel() {
       return tb - ta
     })
   const detail = reports.find((r) => r.id === detailId) ?? null
-  // Riwayat: 15 baris / halaman + navigasi
-  const DONE_PAGE_SIZE = 15
+  // Riwayat: 10 baris / halaman + navigasi
+  const DONE_PAGE_SIZE = 10
   const donePages = Math.max(1, Math.ceil(done.length / DONE_PAGE_SIZE))
   const page = Math.min(donePage, donePages - 1)
   const donePageItems = done.slice(page * DONE_PAGE_SIZE, (page + 1) * DONE_PAGE_SIZE)
@@ -118,6 +119,8 @@ export default function MassReportPanel() {
   }
 
   const review = async (id: string, decision: "APPROVED" | "REJECTED", reason?: string) => {
+    if (savingId) return
+    setSavingId(id)
     try {
       const r = await fetch(`/api/mass-reports/${id}/review`, {
         method: "POST",
@@ -131,6 +134,29 @@ export default function MassReportPanel() {
       await mutate()
     } catch (e) {
       flash(e instanceof Error ? e.message : t("common.failed"))
+    } finally {
+      setSavingId(null)
+    }
+  }
+
+  const revertReport = async (id: string) => {
+    if (!window.confirm(t("report.revertConfirm"))) return
+    if (savingId) return
+    setSavingId(id)
+    try {
+      const r = await fetch(`/api/mass-reports/${id}/revert`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      })
+      const b = await r.json().catch(() => null)
+      if (!r.ok) throw new Error(b?.error || t("common.failed"))
+      flash(t("report.reverted"))
+      setDetailId(null)
+      await mutate()
+    } catch (e) {
+      flash(e instanceof Error ? e.message : t("common.failed"))
+    } finally {
+      setSavingId(null)
     }
   }
 
@@ -326,15 +352,17 @@ export default function MassReportPanel() {
                             setEditId(r.id)
                             setEditReason(r.reason)
                           }}
-                          className="flex items-center justify-center gap-1 bg-forest text-white text-sm font-semibold py-2.5 rounded-xl"
+                          disabled={savingId === r.id || (r.status !== "READY" && (r.voteCount ?? 0) < (r.threshold ?? 10))}
+                          className="flex items-center justify-center gap-1 bg-forest text-white text-sm font-semibold py-2.5 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           <Check className="h-3.5 w-3.5" />
-                          {t("report.accept")}
+                          {savingId === r.id ? t("common.saving") : t("report.accept")}
                         </button>
                         <button
                           type="button"
                           onClick={() => void review(r.id, "REJECTED")}
-                          className="flex items-center justify-center gap-1 bg-page border border-line text-ink text-sm font-semibold py-2.5 rounded-xl"
+                          disabled={savingId === r.id}
+                          className="flex items-center justify-center gap-1 bg-page border border-line text-ink text-sm font-semibold py-2.5 rounded-xl disabled:opacity-50"
                         >
                           <X className="h-3.5 w-3.5" />
                           {t("roster.reject")}
@@ -639,8 +667,20 @@ export default function MassReportPanel() {
                 onClick={() => void openPhoto(detail.id)}
                 className="w-full flex items-center justify-center gap-1.5 text-sm font-semibold text-[#9a6a20] bg-[#EEA34C]/12 border border-[#EEA34C]/45 rounded-xl py-2"
               >
-<ImageIcon className="h-3.5 w-3.5" />
-                      {t("report.viewProof")}
+                <ImageIcon className="h-3.5 w-3.5" />
+                {t("report.viewProof")}
+              </button>
+            )}
+
+            {canReview && detail.status === "APPROVED" && (
+              <button
+                type="button"
+                disabled={savingId === detail.id}
+                onClick={() => void revertReport(detail.id)}
+                className="w-full flex items-center justify-center gap-1.5 text-sm font-semibold text-alert bg-alert-bg border border-alert/30 rounded-xl py-2.5 active:scale-[0.98] transition disabled:opacity-50"
+              >
+                <X className="h-4 w-4" />
+                {savingId === detail.id ? t("common.saving") : t("report.revert")}
               </button>
             )}
           </div>

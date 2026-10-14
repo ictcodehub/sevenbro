@@ -163,6 +163,33 @@ export default function MassReportVoteModal() {
     }
   }
 
+  const submitReview = async (decision: "APPROVED" | "REJECTED") => {
+    if (!current || saving) return
+    setSaving(true)
+    setVoteErr(null)
+    try {
+      const r = await fetch(`/api/mass-reports/${current.id}/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ decision }),
+      })
+      const b = await r.json().catch(() => null)
+      if (!r.ok) throw new Error(b?.error || "Gagal memproses review.")
+      dismissId(current.id)
+      const msg =
+        decision === "APPROVED"
+          ? `Laporan disetujui. Poin target dikurangi.`
+          : `Laporan ditolak.`
+      if (loadPrefs().push) showBrowserNotification("Review Mass Report", msg)
+      closeQuiet()
+      router.refresh()
+    } catch (e) {
+      setVoteErr(e instanceof Error ? e.message : "Gagal memproses review.")
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (!current) return null
 
   const pointBadge = (
@@ -281,17 +308,39 @@ export default function MassReportVoteModal() {
 
         <div className="px-4 pb-4 pt-1">
           {isReviewRole ? (
-            <button
-              type="button"
-              onClick={() => {
-                dismissId(current.id)
-                router.push("/app/poin")
-              }}
-              className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-forest text-white text-sm font-bold py-3 active:scale-[0.98] transition-transform"
-            >
-              <Flag className="h-4 w-4" />
-              Buka Panel Review
-            </button>
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => void submitReview("APPROVED")}
+                  className="flex items-center justify-center gap-1.5 rounded-xl bg-forest text-white text-sm font-bold py-3 active:scale-[0.98] disabled:opacity-45 transition-transform"
+                >
+                  <Check className="h-4 w-4" />
+                  Approve
+                </button>
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => void submitReview("REJECTED")}
+                  className="flex items-center justify-center gap-1.5 rounded-xl bg-page border border-line text-ink text-sm font-bold py-3 active:scale-[0.98] disabled:opacity-45 transition-transform"
+                >
+                  <X className="h-4 w-4" />
+                  Reject
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  dismissId(current.id)
+                  router.push("/app/poin")
+                }}
+                className="w-full flex items-center justify-center gap-1.5 rounded-xl text-xs font-semibold text-ink-soft/75 py-2 hover:bg-surface transition"
+              >
+                <Flag className="h-3.5 w-3.5" />
+                Buka di Panel Poin
+              </button>
+            </div>
           ) : voted ? (
             <div className="rounded-xl bg-ok-bg border border-forest/15 px-3 py-3 text-center">
               <p className="text-sm font-semibold text-forest">

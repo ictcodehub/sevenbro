@@ -106,7 +106,7 @@ export default function SettingsPage() {
           </p>
           <p className="text-xs text-ink-soft/75 truncate">{session.user.email}</p>
           <p className="mt-1 inline-flex items-center bg-forest/10 text-forest text-[11px] font-bold px-2 py-0.5 rounded-full">
-            {formatRoleLabel((session.user as { role?: string }).role)}
+            {formatRoleLabel((session.user as { role?: string }).role, lang)}
           </p>
         </div>
       )}

@@ -177,6 +177,7 @@ export function TimelineItem({
   description,
   isActive,
   isLast,
+  disabled,
   actions,
 }: {
   time: string
@@ -186,6 +187,7 @@ export function TimelineItem({
   description?: string | null
   isActive?: boolean
   isLast?: boolean
+  disabled?: boolean
   actions?: ReactNode
 }) {
   const plainDesc = description
@@ -196,32 +198,47 @@ export function TimelineItem({
     : null
 
   return (
-    <div className={`min-w-0 ${isLast ? "pb-2" : "pb-6"}`}>
+    <div className={`min-w-0 ${isLast ? "pb-2" : "pb-6"} ${disabled ? "opacity-55" : ""}`}>
       {/* Baris 1: node · tanggal — aksi absolute sejajar tanggal */}
       <div className="relative flex items-center gap-2 pr-16">
         <span
           className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ring-2 ${
-            isActive
+            disabled
+              ? "border border-line bg-surface ring-white"
+              : isActive
               ? "bg-forest ring-white"
               : "border border-forest/50 bg-white ring-white"
           }`}
           aria-hidden
         >
-          {isActive ? (
+          {disabled ? (
+            <span className="h-1.5 w-1.5 rounded-full bg-ink-soft/40" />
+          ) : isActive ? (
             <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
           ) : (
             <span className="h-1.5 w-1.5 rounded-full bg-forest" />
           )}
         </span>
-        <p
-          className={`min-w-0 flex-1 text-[11px] font-medium leading-snug truncate ${
-            isActive ? "text-forest" : "text-ink-soft/65"
-          }`}
-        >
-          {time}
-          {timeEnd ? ` — ${timeEnd}` : ""}
-        </p>
-        {actions && (
+        <div className="min-w-0 flex-1 flex items-center gap-1.5 truncate">
+          <p
+            className={`text-[11px] font-medium leading-snug truncate ${
+              disabled
+                ? "text-ink-soft/60"
+                : isActive
+                ? "text-forest"
+                : "text-ink-soft/65"
+            }`}
+          >
+            {time}
+            {timeEnd ? ` — ${timeEnd}` : ""}
+          </p>
+          {disabled && (
+            <span className="shrink-0 text-[9px] font-semibold uppercase tracking-wider text-ink-soft/70 bg-page/90 border border-line px-1.5 py-0.5 rounded">
+              Ended
+            </span>
+          )}
+        </div>
+        {actions && !disabled && (
           <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-0">
             {actions}
           </div>
