@@ -114,6 +114,12 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-09-29 | **Buku Kas: month selector + dropdown Per Siswa** — label bulan = bulan berjalan/terpilih; rekap ikut bulan; dropdown biasa quick view detail di tabel; tap baris → modal full-screen riwayat; sort terbaru di atas; hapus tombol Muat ulang | `kas/buku/page.tsx` |
 | 2026-09-29 | **Tab Transaksi = Jurnal kas** — 1 baris = 1 transaksi (bukan agregat "16/16 Siswa"); kolom No·Uraian·Nominal·Saldo/Balance; group per hari; i18n kategori/status (Special dues, Arrears cleared); Show 20 more; monthIn summary tanpa backlog | `kas/buku/page.tsx` · `api/kas/summary` · `locales.ts` |
 | 2026-09-29 | **Saldo kas = keseluruhan** (historis backlog + setoran real) — `monthIn` bulan ini = transaksi real saja; baris backlog dihitung di saldo tetapi bukan setoran harian | `api/kas/summary` · DB transactions |
+| 2026-10-14 | **CodeGraph SSOT & Mandatory first-step** — Wajib panggil CodeGraph (`codegraph_explore` / `codegraph explore`) sebelum analisis kode manual atau loop grep; dilarang re-analysis berulang; banner wajib di puncak `AGENTS.md` + checklist workflow | `AGENTS.md` · `docs/workflows/session-sync.md` · `scripts/` |
+| 2026-10-14 | **Kas Expense format & double-submit lock** — input nominal dibersihkan non-digit (`replace(/\D/g, "")`) anti-desimal `30.000`→30; chips 10k–100k; preview format IDR; ref lock `savingOutRef`. Transaksi tissue Mishella dikoreksi jadi Rp 30.000 tunggal | `src/app/app/kas/page.tsx` · DB `transactions` |
+| 2026-10-14 | **Sisa Belanja / Pengembalian Kas** — form Sheet Sisa Belanja di Kas, catat `IN` kategori `Sisa Pengeluaran`, masuk saldo riil & Jurnal Transaksi | `src/app/app/kas/page.tsx` · `kas/buku/page.tsx` · `locales.ts` |
+| 2026-10-14 | **Pencabutan poin bayar kas & DB cleanup** — auto-poin bayar kas dihapus dari collect & transactions; `kas-points.ts` deprecated; 25 data riwayat poin bayar kas di DB dibersihkan; A1 dihapus dari `POINT_SYSTEM.md` | `api/kas/collect` · `api/kas/transactions` · `kas-points.ts` · DB `points` · `POINT_SYSTEM.md` |
+| 2026-10-14 | **Tema oranye Refund / Sisa Belanja** — tombol aksi, form modal, dan nominal refund diberi aksen oranye (`amber-600`); label kategori di tabel Buku Kas ditampilkan sebagai teks biasa oranye `"Refund"` (tanpa pill badge) agar selaras dengan baris lainnya | `kas/page.tsx` · `kas/buku/page.tsx` · `locales.ts` · `docs/tickets/kas-expense-and-points/06-plain-orange-refund-label.md` |
+| 2026-10-14 | **Kartu Saldo Kas tapable ke Buku Kas** — dark card Saldo Kas dikonversi jadi `<Link href="/app/kas/buku">` dengan affordance `ChevronRight` subtle + micro-interaction `active:scale-[0.98]` | `kas/page.tsx` · `docs/tickets/kas-expense-and-points/05-clickable-cash-balance-card.md` |
 
 ---
 
@@ -184,5 +190,9 @@ Setelah kerja selesai: update `PROGRESS.md` Open + baris **Keputusan sinkron** d
 
 
 
+
+
+
+
 ### Automation log
-- last session-sync: `2026-09-29T15:25:02.864Z` · branch `sevenbro-dev`
+- last session-sync: `2026-10-14T06:46:14.713Z` · branch `sevenbro-dev`

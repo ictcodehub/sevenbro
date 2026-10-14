@@ -1,7 +1,29 @@
 # AGENTS.md — Seven Bro!
 
-> **Baca file ini dulu** sebelum mengubah apa pun.
-> Panduan wajib untuk AI agent (MiMo, Claude Code, Cursor, dll.) di repo ini.
+> **BACA INI DULU SEBELUM MENGANALISIS ATAU MENGUBAH KODE**
+> Panduan wajib untuk semua AI agent (MiMo, Claude Code, Cursor, Codex, dll.) di repo ini.
+
+---
+
+> ### ⚡ DUA PROTOKOL WAJIB UTAMA (COMBO UTAMA AGENT)
+> 
+> **Setiap AI agent (Antigravity, MiMo, Claude Code, Cursor, Codex, dll.) WAJIB menjalankan 2 pilar protokol ini sebelum atau saat menangani task:**
+> 
+> #### 🔍 Pilar 1: Wajib Konsultasi CodeGraph Dulu (Zero Blind Exploration)
+> 1. **Repo ini 100% terindeks CodeGraph (`.codegraph/`).**
+> 2. Sebelum membaca file secara manual atau grep massal: **WAJIB panggil MCP `codegraph_explore` atau CLI `codegraph explore "<query>"`**.
+> 3. CodeGraph memberikan *verbatim source* symbol terkait + dynamic-dispatch call paths dalam 1 langkah.
+> 4. **DILARANG melakukan re-analysis berulang kali dari nol** jika konteks symbol/alur sudah tersedia di CodeGraph.
+> 5. Sebelum mengubah kode, cek dependency & blast radius via `codegraph callers <symbol>` dan `codegraph impact <symbol>`.
+> 6. Setelah perubahan kode signifikan, jalankan `codegraph status` / `codegraph sync`.
+> 
+> #### 🎯 Pilar 2: Pipeline Engineering Bertahap Matt Pocock (Spec & Ticket Driven)
+> **DILARANG LANGSUNG CODING ASAL-ASALAN TANPA TAHAPAN JELAS.** Wajib lalui siklus:
+> 1. **`/grill-me` (atau `/grill-with-docs`)**: Interogasi & validasi requirement sampai 0 asumsi liar / ambiguitas arsitektur.
+> 2. **`/to-spec`**: Tuliskan spesifikasi solusi ke `docs/specs/<feature>.md`.
+> 3. **`/to-tickets`**: Pecah spec menjadi tiket terisolasi ke `docs/tickets/<feature>/01-xxx.md`.
+> 4. **`/implement`**: Eksekusi tiket per task, jalankan verifikasi TDD / typecheck / unit test per tiket.
+> 5. **`/code-review`**: Jalankan review ganda (Standards & Spec) sebelum finalisasi / deploy.
 
 ---
 
@@ -260,3 +282,14 @@ Update `docs/PROGRESS.md` saat milestone selesai.
 - Docs: https://colbymchenry.github.io/codegraph/
 - Upgrade: `codegraph upgrade`
 - Uninit project: `codegraph uninit`
+
+---
+
+## 11. Agent skills (Matt Pocock & Custom Skills)
+
+Pipeline engineering bertahap: `/grill-me` (atau `/grill-with-docs`) → `/to-spec` → `/to-tickets` → `/implement` → `/code-review`.
+
+- **Issue tracker**: Local Markdown di `docs/specs/` dan `docs/tickets/`. Lihat `docs/agents/issue-tracker.md`.
+- **Domain docs**: Single-context (`GLOSSARY.md` + `docs/adr/`). Lihat `docs/agents/domain.md`.
+- **Installed skills**: `.agents/skills/` (`to-spec`, `to-tickets`, `implement`, `code-review`, `grill-with-docs`, `tdd`, dll.).
+

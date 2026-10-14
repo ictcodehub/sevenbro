@@ -23,12 +23,15 @@
 - Buku Kas UI: Per Siswa rekap + dropdown quick view + modal riwayat (sort terbaru; filter bulan) · **Transaksi = jurnal kas** per transaksi + group hari + Show 20 more · monthIn summary tanpa backlog
 - StudentMultiSelect: label i18n (EN “All students”) + default **select all**
 - Tunggak kumulatif dari anchor; tetap dihitung walau data kas kosong (kalender setoran)
+- **Pengeluaran anti-desimal & double lock** (2026-10-14): parsing integer non-digit `replace(/\D/g, "")`, quick chips 10k–100k, preview Rp, ref lock `savingOutRef`. Koreksi transaksi belanja tissue Mishella di Supabase menjadi Rp 30.000 tunggal (duplikat dihapus).
+- **Sisa Belanja / Pengembalian Dana (Tema Oranye)** (2026-10-14): tombol aksi + Sheet di menu Kas, catat `IN` kategori `Sisa Pengeluaran`, tambah saldo kas riil; di Buku Kas ditampilkan teks biasa oranye `"Refund"` (tanpa pill badge) dan nominal oranye agar selaras dengan baris lainnya.
+- **Kartu Saldo Kas Tapable** (2026-10-14): kartu Saldo Kas (dark card) di menu Kas kini clickable/tapable langsung menuju `/app/kas/buku` dengan indikator `ChevronRight` dan micro-interaction scale.
 
 ### Poin
 - Arena: Leaderboard · Battle Log · **Report**
 - Podium **muted** (abu, “—”) bila skor top masih seri
 - Nama UI lengkap via `formatDisplayName`
-- Preset Beri Poin; auto +1 Bayar Uang Kas (1×/siswa/hari)
+- Preset Beri Poin; **auto-poin bayar kas dihapus** (2026-10-14, 25 riwayat poin lama dibersihkan dari DB)
 
 ### Mass Report
 - Ketua: **Buat Report** dari menu profil → `/app/report/new`

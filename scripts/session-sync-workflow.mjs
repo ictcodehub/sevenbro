@@ -68,11 +68,13 @@ console.log("\n## Binding docs")
 console.log("- AGENTS.md read:", agents.length > 0 ? "yes" : "MISSING")
 console.log("- SESSION_SYNC.md:", sync.length > 0 ? "yes" : "MISSING")
 console.log("- docs/PROGRESS.md:", progress.length > 0 ? "yes" : "MISSING")
-console.log("\n## Agent next steps")
+console.log("\n## Agent next steps (Wajib Combo Utama)")
 console.log("1. Use this brain for the current task")
-console.log("2. Update PROGRESS / SESSION_SYNC if state changes")
-console.log("3. No commit/push/deploy unless user asks")
-console.log("4. Run codegraph sync after large code changes")
+console.log("2. WAJIB Pilar 1: Konsultasi CodeGraph (codegraph_explore / codegraph explore) sebelum analisis atau edit kode")
+console.log("3. WAJIB Pilar 2: Jalankan Pipeline Bertahap Matt Pocock (/grill-me → /to-spec → /to-tickets → /implement → /code-review)")
+console.log("4. Update PROGRESS / SESSION_SYNC if state changes")
+console.log("5. No commit/push/deploy unless user asks")
+console.log("6. Run codegraph sync after code changes")
 
 // Stamp last sync
 if (sync) {

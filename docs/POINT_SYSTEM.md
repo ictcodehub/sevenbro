@@ -9,7 +9,7 @@
 
 | ID | Faktor | Poin | Siapa | Cara |
 |----|--------|------|-------|------|
-| A1 | Bayar uang kas | +1 | Sistem (Bendahara catat setoran) | **Otomatis** saat setoran tercatat |
+| ~~A1~~ | ~~(Dihapus 2026-10-14: Bayar uang kas tidak lagi menambah poin)~~ | — | — | — |
 | A2 | Perfect Score DT (ulangan harian) | +5 | Homeroom / Teacher | Manual · form Prestasi |
 | A3 | Perfect Score PT (ulangan tengah semester) | +5 | Homeroom / Teacher | Manual · form Prestasi |
 | A4 | Mengerjakan piket | +1 | Ketua / Sekretaris | Checklist piket |

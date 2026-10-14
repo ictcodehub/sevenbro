@@ -5,7 +5,6 @@ import { requireApi } from "@/lib/session"
 import { ensureContextReader } from "@/lib/server-context"
 import { createAdminClient } from "@/lib/db"
 import { notifyHomeroom } from "@/lib/notify"
-import { awardKasPoint } from "@/lib/kas-points"
 import { formatDisplayName, formatIDR } from "@/lib/format"
 
 export const dynamic = "force-dynamic"
@@ -71,16 +70,10 @@ export async function POST(req: Request) {
 
     if (error) throw new Error(error.message)
 
-    // Auto +1 poin “Bayar Uang Kas” (docs/POINT_SYSTEM.md A1) — max 1× per siswa per hari
-    const pointsAwarded = await awardKasPoint(
-      db,
-      (students ?? []).map((s) => s.id),
-    )
-
     const total = amountPer * rows.length
     await notifyHomeroom(ctx, {
       title: "Setoran kas dicatat",
-      body: `${formatDisplayName(ctx.name) || "Bendahara"} mencatat setoran ${rows.length} siswa · ${formatIDR(total)}${occurred_on !== nowYmd ? ` · tgl ${occurred_on}` : ""}${pointsAwarded > 0 ? ` · +1 poin ${pointsAwarded} siswa` : ""}.`,
+      body: `${formatDisplayName(ctx.name) || "Bendahara"} mencatat setoran ${rows.length} siswa · ${formatIDR(total)}${occurred_on !== nowYmd ? ` · tgl ${occurred_on}` : ""}.`,
       kind: "kas",
     })
     return NextResponse.json(
@@ -88,7 +81,6 @@ export async function POST(req: Request) {
         ok: rows.length,
         total,
         amountPer,
-        pointsAwarded,
         message: `${rows.length} siswa · ${total.toLocaleString("id-ID")} tercatat`,
       },
       { status: 201 },
