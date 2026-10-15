@@ -31,6 +31,7 @@
 - **Full English Localization** (2026-10-14): label posisi (Leader, Treasurer, Secretary, Member), subtitle header pengumuman, tombol Brief/General, format tanggal & waktu relatif.
 - **Paginasi & Agenda Limits** (2026-10-14): batas 15 baris Pengumuman + navigasi; batas 10 baris Report history + navigasi; batas 10 baris Agenda + navigasi; event lampau di-disable visual (`opacity-55`, badge `Ended`) dan tidak dihapus dari DB.
 - **Auto-unpin Daily Brief Lama** (2026-10-14): saat Daily Brief baru dipin, brief lama otomatis di-unpin di `daily_briefs` dan `announcements` untuk mencegah double pin.
+- **Buku Kas: Label Expense Merah, Indikator Saldo Up/Down & Footer Ringkas** (2026-10-15): label Expense diberi warna merah (`text-alert`), di depan `Rp.` pada kolom Saldo ditambahkan indikator panah halus (`ArrowUp` hijau `text-forest` saat saldo bertambah/IN, `ArrowDown` merah `text-alert` saat saldo berkurang/OUT) dengan stroke 1.5 tipis dan rapi, serta baris TOTAL pada footer tabel disederhanakan hanya menampilkan total saldo akhir (tidak lagi menumpuk total masuk & keluar yang sudah ada di kartu atas).
 
 ### Poin
 - Arena: Leaderboard · Battle Log · **Report**
