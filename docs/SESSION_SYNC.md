@@ -125,6 +125,7 @@ Output: branch, commit terakhir, dirty files, ringkasan docs utama.
 | 2026-10-14 | **Hapus fitur & tombol Leave di Kas** — hapus toggle switch Pay/Leave, kolom LEAVE di tabel, dan opsi izin; tombol All & Clear digeser mepet ke kiri | `kas/page.tsx` |
 | 2026-10-14 | **Paginasi & Agenda Limits** — batas 15 baris Pengumuman + navigasi; batas 10 baris Report history + navigasi; batas 10 baris Agenda + navigasi; event lampau di-disable visual (`opacity-55`, badge `Ended`) dan tidak dihapus dari DB | `pengumuman/page.tsx` · `MassReportPanel.tsx` · `agenda/page.tsx` · `events/route.ts` · `ui-primitives.tsx` |
 | 2026-10-14 | **Auto-unpin Daily Brief lama** — saat Daily Brief baru dipin, brief lama otomatis di-unpin di `daily_briefs` dan `announcements` untuk mencegah double pin | `api/info-briefs/route.ts` · `api/announcements/[id]/route.ts` |
+| 2026-10-15 | **Buku Kas: label Expense merah, indikator up/down saldo & footer ringkas** — label kategori Expense diwarnai merah (`text-alert`); di depan `Rp.` kolom Saldo ditambahkan indikator naik/turun (`ArrowUp` hijau `text-forest` jika masuk, `ArrowDown` merah `text-alert` jika keluar, stroke 1.5 tipis dan rapi); baris TOTAL footer disederhanakan hanya menampilkan saldo akhir agar tidak bertumpuk/sempit | `kas/buku/page.tsx` · `docs/specs/cash-book-indicators-and-expense-label.md` |
 
 ---
 

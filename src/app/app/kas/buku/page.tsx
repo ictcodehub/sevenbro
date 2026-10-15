@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import {
   ArrowLeft,
+  ArrowUp,
+  ArrowDown,
   ArrowUpRight,
   ArrowDownRight,
   BookOpen,
@@ -1155,7 +1157,15 @@ function BukuKasInner() {
                                       {line.description || shortUraian(line)}
                                     </div>
                                     <div className="text-[10px] text-ink-soft/70 truncate flex items-center gap-1">
-                                      <span className={isRefund ? "text-amber-600 dark:text-amber-400 font-medium" : ""}>
+                                      <span
+                                        className={
+                                          isRefund
+                                            ? "text-amber-600 dark:text-amber-400 font-medium"
+                                            : !isIn
+                                            ? "text-alert font-medium"
+                                            : ""
+                                        }
+                                      >
                                         {categoryLabel(line.category, t)}
                                       </span>
                                       {payStatusLabel(line.description, t) && (
@@ -1176,7 +1186,14 @@ function BukuKasInner() {
                                     {rp(line.amount)}
                                   </td>
                                   <td className="px-1.5 py-2 text-right text-xs tabular-nums text-ink whitespace-nowrap">
-                                    {rp(line.saldo)}
+                                    <span className="inline-flex items-center justify-end gap-1">
+                                      {isIn ? (
+                                        <ArrowUp className="h-3 w-3 text-forest shrink-0" strokeWidth={1.5} />
+                                      ) : (
+                                        <ArrowDown className="h-3 w-3 text-alert shrink-0" strokeWidth={1.5} />
+                                      )}
+                                      <span>{rp(line.saldo)}</span>
+                                    </span>
                                   </td>
                                 </tr>
                               )
@@ -1186,12 +1203,8 @@ function BukuKasInner() {
                       })}
                       <tfoot>
                         <tr className="bg-page border-t border-line">
-                          <td colSpan={2} className="px-1.5 py-2 text-xs font-bold text-ink">
+                          <td colSpan={3} className="px-1.5 py-2 text-xs font-bold text-ink">
                             {t("kas.totalRow")}
-                          </td>
-                          <td className="px-1.5 py-2 text-right text-xs font-bold tabular-nums whitespace-nowrap">
-                            <span className="text-forest">{rp(totalIn)}</span>
-                            {totalOut > 0 && <span className="text-alert"> · {rp(totalOut)}</span>}
                           </td>
                           <td className="px-1.5 py-2 text-right text-xs font-bold tabular-nums text-ink whitespace-nowrap">
                             {rp(lastSaldo)}
