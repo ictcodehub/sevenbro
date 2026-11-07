@@ -328,7 +328,7 @@ export const STRINGS = {
   "poin.podiumMuted": { id: "Belum ada selisih poin", en: "No score gap yet" },
   "poin.waitingPts": { id: "Menunggu poin", en: "Waiting for points" },
   "poin.arenaMeHint": { id: "poin · tap untuk alasan", en: "points · tap for reasons" },
-  "poin.getGiveBtn": { id: "Beri Poin", en: "Give Points" },
+  "poin.getGiveBtn": { id: "Poin", en: "Points" },
   "poin.formTitle": { id: "Form Beri Poin", en: "Give Points Form" },
   "poin.formSubtitle": { id: "Siswa, tipe, alasan, skor", en: "Students, type, reason, score" },
   "poin.quickReasonAria": { id: "Alasan cepat", en: "Quick reason" },
