@@ -755,6 +755,7 @@ export const STRINGS = {
   "roster.nisLabel": { id: "NIS", en: "Student ID" },
   "roster.nisPlaceholder": { id: "Nomor Induk Siswa (opsional)", en: "Student ID (optional)" },
   "roster.proposeNote": { id: "Perubahan dikirim sebagai usulan. Wali kelas harus menyetujui sebelum diterapkan.", en: "Changes are sent as a proposal. Homeroom must approve before applying." },
+  "roster.customPosition": { id: "Lainnya (Ketik Sendiri)", en: "Custom (Type Own)" },
 
   // ── Pengumuman / brief toasts ──
   "info.annUpdated": { id: "Pengumuman diperbarui", en: "Announcement updated" },

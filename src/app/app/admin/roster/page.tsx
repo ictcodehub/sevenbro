@@ -149,7 +149,16 @@ export default function AdminRosterPage() {
   const [editEmail, setEditEmail] = useState("")
   const [editNis, setEditNis] = useState("")
   const [editPosition, setEditPosition] = useState("")
+  const [isCustomPosition, setIsCustomPosition] = useState(false)
   const { lang, t } = useI18n()
+
+  const STANDARD_POSITIONS = [
+    { key: "KETUA", labelId: "Ketua", labelEn: "Leader" },
+    { key: "WAKIL KETUA", labelId: "Wakil Ketua", labelEn: "Vice Leader" },
+    { key: "SEKRETARIS", labelId: "Sekretaris", labelEn: "Secretary" },
+    { key: "BENDAHARA", labelId: "Bendahara", labelEn: "Treasurer" },
+    { key: "ANGGOTA", labelId: "Anggota", labelEn: "Member" },
+  ]
 
   const flash = (msg: string) => {
     setToast(msg)
@@ -162,7 +171,10 @@ export default function AdminRosterPage() {
     setEditName(s.full_name)
     setEditEmail(s.email ?? "")
     setEditNis(s.nis ?? "")
-    setEditPosition(positionLabel(s.position))
+    const pos = (s.position ?? "").trim().toUpperCase()
+    setEditPosition(pos || "ANGGOTA")
+    const isStd = STANDARD_POSITIONS.some((p) => p.key === (pos || "ANGGOTA"))
+    setIsCustomPosition(!isStd && Boolean(pos))
   }
 
   const openEditTeacher = (t: Teacher) => {
@@ -172,6 +184,7 @@ export default function AdminRosterPage() {
     setEditEmail(t.email)
     setEditNis("")
     setEditPosition("")
+    setIsCustomPosition(false)
   }
 
   const closeEdit = () => {
@@ -181,6 +194,7 @@ export default function AdminRosterPage() {
     setEditEmail("")
     setEditNis("")
     setEditPosition("")
+    setIsCustomPosition(false)
   }
 
   const load = async () => {
@@ -904,19 +918,42 @@ export default function AdminRosterPage() {
           {editStudent && (
             <div>
               <span className="text-[11px] font-semibold text-ink">{t("roster.colPosition")}</span>
-              <input
-                value={editPosition}
-                onChange={(e) => setEditPosition(e.target.value)}
-                list="roster-position-options"
+              <select
+                value={isCustomPosition ? "__CUSTOM__" : editPosition}
+                onChange={(e) => {
+                  const val = (e.target as HTMLSelectElement).value
+                  if (val === "__CUSTOM__") {
+                    setIsCustomPosition(true)
+                    if (STANDARD_POSITIONS.some((p) => p.key === editPosition)) {
+                      setEditPosition("")
+                    }
+                  } else {
+                    setIsCustomPosition(false)
+                    setEditPosition(val)
+                  }
+                }}
                 aria-label={t("roster.colPosition")}
                 className={inputClass + " mt-1"}
-                placeholder={t("roster.colPosition")}
-              />
-              <datalist id="roster-position-options">
-                {[...new Set(students.map((x) => positionLabel(x.position, lang)))].map((p) => (
-                  <option key={p} value={p} />
+              >
+                {STANDARD_POSITIONS.map((p) => (
+                  <option key={p.key} value={p.key}>
+                    {lang === "en" ? p.labelEn : p.labelId}
+                  </option>
                 ))}
-              </datalist>
+                <option value="__CUSTOM__">
+                  {t("roster.customPosition")}
+                </option>
+              </select>
+              {isCustomPosition && (
+                <input
+                  value={editPosition}
+                  onChange={(e) => setEditPosition((e.target as HTMLInputElement).value.toUpperCase())}
+                  aria-label={t("roster.colPosition")}
+                  className={inputClass + " mt-2"}
+                  placeholder={lang === "en" ? "Type custom position (e.g. KOORDINATOR)" : "Ketik posisi baru (mis. KOORDINATOR)"}
+                  autoFocus
+                />
+              )}
             </div>
           )}
           {isKetua && editStudent && (
