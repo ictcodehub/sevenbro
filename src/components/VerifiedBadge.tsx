@@ -70,10 +70,12 @@ export function positionLabel(
   if (!p) return ""
   if (lang === "en") {
     if (p === "KETUA") return "Leader"
-    if (p === "BENDAHARA") return "Treasurer"
-    if (p === "SEKRETARIS") return "Secretary"
-    if (p === "ANGGOTA") return "Member"
     if (p === "WAKIL KETUA") return "Vice Leader"
+    if (p === "BENDAHARA") return "Treasurer"
+    if (p === "WAKIL BENDAHARA") return "Vice Treasurer"
+    if (p === "SEKRETARIS") return "Secretary"
+    if (p === "WAKIL SEKRETARIS") return "Vice Secretary"
+    if (p === "ANGGOTA") return "Member"
   }
   // Posisi bebas — Title Case generik ("WAKIL KETUA" → "Wakil Ketua")
   return formatDisplayName(position ?? "")

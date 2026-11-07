@@ -49,6 +49,8 @@ describe("resolveEffectiveRole", () => {
   it("position bebas di luar daftar lama → role itu sendiri (bukan PENDING)", () => {
     expect(resolveEffectiveRole("STUDENT", "WAKIL")).toBe("WAKIL")
     expect(resolveEffectiveRole("STUDENT", "WAKIL KETUA")).toBe("WAKIL KETUA")
+    expect(resolveEffectiveRole("STUDENT", "WAKIL SEKRETARIS")).toBe("WAKIL SEKRETARIS")
+    expect(resolveEffectiveRole("STUDENT", "WAKIL BENDAHARA")).toBe("WAKIL BENDAHARA")
     expect(resolveEffectiveRole("STUDENT", " KETUA ")).toBe("KETUA")
   })
 

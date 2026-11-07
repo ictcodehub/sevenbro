@@ -156,7 +156,9 @@ export default function AdminRosterPage() {
     { key: "KETUA", labelId: "Ketua", labelEn: "Leader" },
     { key: "WAKIL KETUA", labelId: "Wakil Ketua", labelEn: "Vice Leader" },
     { key: "SEKRETARIS", labelId: "Sekretaris", labelEn: "Secretary" },
+    { key: "WAKIL SEKRETARIS", labelId: "Wakil Sekretaris", labelEn: "Vice Secretary" },
     { key: "BENDAHARA", labelId: "Bendahara", labelEn: "Treasurer" },
+    { key: "WAKIL BENDAHARA", labelId: "Wakil Bendahara", labelEn: "Vice Treasurer" },
     { key: "ANGGOTA", labelId: "Anggota", labelEn: "Member" },
   ]
 
