@@ -38,7 +38,16 @@ type Tx = {
 type LedgerRow = Tx & { saldo: number }
 
 /** Buku Kas: manage view tetap untuk semua yang boleh lihat kas (read-only) */
-const PAGE_ROLES = ["HOMEROOM", "BENDAHARA", "KETUA", "SEKRETARIS", "ANGGOTA"]
+const PAGE_ROLES = [
+  "HOMEROOM",
+  "BENDAHARA",
+  "WAKIL BENDAHARA",
+  "KETUA",
+  "WAKIL KETUA",
+  "SEKRETARIS",
+  "WAKIL SEKRETARIS",
+  "ANGGOTA",
+]
 
 function sortKey(t: Tx) {
   const time = (t.created_at.split("T")[1] ?? "00:00:00").slice(0, 8)

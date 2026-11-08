@@ -26,12 +26,12 @@ export const authOptions: NextAuthOptions = {
       // Advanced security: domain sekolah + siswa/guru/homeroom/allowlist
       return canSignInEmail(user.email)
     },
-    async jwt({ token, account, user }) {
-      // Refresh role hemat resource (free tier):
-      // DB cuma dicek max 1x/24 jam per user — dan hanya saat session di-refetch
-      // (buka app lagi / navigasi). Ganti pengurus berlaku paling telat sehari.
-      // Server-side requireApi tetap fresh per-request, jadi keamanan tidak terganggu.
-      const ROLE_REFRESH_MS = 24 * 60 * 60 * 1000
+    async jwt({ token, account, user, trigger }) {
+      // Refresh role:
+      // DB dicek saat trigger update, atau jika sudah lewat ROLE_REFRESH_MS (30 detik).
+      // Memastikan pergantian posisi siswa di roster langsung aktif saat refresh/navigasi.
+      // Server-side requireApi tetap fresh per-request, jadi keamanan selalu terjamin.
+      const ROLE_REFRESH_MS = 30 * 1000
 
       if (account && user?.email) {
         try {
@@ -87,9 +87,11 @@ export const authOptions: NextAuthOptions = {
           token.effectiveRole = token.effectiveRole ?? "PENDING"
         }
       } else if (token.email) {
-        // Bukan login — session di-refetch client. Cek topi baru di DB kalau sudah waktunya.
+        // Bukan login — session di-refetch client. Cek topi baru di DB kalau sudah waktunya atau trigger update.
         const last = (token.roleCheckedAt as number | undefined) ?? 0
-        if (Date.now() - last > ROLE_REFRESH_MS) {
+        const isExpired = Date.now() - last > ROLE_REFRESH_MS
+        const isUpdateTrigger = (trigger as string | undefined) === "update"
+        if (isExpired || isUpdateTrigger) {
           token.roleCheckedAt = Date.now()
           try {
             const email = normalizeEmail(token.email)

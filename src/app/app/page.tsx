@@ -101,7 +101,16 @@ function useOverflow2Lines() {
   return { ref, overflow }
 }
 
-const HOME_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
+const HOME_ROLES = [
+  "HOMEROOM",
+  "KETUA",
+  "WAKIL KETUA",
+  "BENDAHARA",
+  "WAKIL BENDAHARA",
+  "SEKRETARIS",
+  "WAKIL SEKRETARIS",
+  "ANGGOTA",
+]
 
 export default function HomePage() {
   return (

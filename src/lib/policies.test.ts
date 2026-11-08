@@ -21,25 +21,28 @@ const ALL_ROLES = [
   "HOMEROOM",
   "TEACHER",
   "KETUA",
+  "WAKIL KETUA",
   "BENDAHARA",
+  "WAKIL BENDAHARA",
   "SEKRETARIS",
+  "WAKIL SEKRETARIS",
   "ANGGOTA",
   "PENDING",
 ] as const
 type Role = (typeof ALL_ROLES)[number]
 
 const EXPECTED: Record<string, Role[]> = {
-  canPostAnnouncement: ["HOMEROOM", "KETUA", "SEKRETARIS"],
-  canManageAgenda: ["HOMEROOM", "KETUA", "SEKRETARIS"],
-  canManageKas: ["HOMEROOM", "BENDAHARA"],
-  canViewKas: ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"],
+  canPostAnnouncement: ["HOMEROOM", "KETUA", "SEKRETARIS", "WAKIL SEKRETARIS"],
+  canManageAgenda: ["HOMEROOM", "KETUA", "SEKRETARIS", "WAKIL SEKRETARIS"],
+  canManageKas: ["HOMEROOM", "BENDAHARA", "WAKIL BENDAHARA"],
+  canViewKas: ["HOMEROOM", "KETUA", "WAKIL KETUA", "BENDAHARA", "WAKIL BENDAHARA", "SEKRETARIS", "WAKIL SEKRETARIS", "ANGGOTA"],
   canGivePoints: ["HOMEROOM", "TEACHER"],
   canAdmin: ["HOMEROOM"],
   canViewRoster: ["HOMEROOM", "KETUA"],
   canManageRoster: ["HOMEROOM"],
   canProposeRoster: ["KETUA"],
   canCreateMassReport: ["KETUA"],
-  canVoteMassReport: ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"],
+  canVoteMassReport: ["HOMEROOM", "KETUA", "WAKIL KETUA", "BENDAHARA", "WAKIL BENDAHARA", "SEKRETARIS", "WAKIL SEKRETARIS", "ANGGOTA"],
   canReviewMassReport: ["HOMEROOM"],
 }
 
@@ -69,8 +72,11 @@ describe("policies", () => {
     it("true untuk semua role aktif (bukan PENDING)", () => {
       expect(canUseApp("HOMEROOM")).toBe(true)
       expect(canUseApp("KETUA")).toBe(true)
+      expect(canUseApp("WAKIL KETUA")).toBe(true)
       expect(canUseApp("BENDAHARA")).toBe(true)
+      expect(canUseApp("WAKIL BENDAHARA")).toBe(true)
       expect(canUseApp("SEKRETARIS")).toBe(true)
+      expect(canUseApp("WAKIL SEKRETARIS")).toBe(true)
       expect(canUseApp("ANGGOTA")).toBe(true)
     })
 

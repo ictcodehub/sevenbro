@@ -30,7 +30,16 @@ type EventRow = {
 }
 
 // Agenda dibuka untuk siswa aktif; manage tetap via canManageAgenda
-const PAGE_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
+const PAGE_ROLES = [
+  "HOMEROOM",
+  "KETUA",
+  "WAKIL KETUA",
+  "BENDAHARA",
+  "WAKIL BENDAHARA",
+  "SEKRETARIS",
+  "WAKIL SEKRETARIS",
+  "ANGGOTA",
+]
 const PAGE_LIMIT = 10
 
 function toLocalInputValue(iso: string) {

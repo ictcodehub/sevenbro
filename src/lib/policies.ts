@@ -13,8 +13,11 @@ const ACTIVE_ROLES = [
   "HOMEROOM",
   "TEACHER",
   "KETUA",
+  "WAKIL KETUA",
   "BENDAHARA",
+  "WAKIL BENDAHARA",
   "SEKRETARIS",
+  "WAKIL SEKRETARIS",
   "ANGGOTA",
 ] as const
 
@@ -22,24 +25,33 @@ function isAllowed(role: string, allowed: readonly string[]): boolean {
   return allowed.includes(role)
 }
 
-/** Boleh posting pengumuman: HOMEROOM, KETUA, SEKRETARIS */
+/** Boleh posting pengumuman: HOMEROOM, KETUA, SEKRETARIS, WAKIL SEKRETARIS */
 export function canPostAnnouncement(role: string): boolean {
-  return isAllowed(role, ["HOMEROOM", "KETUA", "SEKRETARIS"])
+  return isAllowed(role, ["HOMEROOM", "KETUA", "SEKRETARIS", "WAKIL SEKRETARIS"])
 }
 
-/** Boleh kelola agenda: HOMEROOM, KETUA, SEKRETARIS */
+/** Boleh kelola agenda: HOMEROOM, KETUA, SEKRETARIS, WAKIL SEKRETARIS */
 export function canManageAgenda(role: string): boolean {
-  return isAllowed(role, ["HOMEROOM", "KETUA", "SEKRETARIS"])
+  return isAllowed(role, ["HOMEROOM", "KETUA", "SEKRETARIS", "WAKIL SEKRETARIS"])
 }
 
-/** Boleh kelola kas: HOMEROOM, BENDAHARA */
+/** Boleh kelola kas: HOMEROOM, BENDAHARA, WAKIL BENDAHARA */
 export function canManageKas(role: string): boolean {
-  return isAllowed(role, ["HOMEROOM", "BENDAHARA"])
+  return isAllowed(role, ["HOMEROOM", "BENDAHARA", "WAKIL BENDAHARA"])
 }
 
 /** Boleh lihat kas (read-only termasuk Buku Kas): semua siswa aktif + Homeroom */
 export function canViewKas(role: string): boolean {
-  return isAllowed(role, ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"])
+  return isAllowed(role, [
+    "HOMEROOM",
+    "KETUA",
+    "WAKIL KETUA",
+    "BENDAHARA",
+    "WAKIL BENDAHARA",
+    "SEKRETARIS",
+    "WAKIL SEKRETARIS",
+    "ANGGOTA",
+  ])
 }
 
 /** Boleh memberi poin: HOMEROOM, TEACHER */
@@ -69,7 +81,16 @@ export function canProposeRoster(role: string): boolean {
 
 /** Boleh buka / kelola Mass Report (create + vote view): siswa aktif + Homeroom */
 export function canUseMassReport(role: string): boolean {
-  return isAllowed(role, ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"])
+  return isAllowed(role, [
+    "HOMEROOM",
+    "KETUA",
+    "WAKIL KETUA",
+    "BENDAHARA",
+    "WAKIL BENDAHARA",
+    "SEKRETARIS",
+    "WAKIL SEKRETARIS",
+    "ANGGOTA",
+  ])
 }
 
 /** Buat Mass Report: KETUA saja — Homeroom hanya review */

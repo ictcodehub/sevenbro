@@ -30,7 +30,16 @@ import { useI18n, useT } from "@/lib/i18n"
 import { VerifiedBadge, usePositions } from "@/components/VerifiedBadge"
 
 /** Kas: manage = HOMEROOM & BENDAHARA; siswa lain read-only */
-const PAGE_ROLES = ["HOMEROOM", "BENDAHARA", "KETUA", "SEKRETARIS", "ANGGOTA"]
+const PAGE_ROLES = [
+  "HOMEROOM",
+  "BENDAHARA",
+  "WAKIL BENDAHARA",
+  "KETUA",
+  "WAKIL KETUA",
+  "SEKRETARIS",
+  "WAKIL SEKRETARIS",
+  "ANGGOTA",
+]
 const NOMINAL = 1000
 
 type Tx = {

@@ -166,7 +166,16 @@ function PinCardToggle({
   )
 }
 
-const PAGE_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
+const PAGE_ROLES = [
+  "HOMEROOM",
+  "KETUA",
+  "WAKIL KETUA",
+  "BENDAHARA",
+  "WAKIL BENDAHARA",
+  "SEKRETARIS",
+  "WAKIL SEKRETARIS",
+  "ANGGOTA",
+]
 
 export default function PengumumanPage() {
   const t = useT()

@@ -360,7 +360,16 @@ function HistoryList({ items, showStudent }: { items: PointLog[]; showStudent?: 
   )
 }
 
-const PAGE_ROLES = ["HOMEROOM", "KETUA", "BENDAHARA", "SEKRETARIS", "ANGGOTA"]
+const PAGE_ROLES = [
+  "HOMEROOM",
+  "KETUA",
+  "WAKIL KETUA",
+  "BENDAHARA",
+  "WAKIL BENDAHARA",
+  "SEKRETARIS",
+  "WAKIL SEKRETARIS",
+  "ANGGOTA",
+]
 
 /**
  * Base URL untuk QR Beri Poin.
